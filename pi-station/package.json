@@ -1,5 +1,5 @@
 {
-   "name": "pi-station",
+   "name": "@nielpattin/pi-station",
    "version": "0.5.4",
    "description": "Station bar status extension for pi coding agent",
    "keywords": [
@@ -14,7 +14,15 @@
    "author": "Niel Pattin",
    "repository": {
       "type": "git",
-      "url": "git+https://github.com/nielpattin/pi-station.git"
+      "url": "git+https://github.com/nielpattin/pi-packages.git",
+      "directory": "pi-station"
+   },
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/pi-station#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
+   "publishConfig": {
+      "access": "public"
    },
    "files": [
       "*.ts",
