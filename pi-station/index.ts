@@ -11,6 +11,7 @@ import {
    type AutocompleteProvider,
    type SelectItem,
    SelectList,
+   SettingsList,
    truncateToWidth,
    visibleWidth,
 } from "@earendil-works/pi-tui";
@@ -54,7 +55,6 @@ import { DEFAULT_LAYOUT } from "./default-layout.ts";
 import {
    collectHiddenExtensionStatusKeys,
    getNotificationExtensionStatuses,
-   nextStationSettingWithOptions,
    parseStationConfig,
 } from "./station-config.ts";
 import { computeResponsiveLayout } from "./layout/index.ts";
@@ -73,7 +73,7 @@ import { matchesConfiguredShortcut } from "./shortcuts.ts";
 
 let config: StationConfig = {
    customItems: [],
-   mouseScroll: true,
+   scrollBar: true,
    fixedEditor: true,
 };
 
@@ -401,11 +401,11 @@ function writeStationSetting(cwd: string, update: (existingStationSetting: unkno
       return false;
    }
 
-   const writeToProject = Object.prototype.hasOwnProperty.call(projectSettings, "station-bar");
+   const writeToProject = Object.prototype.hasOwnProperty.call(projectSettings, "station");
    const settingsPath = writeToProject ? projectSettingsPath : globalSettingsPath;
    const settings = writeToProject ? projectSettings : globalSettings;
 
-   settings["station-bar"] = update(settings["station-bar"]);
+   settings["station"] = update(settings["station"]);
 
    try {
       mkdirSync(dirname(settingsPath), { recursive: true });
@@ -415,15 +415,6 @@ function writeStationSetting(cwd: string, update: (existingStationSetting: unkno
       console.debug(`[station-bar] Failed to persist station setting to ${settingsPath}:`, error);
       return false;
    }
-}
-
-function writeStationOptionSetting(
-   cwd: string,
-   updates: Partial<Pick<StationConfig, "mouseScroll" | "fixedEditor">>,
-): boolean {
-   return writeStationSetting(cwd, (existingStationSetting) =>
-      nextStationSettingWithOptions(existingStationSetting, updates),
-   );
 }
 
 function hasNonWhitespaceText(text: string): boolean {
@@ -476,7 +467,7 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
 
 export default function stationBar(pi: ExtensionAPI) {
    const startupSettings = readSettings();
-   config = parseStationConfig(startupSettings["station-bar"]);
+   config = parseStationConfig(startupSettings["station"]);
    let resolvedShortcuts = resolveShortcutConfig(startupSettings);
    let bashModeSettings = parseBashModeSettings(startupSettings);
 
@@ -743,7 +734,7 @@ export default function stationBar(pi: ExtensionAPI) {
       cachedSkillsInstalled = -1;
 
       const settings = readSettings(ctx.cwd);
-      config = parseStationConfig(settings["station-bar"]);
+      config = parseStationConfig(settings["station"]);
       state.config = config;
 
       customCompactionEnabled = detectCustomCompactionEnabled(ctx.cwd);
@@ -1166,92 +1157,99 @@ export default function stationBar(pi: ExtensionAPI) {
       requestStatusRender();
    });
 
-   // Command to toggle/configure
+   // Command to open station settings
    pi.registerCommand("station", {
-      description: "Configure station bar status (toggle, fixed-editor, mouse-scroll)",
-      handler: async (args, ctx) => {
-         // Update context reference (command ctx may have more methods)
+      description: "Open station bar settings (fixed editor, scroll bar)",
+      handler: async (_args, ctx) => {
          currentCtx = ctx;
 
-         if (!args?.trim()) {
-            // Toggle
-            enabled = !enabled;
-            if (enabled) {
-               setupCustomEditor(ctx);
-               ctx.ui.notify("Station bar enabled", "info");
-            } else {
-               bashIntegration.session?.dispose();
-               bashIntegration.session = null;
-               bashIntegration.transcript.clear();
-               bashIntegration.active = false;
-               getPromptHistoryState().savedPromptHistory = [];
-               stashedEditorText = null;
-               ctx.ui.setStatus("stash", undefined);
-               restoreFooterStatusRepaintHook?.();
-               restoreFooterStatusRepaintHook = null;
-               teardownFixedEditorCompositor();
-               stashShortcutInputUnsubscribe?.();
-               stashShortcutInputUnsubscribe = null;
-               // Keep editor attached so thinking border color persists.
-               // BashModeEditor extends CustomEditor (same base as pi default),
-               // so all default editing features still work.
-               ctx.ui.setFooter(undefined);
-               ctx.ui.setHeader(undefined);
-               ctx.ui.setWidget("station-top", undefined);
-               ctx.ui.setWidget("station-secondary", undefined);
-               ctx.ui.setWidget("station-bash-transcript", undefined);
-               ctx.ui.setWidget("station-status", undefined);
-               ctx.ui.setWidget("station-last-prompt", undefined);
-               footerDataRef = null;
-               tuiRef = null;
-               // Keep currentEditor reference so the thinking border color persists.
-               statusRenderScheduler.cancel();
-               resetLayoutCache();
-               ctx.ui.notify("Station bar disabled", "info");
-            }
-            return;
-         }
+         if (!ctx.hasUI) return;
 
-         const normalizedArgs = args.trim().toLowerCase();
-         const mouseScrollMatch = /^mouse-scroll(?:\s+(on|off|toggle))?$/.exec(normalizedArgs);
-         if (mouseScrollMatch) {
-            const mode = mouseScrollMatch[1] ?? "toggle";
-            config.mouseScroll = mode === "toggle" ? !config.mouseScroll : mode === "on";
-            if (enabled && ctx.hasUI && config.fixedEditor && tuiRef && currentEditor) {
-               installFixedEditorCompositor(ctx, tuiRef);
-            }
+         let needsCustomEditorRefresh = false;
+         let needsScrollBarRefresh = false;
+         const valueFor = (value: boolean): string => (value ? "ON" : "OFF");
 
-            if (writeStationOptionSetting(ctx.cwd, { mouseScroll: config.mouseScroll })) {
-               ctx.ui.notify(`Station bar mouse scroll ${config.mouseScroll ? "enabled" : "disabled"}`, "info");
-            } else {
-               ctx.ui.notify(
-                  `Station bar mouse scroll ${config.mouseScroll ? "enabled" : "disabled"} (not persisted; check settings.json)`,
-                  "warning",
+         await ctx.ui.custom<void>(
+            (tui, theme, _keybindings, done) => {
+               const list = new SettingsList(
+                  [
+                     {
+                        id: "fixedEditor",
+                        label: "Fixed Editor",
+                        description: "Keep chat/feed scrollable above a fixed editor cluster.",
+                        currentValue: valueFor(config.fixedEditor),
+                        values: ["ON", "OFF"],
+                     },
+                     {
+                        id: "scrollBar",
+                        label: "Scroll Bar",
+                        description: "Show the scroll position indicator on the chat/feed area.",
+                        currentValue: valueFor(config.scrollBar),
+                        values: ["ON", "OFF"],
+                     },
+                  ],
+                  2,
+                  {
+                     label: (text: string) => text,
+                     value: (text: string) => text,
+                     description: (text: string) => text,
+                     cursor: "→ ",
+                     hint: (text: string) => text,
+                  },
+                  (id, newValue) => {
+                     if (id === "fixedEditor") {
+                        config.fixedEditor = newValue === "ON";
+                        writeStationSetting(ctx.cwd, (existing) =>
+                           isRecord(existing)
+                              ? { ...existing, fixedEditor: config.fixedEditor }
+                              : { fixedEditor: config.fixedEditor },
+                        );
+                        needsCustomEditorRefresh = true;
+                     } else if (id === "scrollBar") {
+                        config.scrollBar = newValue === "ON";
+                        writeStationSetting(ctx.cwd, (existing) =>
+                           isRecord(existing)
+                              ? { ...existing, scrollBar: config.scrollBar }
+                              : { scrollBar: config.scrollBar },
+                        );
+                        needsScrollBarRefresh = true;
+                     }
+                  },
+                  () => done(),
                );
-            }
-            return;
+
+               return {
+                  render(width: number): string[] {
+                     const border = (text: string) => theme.fg("accent", text);
+                     const innerWidth = Math.max(1, width - 4);
+                     const title = theme.fg("accent", theme.bold("Station Settings"));
+                     const top = border(`╭${"─".repeat(Math.max(1, width - 2))}╮`);
+                     const divider = border(`├${"─".repeat(Math.max(1, width - 2))}┤`);
+                     const bottom = border(`╰${"─".repeat(Math.max(1, width - 2))}╯`);
+                     const rows = list.render(innerWidth).map((line) => {
+                        const text = truncateToWidth(line, innerWidth, "");
+                        return `${border("│")} ${text}${" ".repeat(Math.max(0, innerWidth - visibleWidth(text)))} ${border("│")}`;
+                     });
+                     const titleRow = `${border("│")} ${title}${" ".repeat(Math.max(0, innerWidth - visibleWidth("Station Settings")))} ${border("│")}`;
+                     return [top, titleRow, divider, ...rows, bottom];
+                  },
+                  handleInput(data: string): void {
+                     list.handleInput(data);
+                     tui.requestRender();
+                  },
+                  invalidate(): void {
+                     list.invalidate();
+                  },
+               };
+            },
+            { overlay: true },
+         );
+
+         if (needsCustomEditorRefresh && enabled) {
+            setupCustomEditor(ctx);
+         } else if (needsScrollBarRefresh && enabled && config.fixedEditor) {
+            fixedEditorCompositor?.setScrollBar(config.scrollBar);
          }
-
-         const fixedEditorMatch = /^fixed-editor(?:\s+(on|off|toggle))?$/.exec(normalizedArgs);
-         if (fixedEditorMatch) {
-            const mode = fixedEditorMatch[1] ?? "toggle";
-            config.fixedEditor = mode === "toggle" ? !config.fixedEditor : mode === "on";
-            if (enabled && ctx.hasUI) {
-               setupCustomEditor(ctx);
-            }
-
-            if (writeStationOptionSetting(ctx.cwd, { fixedEditor: config.fixedEditor })) {
-               ctx.ui.notify(`Station bar fixed editor ${config.fixedEditor ? "enabled" : "disabled"}`, "info");
-            } else {
-               ctx.ui.notify(
-                  `Station bar fixed editor ${config.fixedEditor ? "enabled" : "disabled"} (not persisted; check settings.json)`,
-                  "warning",
-               );
-            }
-            return;
-         }
-
-         ctx.ui.notify("Usage: /station [fixed-editor on|off|toggle | mouse-scroll on|off|toggle]", "warning");
       },
    });
 
@@ -1269,22 +1267,9 @@ export default function stationBar(pi: ExtensionAPI) {
    });
 
    pi.registerCommand("bash-mode", {
-      description: "Toggle sticky bash mode (on, off, toggle)",
-      handler: async (args, ctx) => {
-         const mode = args?.trim().toLowerCase() || "toggle";
-         if (mode === "on") {
-            await bashIntegration.setActive(true, ctx as any);
-            return;
-         }
-         if (mode === "off") {
-            await bashIntegration.setActive(false, ctx as any);
-            return;
-         }
-         if (mode === "toggle") {
-            await bashIntegration.setActive(!bashIntegration.active, ctx as any);
-            return;
-         }
-         ctx.ui.notify("Usage: /bash-mode [on|off|toggle]", "warning");
+      description: "Enable sticky bash mode",
+      handler: async (_args, ctx) => {
+         await bashIntegration.setActive(true, ctx as any);
       },
    });
 
@@ -1638,7 +1623,7 @@ export default function stationBar(pi: ExtensionAPI) {
       compositor = new TerminalSplitCompositor({
          tui,
          terminal: tui.terminal,
-         mouseScroll: config.mouseScroll,
+         scrollBar: config.scrollBar,
          keyboardScrollShortcuts: {
             up: resolvedShortcuts.scrollChatUp,
             down: resolvedShortcuts.scrollChatDown,
@@ -1901,6 +1886,7 @@ export default function stationBar(pi: ExtensionAPI) {
       teardownFixedEditorCompositor();
       ctx.ui.setWidget("station-top", undefined);
       ctx.ui.setWidget("station-secondary", undefined);
+      ctx.ui.setWidget("station-tertiary", undefined);
       ctx.ui.setWidget("station-bash-transcript", undefined);
       ctx.ui.setWidget("station-status", undefined);
       ctx.ui.setWidget("station-last-prompt", undefined);

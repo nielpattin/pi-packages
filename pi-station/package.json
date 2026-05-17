@@ -1,6 +1,6 @@
 {
    "name": "@nielpattin/pi-station",
-   "version": "0.5.7",
+   "version": "0.6.0",
    "description": "Station bar status extension for pi coding agent",
    "keywords": [
       "coding-agent",
@@ -10,28 +10,28 @@
       "station-bar",
       "status-bar"
    ],
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/pi-station#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
    "license": "MIT",
    "author": "Niel Pattin",
-   "main": "./dist/index.js",
-   "types": "./dist/index.d.ts",
-   "files": [
-      "dist",
-      "README.md",
-      "theme.example.json"
-   ],
    "repository": {
       "type": "git",
       "url": "git+https://github.com/nielpattin/pi-packages.git",
       "directory": "pi-station"
    },
-   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/pi-station#readme",
-   "bugs": {
-      "url": "https://github.com/nielpattin/pi-packages/issues"
-   },
+   "files": [
+      "dist",
+      "README.md",
+      "theme.example.json"
+   ],
+   "type": "module",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
    "publishConfig": {
       "access": "public"
    },
-   "type": "module",
    "scripts": {
       "clean": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.build.tsbuildinfo',{force:true});\"",
       "build": "npm run clean && tsc -p tsconfig.build.json",

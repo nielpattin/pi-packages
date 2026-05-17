@@ -326,7 +326,14 @@ test("terminal split shutdown cleanup resets extended keyboard modes", () => {
   const cleanup = terminal.writes.at(-1) ?? "";
   assert.ok(cleanup.includes("\x1b[<999u"));
   assert.ok(cleanup.includes("\x1b[>4;0m"));
-  assert.ok(cleanup.indexOf("\x1b[?1049l") < cleanup.indexOf("\x1b[<999u"));
+  const firstClear = cleanup.indexOf("\x1b[2J\x1b[H");
+  const exitAlternate = cleanup.indexOf("\x1b[?1049l");
+  const secondClear = cleanup.indexOf("\x1b[2J\x1b[H", exitAlternate);
+  assert.ok(firstClear !== -1);
+  assert.ok(secondClear !== -1);
+  assert.ok(firstClear < exitAlternate);
+  assert.ok(exitAlternate < secondClear);
+  assert.ok(secondClear < cleanup.indexOf("\x1b[<999u"));
 });
 
 test("terminal row reservation does not recurse when hidden editor render reads terminal rows", () => {
@@ -1532,12 +1539,19 @@ test("terminal split reuses the fixed cluster during one render pass", () => {
   compositor.dispose();
 });
 
-test("emergency terminal reset exits alternate screen before clearing keyboard modes", () => {
+test("emergency terminal reset clears alternate and restored main screens", () => {
   const cleanup = emergencyTerminalModeReset();
   assert.ok(cleanup.includes("\x1b[?1049l"));
   assert.ok(cleanup.includes("\x1b[<999u"));
   assert.ok(cleanup.includes("\x1b[>4;0m"));
-  assert.ok(cleanup.indexOf("\x1b[?1049l") < cleanup.indexOf("\x1b[<999u"));
+  const firstClear = cleanup.indexOf("\x1b[2J\x1b[H");
+  const exitAlternate = cleanup.indexOf("\x1b[?1049l");
+  const secondClear = cleanup.indexOf("\x1b[2J\x1b[H", exitAlternate);
+  assert.ok(firstClear !== -1);
+  assert.ok(secondClear !== -1);
+  assert.ok(firstClear < exitAlternate);
+  assert.ok(exitAlternate < secondClear);
+  assert.ok(secondClear < cleanup.indexOf("\x1b[<999u"));
 });
 
 test("terminal split emergency exit cleanup resets extended keyboard modes", () => {
@@ -1554,7 +1568,14 @@ test("terminal split emergency exit cleanup resets extended keyboard modes", () 
   const cleanup = terminal.writes.at(-1) ?? "";
   assert.ok(cleanup.includes("\x1b[<999u"));
   assert.ok(cleanup.includes("\x1b[>4;0m"));
-  assert.ok(cleanup.indexOf("\x1b[?1049l") < cleanup.indexOf("\x1b[<999u"));
+  const firstClear = cleanup.indexOf("\x1b[2J\x1b[H");
+  const exitAlternate = cleanup.indexOf("\x1b[?1049l");
+  const secondClear = cleanup.indexOf("\x1b[2J\x1b[H", exitAlternate);
+  assert.ok(firstClear !== -1);
+  assert.ok(secondClear !== -1);
+  assert.ok(firstClear < exitAlternate);
+  assert.ok(exitAlternate < secondClear);
+  assert.ok(secondClear < cleanup.indexOf("\x1b[<999u"));
 
   compositor.dispose();
 });

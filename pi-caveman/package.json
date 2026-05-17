@@ -5,23 +5,23 @@
    "keywords": [
       "pi-package"
    ],
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/pi-caveman#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
    "license": "MIT",
-   "main": "./dist/index.js",
-   "types": "./dist/index.d.ts",
-   "files": [
-      "dist",
-      "README.md",
-      "skills"
-   ],
    "repository": {
       "type": "git",
       "url": "git+https://github.com/nielpattin/pi-packages.git",
       "directory": "pi-caveman"
    },
-   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/pi-caveman#readme",
-   "bugs": {
-      "url": "https://github.com/nielpattin/pi-packages/issues"
-   },
+   "files": [
+      "dist",
+      "README.md",
+      "skills"
+   ],
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
    "publishConfig": {
       "access": "public"
    },
@@ -31,12 +31,12 @@
       "prepublishOnly": "npm run build",
       "prepack": "node -e \"const fs=require('node:fs');if(!fs.existsSync('dist')){console.error('Error: dist/ missing. Run npm run build first.');process.exit(1);}\""
    },
-   "peerDependencies": {
-      "@earendil-works/pi-coding-agent": "*"
-   },
    "devDependencies": {
       "@earendil-works/pi-coding-agent": "^0.74.1",
       "typescript": "^6.0.3"
+   },
+   "peerDependencies": {
+      "@earendil-works/pi-coding-agent": "*"
    },
    "pi": {
       "extensions": [

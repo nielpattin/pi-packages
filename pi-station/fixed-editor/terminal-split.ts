@@ -20,7 +20,7 @@ interface TerminalSplitCompositorOptions {
    renderCluster: (width: number, terminalRows: number) => FixedEditorClusterRender;
    renderRootOverlay?: (width: number, terminalRows: number) => string[] | null;
    getShowHardwareCursor?: () => boolean;
-   mouseScroll?: boolean;
+   scrollBar?: boolean;
    keyboardScrollShortcuts?: KeyboardScrollShortcuts;
    onCopySelection?: (text: string) => void;
    accentColor?: (text: string) => string;
@@ -107,6 +107,10 @@ function clearLine(): string {
    return "\x1b[2K";
 }
 
+function clearScreen(): string {
+   return "\x1b[2J\x1b[H";
+}
+
 function hideCursor(): string {
    return "\x1b[?25l";
 }
@@ -157,7 +161,9 @@ export function emergencyTerminalModeReset(): string {
       resetScrollRegion() +
       disableMouseReporting() +
       enableAlternateScrollMode() +
+      clearScreen() +
       exitAlternateScreen() +
+      clearScreen() +
       resetExtendedKeyboardModes() +
       endSynchronizedOutput()
    );
@@ -393,7 +399,7 @@ export class TerminalSplitCompositor {
    private readonly renderCluster: (width: number, terminalRows: number) => FixedEditorClusterRender;
    private readonly renderRootOverlay: ((width: number, terminalRows: number) => string[] | null) | null;
    private readonly getShowHardwareCursor: () => boolean;
-   private readonly mouseScroll: boolean;
+   private scrollBar: boolean;
    private readonly keyboardScrollShortcuts: KeyboardScrollShortcuts;
    private readonly onCopySelection: ((text: string) => void) | null;
    private readonly accentColor: ((text: string) => string) | null;
@@ -440,7 +446,7 @@ export class TerminalSplitCompositor {
       this.renderCluster = options.renderCluster;
       this.renderRootOverlay = options.renderRootOverlay ?? null;
       this.getShowHardwareCursor = options.getShowHardwareCursor ?? (() => false);
-      this.mouseScroll = options.mouseScroll !== false;
+      this.scrollBar = options.scrollBar !== false;
       this.keyboardScrollShortcuts = options.keyboardScrollShortcuts ?? DEFAULT_KEYBOARD_SCROLL_SHORTCUTS;
       this.onCopySelection = options.onCopySelection ?? null;
       this.accentColor = options.accentColor ?? null;
@@ -449,6 +455,11 @@ export class TerminalSplitCompositor {
       this.originalDoRender =
          typeof options.tui.doRender === "function" ? options.tui.doRender.bind(options.tui) : null;
       this.originalRender = typeof options.tui.render === "function" ? options.tui.render.bind(options.tui) : null;
+   }
+
+   setScrollBar(enabled: boolean): void {
+      this.scrollBar = enabled;
+      this.requestRender();
    }
 
    install(): void {
@@ -462,7 +473,7 @@ export class TerminalSplitCompositor {
             enterAlternateScreen() +
             this.enableAlternateScreenKeyboardMode() +
             disableAlternateScrollMode() +
-            (this.mouseScroll ? enableMouseReporting() : "") +
+            enableMouseReporting() +
             endSynchronizedOutput(),
       );
       this.emergencyCleanup = () => {
@@ -664,12 +675,10 @@ export class TerminalSplitCompositor {
       this.renderingScrollableRoot = true;
       try {
          const start = this.refreshRootWindow(width);
-         return this.decorateRootScrollbar(
-            this.visibleRootLines.map((line, index) => {
-               return this.renderSelectionHighlight(line, start + index, "root");
-            }),
-            width,
-         );
+         const rootLines = this.visibleRootLines.map((line, index) => {
+            return this.renderSelectionHighlight(line, start + index, "root");
+         });
+         return this.scrollBar ? this.decorateRootScrollbar(rootLines, width) : rootLines;
       } finally {
          this.renderingScrollableRoot = false;
       }
@@ -710,7 +719,7 @@ export class TerminalSplitCompositor {
          return { consume: true };
       }
 
-      const mousePackets = this.mouseScroll ? parseSgrMousePackets(data) : null;
+      const mousePackets = parseSgrMousePackets(data);
       if (mousePackets) {
          for (const packet of mousePackets) {
             this.handleMousePacket(packet);
@@ -794,7 +803,7 @@ export class TerminalSplitCompositor {
    }
 
    private decorateRootScrollbar(lines: string[], width: number): string[] {
-      if (!Number.isFinite(width) || width < 2 || this.maxScrollOffset <= 0) {
+      if (!this.scrollBar || !Number.isFinite(width) || width < 2 || this.maxScrollOffset <= 0) {
          return lines;
       }
 
@@ -818,7 +827,8 @@ export class TerminalSplitCompositor {
    }
 
    private handleScrollbarMousePacket(packet: SgrMousePacket): boolean {
-      if (this.maxScrollOffset <= 0 || packet.row < 1 || packet.row > this.visibleScrollableRows) return false;
+      if (!this.scrollBar || this.maxScrollOffset <= 0 || packet.row < 1 || packet.row > this.visibleScrollableRows)
+         return false;
       if (this.selectionDragging) return false;
       const width = Math.max(1, this.terminal.columns || 80);
       const onScrollbar = packet.col >= width;
@@ -1138,10 +1148,10 @@ export class TerminalSplitCompositor {
       const start = this.updateVisibleRootWindow(scrollableRows);
       let buffer = beginSynchronizedOutput() + setScrollRegion(1, scrollableRows) + moveCursor(1, 1);
 
-      const decoratedLines = this.decorateRootScrollbar(
-         this.visibleRootLines.map((line, row) => this.renderSelectionHighlight(line, start + row, "root")),
-         width,
+      const rootLines = this.visibleRootLines.map((line, row) =>
+         this.renderSelectionHighlight(line, start + row, "root"),
       );
+      const decoratedLines = this.scrollBar ? this.decorateRootScrollbar(rootLines, width) : rootLines;
       for (let row = 0; row < scrollableRows; row++) {
          if (row > 0) buffer += "\r\n";
          buffer += clearLine();
@@ -1230,10 +1240,12 @@ export class TerminalSplitCompositor {
       this.originalWrite(
          beginSynchronizedOutput() +
             resetScrollRegion() +
-            (this.mouseScroll ? disableMouseReporting() : "") +
+            disableMouseReporting() +
             (activeMode ? disableExtendedKeyboardMode(activeMode) : "") +
             enableAlternateScrollMode() +
+            clearScreen() +
             exitAlternateScreen() +
+            clearScreen() +
             (restoreMainScreenMode && activeMode ? enableExtendedKeyboardMode(activeMode) : "") +
             (options.resetExtendedKeyboardModes ? resetExtendedKeyboardModes() : "") +
             endSynchronizedOutput(),

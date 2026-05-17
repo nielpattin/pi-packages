@@ -3,7 +3,7 @@ import type { ColorValue, CustomItemPosition, CustomStatusItem, PresetDef, Statu
 
 export interface StationConfig {
    customItems: CustomStatusItem[];
-   mouseScroll: boolean;
+   scrollBar: boolean;
    fixedEditor: boolean;
 }
 
@@ -77,13 +77,13 @@ function normalizeCustomItems(raw: unknown): CustomStatusItem[] {
 }
 
 export function parseStationConfig(value: unknown): StationConfig {
-   const defaultConfig: StationConfig = { customItems: [], mouseScroll: true, fixedEditor: true };
+   const defaultConfig: StationConfig = { customItems: [], scrollBar: true, fixedEditor: true };
 
    if (!isRecord(value)) return defaultConfig;
 
    return {
       customItems: normalizeCustomItems(value.customItems),
-      mouseScroll: value.mouseScroll !== false,
+      scrollBar: value.scrollBar !== false,
       fixedEditor: value.fixedEditor !== false,
    };
 }
@@ -118,17 +118,6 @@ export function mergeSegmentsWithCustomItems(
       secondaryRightSegments: secondaryRight,
       tertiarySegments: tertiary,
    };
-}
-
-export function nextStationSettingWithOptions(
-   existingStationSetting: unknown,
-   updates: Partial<Pick<StationConfig, "mouseScroll" | "fixedEditor">>,
-): unknown {
-   if (!isRecord(existingStationSetting)) {
-      return updates;
-   }
-
-   return { ...existingStationSetting, ...updates };
 }
 
 export function collectHiddenExtensionStatusKeys(customItems: readonly CustomStatusItem[]): Set<string> {
