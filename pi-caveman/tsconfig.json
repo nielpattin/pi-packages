@@ -2,9 +2,9 @@
    "extends": "../tsconfig.json",
    "compilerOptions": {
       "composite": true,
-      "outDir": "dist",
-      "rootDir": "src"
+      "rootDir": ".",
+      "outDir": "dist"
    },
-   "include": ["src/**/*"],
+   "include": ["index.ts", "extensions/caveman/**/*.ts"],
    "exclude": ["node_modules", "dist"]
 }

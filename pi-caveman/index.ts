@@ -1,2 +1,2 @@
 // Re-export the caveman extension for pi auto-discovery
-export { default } from "./extensions/caveman/index";
+export { default } from "./extensions/caveman/index.js";

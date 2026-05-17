@@ -1,11 +1,18 @@
 {
    "name": "@nielpattin/pi-caveman",
-   "version": "1.0.1",
+   "version": "1.0.2",
    "description": "Caveman mode for pi — terse output, ~75% fewer tokens, full technical accuracy",
    "keywords": [
       "pi-package"
    ],
    "license": "MIT",
+   "main": "./dist/index.js",
+   "types": "./dist/index.d.ts",
+   "files": [
+      "dist",
+      "README.md",
+      "skills"
+   ],
    "repository": {
       "type": "git",
       "url": "git+https://github.com/nielpattin/pi-packages.git",
@@ -18,9 +25,21 @@
    "publishConfig": {
       "access": "public"
    },
+   "scripts": {
+      "clean": "node -e \"const fs=require('node:fs');fs.rmSync('dist',{recursive:true,force:true});fs.rmSync('tsconfig.build.tsbuildinfo',{force:true});\"",
+      "build": "npm run clean && tsc -p tsconfig.build.json",
+      "prepack": "node -e \"const fs=require('node:fs');if(!fs.existsSync('dist')){console.error('Error: dist/ missing. Run npm run build first.');process.exit(1);}\""
+   },
+   "peerDependencies": {
+      "@earendil-works/pi-coding-agent": "*"
+   },
+   "devDependencies": {
+      "@earendil-works/pi-coding-agent": "^0.74.1",
+      "typescript": "^6.0.3"
+   },
    "pi": {
       "extensions": [
-         "./extensions/caveman"
+         "./dist/index.js"
       ],
       "skills": [
          "./skills/caveman/SKILL.md",

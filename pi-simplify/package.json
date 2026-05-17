@@ -1,6 +1,6 @@
 {
    "name": "@nielpattin/pi-simplify",
-   "version": "0.2.2",
+   "version": "0.2.3",
    "description": "A Pi extension that reviews recently changed code for clarity, consistency, and maintainability.",
    "keywords": [
       "ai",
@@ -31,9 +31,8 @@
    },
    "files": [
       "dist",
-      "src",
-      "!src/**/*.test.ts",
-      "README.md"
+      "README.md",
+      "CHANGELOG.md"
    ],
    "type": "module",
    "main": "./dist/index.js",
@@ -49,6 +48,10 @@
       "prepack": "node -e \"const fs=require('node:fs');if(!fs.existsSync('dist')){console.error('Error: dist/ missing. Run npm run build first.');process.exit(1);}\""
    },
    "devDependencies": {
+      "@earendil-works/pi-ai": "^0.74.1",
+      "@earendil-works/pi-coding-agent": "^0.74.1",
+      "@earendil-works/pi-tui": "^0.74.1",
+      "@sinclair/typebox": "^0.34.49",
       "@types/node": "^25.7.0",
       "@typescript-eslint/eslint-plugin": "^8.0.0",
       "@typescript-eslint/parser": "^8.0.0",
@@ -67,7 +70,7 @@
    },
    "pi": {
       "extensions": [
-         "src/index.ts"
+         "./dist/index.js"
       ]
    }
 }

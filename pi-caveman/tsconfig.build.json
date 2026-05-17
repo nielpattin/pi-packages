@@ -1,0 +1,9 @@
+{
+   "extends": "./tsconfig.json",
+   "compilerOptions": {
+      "noEmit": false,
+      "allowImportingTsExtensions": false,
+      "tsBuildInfoFile": "./tsconfig.build.tsbuildinfo"
+   },
+   "exclude": ["node_modules", "dist"]
+}

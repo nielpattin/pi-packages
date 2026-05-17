@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { resolveDefaultMode, normalizeMode, persistMode, type CavemanMode } from "./config";
+import { resolveDefaultMode, normalizeMode, persistMode, type CavemanMode } from "./config.js";
 
 const KEY = "caveman";
 
