@@ -1,8 +1,12 @@
 # pi-caveman
 
-Caveman mode for Pi-Shitty-aGeNt. Talk less, code same. ~75% fewer output tokens.
+Caveman mode for pi. Talk less, code same. ~75% fewer output tokens.
 
-Place in `~/.pi/agent/extensions/pi-caveman/` for auto-discovery.
+## Install
+
+```bash
+pi install npm:@nielpattin/pi-caveman
+```
 
 ## What you get
 

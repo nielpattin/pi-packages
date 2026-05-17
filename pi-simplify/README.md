@@ -5,7 +5,7 @@ A [Pi](https://github.com/nicholasgasior/pi-coding-agent) extension that reviews
 ## Installation
 
 ```bash
-pi install npm:pi-simplify
+pi install npm:@nielpattin/pi-simplify
 ```
 
 ## Usage

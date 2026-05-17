@@ -31,7 +31,7 @@ Customizes the default [pi](https://github.com/badlogic/pi-mono) editor with a s
 ## Installation
 
 ```bash
-pi install npm:pi-station-bar
+pi install npm:@nielpattin/pi-station
 ```
 
 Restart pi to activate.
