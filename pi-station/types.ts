@@ -48,7 +48,8 @@ export type BuiltinStatusLineSegmentId =
    | "cache_write"
    | "thinking"
    | "extension_statuses"
-   | "skills";
+   | "skills"
+   | "mcp";
 
 // Segment identifiers (built-in + dynamically registered custom items)
 export type StatusLineSegmentId = BuiltinStatusLineSegmentId | `custom:${string}`;

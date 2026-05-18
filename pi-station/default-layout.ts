@@ -5,7 +5,7 @@ const DEFAULT_COLORS: ColorScheme = getDefaultColors();
 
 export const DEFAULT_LAYOUT: PresetDef = {
    leftSegments: ["path", "git"],
-   rightSegments: ["skills"],
+   rightSegments: ["mcp", "skills"],
    secondarySegments: ["shell_mode", "context_pct", "cache_read", "cost"],
    secondaryRightSegments: ["model", "thinking"],
    tertiarySegments: ["extension_statuses"],

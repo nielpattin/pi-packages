@@ -107,7 +107,7 @@ Command output renders in full-screen overlay (fixed-editor mode) or widget (non
 
 | Row       | Left                                              | Right               |
 | --------- | ------------------------------------------------- | ------------------- |
-| Primary   | `path`, `git`                                     | `skills`            |
+| Primary   | `path`, `git`                                     | `mcp`, `skills`     |
 | Secondary | `shell_mode`, `context_pct`, `cache_read`, `cost` | `model`, `thinking` |
 | Tertiary  | `extension_statuses`                              |                     |
 
@@ -176,7 +176,7 @@ Shortcut overrides:
 
 ## Segments
 
-Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`, `token_out`, `token_total`, `cost`, `context_pct`, `context_total`, `time_spent`, `time`, `session`, `hostname`, `cache_read`, `cache_write`, `thinking`, `extension_statuses`, `skills`.
+Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`, `token_out`, `token_total`, `cost`, `context_pct`, `context_total`, `time_spent`, `time`, `session`, `hostname`, `cache_read`, `cache_write`, `thinking`, `extension_statuses`, `skills`, `mcp`.
 
 **Thinking** segment shows current thinking level (`think:off`, `think:med`, etc.) with per-level colors.
 

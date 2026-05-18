@@ -415,8 +415,12 @@ const extensionStatusesSegment: StatusLineSegment = {
       // and strings that are only ANSI codes with no visible text.
       // Also skip statuses explicitly elevated into dedicated custom segments.
       const parts: string[] = [];
+      // Keys that have dedicated segments elsewhere (not shown here)
+      const dedicatedSegmentKeys = new Set(["mcp"]);
+
       for (const [statusKey, value] of statuses.entries()) {
          if (ctx.hiddenExtensionStatusKeys.has(statusKey)) continue;
+         if (dedicatedSegmentKeys.has(statusKey)) continue;
          const normalized = value ? normalizeCompactExtensionStatus(value) : null;
          if (normalized) {
             // Strip any ANSI styling from extensions so our color applies uniformly
@@ -441,6 +445,18 @@ const skillsSegment: StatusLineSegment = {
 
       const content = `Skills: ${loaded}/${installed}`;
       return { content: color(ctx, "context", content), visible: true };
+   },
+};
+
+const mcpSegment: StatusLineSegment = {
+   id: "mcp",
+   render(ctx) {
+      const mcpStatus = ctx.extensionStatuses.get("mcp");
+      if (!mcpStatus) return { content: "", visible: false };
+
+      // Strip existing ANSI, re-apply context color to match skills
+      const plain = mcpStatus.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
+      return { content: color(ctx, "context", plain), visible: true };
    },
 };
 
@@ -469,6 +485,7 @@ export const SEGMENTS: Record<BuiltinStatusLineSegmentId, StatusLineSegment> = {
    cache_write: cacheWriteSegment,
    extension_statuses: extensionStatusesSegment,
    skills: skillsSegment,
+   mcp: mcpSegment,
 };
 
 function renderCustomSegment(id: `custom:${string}`, ctx: SegmentContext): RenderedSegment {
