@@ -747,7 +747,10 @@ export class TerminalSplitCompositor {
    private handleMousePacket(packet: SgrMousePacket): void {
       const delta = mouseScrollDelta(packet);
       if (delta !== 0) {
-         if (this.selectionDragging) return;
+         if (this.selectionDragging) {
+            this.scrollSelectionByWheel(packet, delta);
+            return;
+         }
          this.selectionDragging = false;
          this.scrollBy(delta);
          return;
@@ -976,17 +979,35 @@ export class TerminalSplitCompositor {
       const nextOffset = Math.max(0, Math.min(this.scrollOffset + delta, this.maxScrollOffset));
       if (nextOffset === this.scrollOffset) return false;
 
+      this.updateRootSelectionScroll(packet, nextOffset, delta > 0 ? "top" : "bottom");
+      return true;
+   }
+
+   private scrollSelectionByWheel(packet: SgrMousePacket, delta: number): void {
+      if (this.selectionArea !== "root") return;
+
+      const nextOffset = Math.max(0, Math.min(this.scrollOffset + delta, this.maxScrollOffset));
+      if (nextOffset === this.scrollOffset) return;
+
+      this.updateRootSelectionScroll(packet, nextOffset, "pointer");
+   }
+
+   private updateRootSelectionScroll(packet: SgrMousePacket, nextOffset: number, focus: "top" | "bottom" | "pointer"): void {
       this.lastLeftPress = null;
       this.preserveSelectionFocusOnRelease = true;
       this.scrollOffset = nextOffset;
       const start = this.updateVisibleRootWindow();
-      const edgeLine = delta > 0 ? start : start + Math.max(0, this.visibleScrollableRows - 1);
+      const line =
+         focus === "top"
+            ? start
+            : focus === "bottom"
+              ? start + Math.max(0, this.visibleScrollableRows - 1)
+              : start + Math.max(0, Math.min(packet.row - 1, this.visibleScrollableRows - 1));
       this.selectionFocus = {
-         line: edgeLine,
+         line,
          col: Math.max(0, packet.col - 1),
       };
       this.requestRender();
-      return true;
    }
 
    private clampedSelectionPointForPacket(packet: SgrMousePacket, area: SelectionArea | null): SelectionPoint {

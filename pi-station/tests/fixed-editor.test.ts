@@ -1167,6 +1167,45 @@ test("terminal split selection scrolls when dragged to viewport edges", () => {
   compositor.dispose();
 });
 
+test("terminal split wheel-scrolls while preserving active chat selection", () => {
+  const terminal = new FakeTerminal();
+  let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
+  const copied: string[] = [];
+  const tui = {
+    terminal,
+    addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
+      inputListener = listener;
+      return () => {
+        inputListener = null;
+      };
+    },
+    requestRender() {},
+    render() {
+      return Array.from({ length: 30 }, (_, index) => `line-${index}`);
+    },
+  };
+
+  const compositor = new TerminalSplitCompositor({
+    tui,
+    terminal,
+    onCopySelection: (text) => copied.push(text),
+    renderCluster: () => ({ lines: ["cluster-a", "cluster-b"], cursor: null }),
+  });
+
+  compositor.install();
+  tui.render();
+
+  assert.deepEqual(inputListener?.("\x1b[<0;1;9M"), { consume: true });
+  assert.deepEqual(inputListener?.("\x1b[<64;5;9M"), { consume: true });
+  assert.equal(tui.render()[0]?.replace(/\x1b\[[0-9;]*m/g, ""), "line-17");
+  assert.ok(tui.render()[8]?.includes("line\x1b[7m-25\x1b[27m"));
+
+  assert.deepEqual(inputListener?.("\x1b[<0;5;9m"), { consume: true });
+  assert.deepEqual(copied, ["-25\nline-26\nline-27"]);
+
+  compositor.dispose();
+});
+
 test("terminal split copies edge-scrolled selections without waiting for render", () => {
   const terminal = new FakeTerminal();
   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;

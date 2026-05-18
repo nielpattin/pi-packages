@@ -1,6 +1,6 @@
 {
    "name": "@nielpattin/pi-station",
-   "version": "0.6.0",
+   "version": "0.6.1",
    "description": "Station bar status extension for pi coding agent",
    "keywords": [
       "coding-agent",
@@ -24,6 +24,7 @@
    "files": [
       "dist",
       "README.md",
+      "CHANGELOG.md",
       "theme.example.json"
    ],
    "type": "module",
