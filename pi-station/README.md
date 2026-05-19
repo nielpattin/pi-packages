@@ -1,6 +1,12 @@
-# station bar
+# Pi Station bar
 
 Custom status bar extension for [pi](https://github.com/badlogic/pi-mono) with fixed editor layout, bash mode, editor stash, prompt history, and configurable segments.
+
+![Thumbnail](assets/thumbnail.png)
+
+## Demo
+
+<video controls src="assets/Demo.mp4" title="Title"></video>
 
 ## Install
 
