@@ -6,7 +6,7 @@ Custom status bar extension for [pi](https://github.com/badlogic/pi-mono) with f
 
 ## Demo
 
-<video controls src="assets/Demo.mp4" title="Title"></video>
+https://github.com/user-attachments/assets/27e9beca-35e2-4491-9cc2-c3b70203ceca
 
 ## Install
 
@@ -185,6 +185,10 @@ Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`
 **Context** warning colors: yellow at 70%, red at 90%. During streaming, uses live assistant usage. When `pi-custom-compaction` is installed, native context segments are hidden to avoid stale post-summary usage display.
 
 **Subscription** detected via OAuth model registry — shows `(sub)` instead of dollar cost.
+
+## Credits
+
+Thanks for the solution for the fixed input from Nico https://github.com/nicobailon/pi-interactive-shell
 
 ## License
 
