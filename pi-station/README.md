@@ -168,7 +168,6 @@ Settings merge from `~/.pi/agent/settings.json` and project `.pi/settings.json`:
 }
 ```
 
-
 ## Segments
 
 Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`, `token_out`, `token_total`, `cost`, `context_pct`, `context_total`, `time_spent`, `time`, `session`, `hostname`, `cache_read`, `cache_write`, `thinking`, `extension_statuses`, `skills`, `mcp`.

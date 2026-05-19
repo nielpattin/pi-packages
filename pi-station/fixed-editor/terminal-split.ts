@@ -790,14 +790,14 @@ export class TerminalSplitCompositor {
          this.maxScrollOffset === 0
             ? 0
             : Math.round(((this.maxScrollOffset - this.scrollOffset) / this.maxScrollOffset) * maxThumbTop);
-      const contentWidth = width - 2;
+      const contentWidth = width - 1;
 
       return lines.map((line, index) => {
          const thumbChar = this.accentColor ? this.accentColor("█") : "█";
          const marker = index >= thumbTop && index < thumbTop + thumbRows ? thumbChar : "\x1b[38;5;238m░\x1b[0m";
          const base = visibleWidth(line) > contentWidth ? truncateToWidth(line, contentWidth, "", true) : line;
          const padding = Math.max(0, contentWidth - visibleWidth(base));
-         return `${base}${" ".repeat(padding)} ${marker}`;
+         return `${base}${" ".repeat(padding)}${marker}`;
       });
    }
 
@@ -964,7 +964,11 @@ export class TerminalSplitCompositor {
       this.updateRootSelectionScroll(packet, nextOffset, "pointer");
    }
 
-   private updateRootSelectionScroll(packet: SgrMousePacket, nextOffset: number, focus: "top" | "bottom" | "pointer"): void {
+   private updateRootSelectionScroll(
+      packet: SgrMousePacket,
+      nextOffset: number,
+      focus: "top" | "bottom" | "pointer",
+   ): void {
       this.lastLeftPress = null;
       this.preserveSelectionFocusOnRelease = true;
       this.scrollOffset = nextOffset;
