@@ -25,6 +25,11 @@ test("parseStationConfig supports object config with custom items", () => {
    assert.equal(config.customItems[1].hideWhenMissing, false);
    assert.equal(config.mouseScroll, true);
    assert.equal(config.fixedEditor, true);
+   assert.deepEqual(config.shortcuts, {
+      bashMode: "ctrl+b",
+      stash: "alt+s",
+      stashHistory: "ctrl+alt+h",
+   });
 });
 
 test("parseStationConfig uses defaults when optional layout fields are absent", () => {
@@ -33,6 +38,22 @@ test("parseStationConfig uses defaults when optional layout fields are absent", 
    assert.equal(config.mouseScroll, false);
    assert.equal(config.fixedEditor, false);
    assert.deepEqual(config.customItems, []);
+});
+
+test("parseStationConfig resolves shortcut overrides", () => {
+   const config = parseStationConfig({
+      shortcuts: {
+         bashMode: "ctrl+shift+b",
+         stash: "ctrl+shift+s",
+         stashHistory: "ctrl+shift+h",
+      },
+   });
+
+   assert.deepEqual(config.shortcuts, {
+      bashMode: "ctrl+shift+b",
+      stash: "ctrl+shift+s",
+      stashHistory: "ctrl+shift+h",
+   });
 });
 
 test("mergeSegmentsWithCustomItems appends custom segment ids by position", () => {

@@ -1,28 +1,31 @@
-export {
-   normalizeShortcut,
-   reservedShortcuts,
-   isValidShortcutKeyPart,
-   parseShortcutOverride,
-   shortcutUsageKey,
-   findShortcutReplacement,
-   resolveShortcutConfig,
-   DEFAULT_SHORTCUTS,
-   APP_RESERVED_SHORTCUTS,
-   EXTRA_RESERVED_SHORTCUTS,
-   SHORTCUT_MODIFIER_ORDER,
-   SHORTCUT_MODIFIERS,
-   SHORTCUT_NAMED_KEYS,
-   SHORTCUT_SYMBOL_KEYS,
-   SHORTCUT_KEYS,
-   CHAT_JUMP_SHORTCUTS,
-} from "./shortcut-manager.ts";
+export interface StationShortcuts {
+   bashMode: string;
+   stash: string;
+   stashHistory: string;
+}
 
-export type {
-   StationShortcuts,
-   StationShortcutKey,
-   ChatJumpShortcutKey,
-   ChatJumpRole,
-   ChatJumpDirection,
-   ChatJumpShortcutAction,
-   StationShortcutAction,
-} from "./shortcut-manager.ts";
+export const DEFAULT_STATION_SHORTCUTS: StationShortcuts = {
+   bashMode: "ctrl+b",
+   stash: "alt+s",
+   stashHistory: "ctrl+alt+h",
+};
+
+function normalizeShortcut(value: unknown): string | null {
+   if (typeof value !== "string") return null;
+   const normalized = value.trim().toLowerCase();
+   return normalized ? normalized : null;
+}
+
+export function resolveStationShortcuts(value: unknown): StationShortcuts {
+   if (typeof value !== "object" || value === null || Array.isArray(value)) {
+      return { ...DEFAULT_STATION_SHORTCUTS };
+   }
+
+   const raw = value as Record<string, unknown>;
+
+   return {
+      bashMode: normalizeShortcut(raw.bashMode) ?? DEFAULT_STATION_SHORTCUTS.bashMode,
+      stash: normalizeShortcut(raw.stash) ?? DEFAULT_STATION_SHORTCUTS.stash,
+      stashHistory: normalizeShortcut(raw.stashHistory) ?? DEFAULT_STATION_SHORTCUTS.stashHistory,
+   };
+}

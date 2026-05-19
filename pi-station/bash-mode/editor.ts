@@ -1,17 +1,11 @@
 import { fileURLToPath } from "node:url";
 import { CustomEditor } from "@earendil-works/pi-coding-agent";
-import { isKeyRelease, visibleWidth, truncateToWidth } from "@earendil-works/pi-tui";
+import { visibleWidth, truncateToWidth } from "@earendil-works/pi-tui";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeybindingsManager = any;
 import type { AutocompleteProvider } from "@earendil-works/pi-tui";
-import { matchesConfiguredShortcut } from "../shortcuts.ts";
 import { getOneOffBashCommandContext } from "./completion.ts";
 import type { GhostSuggestion } from "./types.ts";
-
-interface EditorBoundaryShortcuts {
-   start: string;
-   end: string;
-}
 
 interface BashModeEditorOptions {
    keybindings: KeybindingsManager;
@@ -20,24 +14,14 @@ interface BashModeEditorOptions {
    onExitBashMode: () => void;
    onSubmitCommand: (command: string) => void;
    onEditorSubmit?: () => void;
-   editorBoundaryShortcuts?: EditorBoundaryShortcuts;
    onInterrupt: () => void;
    onNotify: (message: string, level?: "info" | "warning" | "error") => void;
    getHistoryEntries: (prefix: string) => string[];
    resolveGhostSuggestion: (text: string, signal: AbortSignal) => Promise<GhostSuggestion | null>;
 }
 
-const DEFAULT_EDITOR_BOUNDARY_SHORTCUTS: EditorBoundaryShortcuts = {
-   start: "super+shift+up",
-   end: "super+shift+down",
-};
-
 function isPrintableInput(data: string): boolean {
    return data.length === 1 && data.charCodeAt(0) >= 32;
-}
-
-function isCommandUndoShortcut(data: string): boolean {
-   return data === "\x1b[122;9u" || data === "\x1b[122;9:1u" || data === "\x1b[122;9:2u" || data === "\x1b[27;9;122~";
 }
 
 function bracketedPasteContent(data: string): string | null {
@@ -164,19 +148,6 @@ export class BashModeEditor extends CustomEditor {
          const bashMode = this.optionsRef.isBashModeActive();
          const oneOffBashCommand = !bashMode && this.isOneOffBashCommandContext();
 
-         if (isCommandUndoShortcut(data)) {
-            (this as any).undo();
-            this.shellHistoryIndex = -1;
-            this.shellHistoryItems = [];
-            this.shellHistoryDraft = "";
-            if (this.isShellCompletionContext()) {
-               this.scheduleGhostUpdate();
-            } else {
-               this.clearGhostSuggestion();
-            }
-            return;
-         }
-
          if (bashMode && this.keybindingsRef.matches(data, "app.interrupt")) {
             this.optionsRef.onExitBashMode();
             return;
@@ -194,17 +165,6 @@ export class BashModeEditor extends CustomEditor {
 
          if (bashMode && this.keybindingsRef.matches(data, "tui.editor.cursorDown")) {
             this.navigateShellHistory(1);
-            return;
-         }
-
-         const editorBoundaryShortcuts = this.optionsRef.editorBoundaryShortcuts ?? DEFAULT_EDITOR_BOUNDARY_SHORTCUTS;
-         if (!isKeyRelease(data) && matchesConfiguredShortcut(data, editorBoundaryShortcuts.start)) {
-            this.moveCursorToEditorBoundary("start");
-            return;
-         }
-
-         if (!isKeyRelease(data) && matchesConfiguredShortcut(data, editorBoundaryShortcuts.end)) {
-            this.moveCursorToEditorBoundary("end");
             return;
          }
 

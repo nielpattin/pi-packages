@@ -2,7 +2,6 @@ import type { ReadonlyFooterDataProvider } from "@earendil-works/pi-coding-agent
 import type { TerminalSplitCompositor } from "../fixed-editor/terminal-split.ts";
 import { readPersistedStashHistory } from "../stash/index.ts";
 import type { StationConfig } from "../station-config.ts";
-import type { StationShortcuts } from "../shortcut-manager/index.ts";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types
@@ -25,7 +24,6 @@ export class StationBarState {
    // Extension-scoped config
    config: StationConfig;
    customCompactionEnabled = false;
-   resolvedShortcuts!: StationShortcuts;
    enabled = true;
 
    // Session-scoped state
@@ -36,7 +34,6 @@ export class StationBarState {
    currentThinkingLevel: string | null = null;
    lastUserPrompt = "";
    showLastPrompt = true;
-   stashedEditorText: string | null = null;
    stashedPromptHistory: string[] = [];
    currentEditor: any = null;
 
@@ -52,7 +49,6 @@ export class StationBarState {
    fixedEditorContainer: any = null;
    fixedWidgetContainerAbove: any = null;
    fixedWidgetContainerBelow: any = null;
-   stashShortcutInputUnsubscribe: (() => void) | null = null;
 
    // Layout cache
    lastLayoutWidth = 0;
@@ -71,12 +67,10 @@ export class StationBarState {
    startSession(
       ctx: any,
       settings: {
-         resolvedShortcuts: StationShortcuts;
          showLastPrompt: boolean;
          customCompactionEnabled: boolean;
       },
    ): void {
-      this.resolvedShortcuts = settings.resolvedShortcuts;
       this.showLastPrompt = settings.showLastPrompt;
       this.customCompactionEnabled = settings.customCompactionEnabled;
 
@@ -86,7 +80,6 @@ export class StationBarState {
       this.liveAssistantUsage = null;
       this.currentThinkingLevel = null;
       this.lastUserPrompt = "";
-      this.stashedEditorText = null;
       this.stashedPromptHistory = readPersistedStashHistory();
       this.currentEditor = null;
 
@@ -102,8 +95,6 @@ export class StationBarState {
       this.restoreFooterStatusRepaintHook?.();
       this.restoreFooterStatusRepaintHook = null;
       this.clearFixedEditorRefs();
-      this.stashShortcutInputUnsubscribe?.();
-      this.stashShortcutInputUnsubscribe = null;
       this.currentCtx = null;
       this.footerDataRef = null;
       this.currentEditor = null;

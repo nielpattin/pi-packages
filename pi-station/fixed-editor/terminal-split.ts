@@ -1,5 +1,4 @@
 import { isKeyRelease, matchesKey, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import { matchesConfiguredShortcut } from "../shortcuts.ts";
 import type { FixedEditorClusterRender } from "./cluster.ts";
 
 export interface TerminalLike {
@@ -9,11 +8,6 @@ export interface TerminalLike {
    write(data: string): void;
 }
 
-interface KeyboardScrollShortcuts {
-   up: string;
-   down: string;
-}
-
 interface TerminalSplitCompositorOptions {
    tui: any;
    terminal: TerminalLike;
@@ -21,7 +15,6 @@ interface TerminalSplitCompositorOptions {
    renderRootOverlay?: (width: number, terminalRows: number) => string[] | null;
    getShowHardwareCursor?: () => boolean;
    scrollBar?: boolean;
-   keyboardScrollShortcuts?: KeyboardScrollShortcuts;
    onCopySelection?: (text: string) => void;
    accentColor?: (text: string) => string;
 }
@@ -78,10 +71,6 @@ const CONTEXT_MENU_MOUSE_REPORTING_PAUSE_MS = 1200;
 const CONTEXT_MENU_SELECTION_RESTORE_WINDOW_MS = 5000;
 const CONTEXT_MENU_CLIPBOARD_RESTORE_INTERVAL_MS = 100;
 const DOUBLE_CLICK_MS = 500;
-const DEFAULT_KEYBOARD_SCROLL_SHORTCUTS: KeyboardScrollShortcuts = {
-   up: "super+up",
-   down: "super+down",
-};
 
 export function beginSynchronizedOutput(): string {
    return "\x1b[?2026h";
@@ -169,26 +158,11 @@ export function emergencyTerminalModeReset(): string {
    );
 }
 
-function parseKeyboardScrollDelta(
-   data: string,
-   shortcuts: KeyboardScrollShortcuts = DEFAULT_KEYBOARD_SCROLL_SHORTCUTS,
-): number {
+function parseKeyboardScrollDelta(data: string): number {
    if (isKeyRelease(data)) return 0;
 
-   if (
-      matchesConfiguredShortcut(data, shortcuts.up) ||
-      matchesKey(data, "pageUp") ||
-      matchesKey(data, "ctrl+shift+up") ||
-      /^\x1b\[(?:5;9(?::[12])?~|1;6(?::[12])?A|57421;9(?::[12])?u|57419;6(?::[12])?u)$/.test(data)
-   )
-      return 10;
-   if (
-      matchesConfiguredShortcut(data, shortcuts.down) ||
-      matchesKey(data, "pageDown") ||
-      matchesKey(data, "ctrl+shift+down") ||
-      /^\x1b\[(?:6;9(?::[12])?~|1;6(?::[12])?B|57422;9(?::[12])?u|57420;6(?::[12])?u)$/.test(data)
-   )
-      return -10;
+   if (matchesKey(data, "pageUp")) return 10;
+   if (matchesKey(data, "pageDown")) return -10;
    return 0;
 }
 
@@ -400,7 +374,6 @@ export class TerminalSplitCompositor {
    private readonly renderRootOverlay: ((width: number, terminalRows: number) => string[] | null) | null;
    private readonly getShowHardwareCursor: () => boolean;
    private scrollBar: boolean;
-   private readonly keyboardScrollShortcuts: KeyboardScrollShortcuts;
    private readonly onCopySelection: ((text: string) => void) | null;
    private readonly accentColor: ((text: string) => string) | null;
    private extendedKeyboardMode: ExtendedKeyboardMode | null = null;
@@ -447,7 +420,6 @@ export class TerminalSplitCompositor {
       this.renderRootOverlay = options.renderRootOverlay ?? null;
       this.getShowHardwareCursor = options.getShowHardwareCursor ?? (() => false);
       this.scrollBar = options.scrollBar !== false;
-      this.keyboardScrollShortcuts = options.keyboardScrollShortcuts ?? DEFAULT_KEYBOARD_SCROLL_SHORTCUTS;
       this.onCopySelection = options.onCopySelection ?? null;
       this.accentColor = options.accentColor ?? null;
       this.rowsDescriptor = descriptorForRows(options.terminal);
@@ -737,7 +709,7 @@ export class TerminalSplitCompositor {
          return { consume: true };
       }
 
-      const keyboardDelta = parseKeyboardScrollDelta(data, this.keyboardScrollShortcuts);
+      const keyboardDelta = parseKeyboardScrollDelta(data);
       if (keyboardDelta === 0) return undefined;
 
       this.scrollBy(keyboardDelta);

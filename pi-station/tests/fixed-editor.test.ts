@@ -1293,7 +1293,7 @@ test("terminal split maps post-edge-scroll drags against the updated viewport", 
   compositor.dispose();
 });
 
-test("terminal split keyboard scroll supports Pi page aliases and preserves app shortcuts", () => {
+test("terminal split keyboard scroll supports page aliases", () => {
   const terminal = new FakeTerminal();
   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
   const tui = {
@@ -1320,71 +1320,9 @@ test("terminal split keyboard scroll supports Pi page aliases and preserves app 
   tui.render();
 
   assert.deepEqual(inputListener?.("\x1b[5~"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[5;9~"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57421;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;9A"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57419;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;9H"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57423;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[7;9~"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;6A"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57419;6u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[6;9~"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57422;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;9B"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57420;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;9F"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57424;9u"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[8;9~"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[1;6B"), { consume: true });
-  assert.deepEqual(inputListener?.("\x1b[57420;6u"), { consume: true });
-  assert.equal(inputListener?.("\x1b[1;10A"), undefined);
-  assert.equal(inputListener?.("\x1b[57419;10u"), undefined);
-  assert.equal(inputListener?.("\x1b[1;10B"), undefined);
-  assert.equal(inputListener?.("\x1b[57420;10u"), undefined);
-  assert.equal(inputListener?.("\x1b[1;10:3A"), undefined);
-  assert.equal(inputListener?.("\x1b[57419;10:3u"), undefined);
-  assert.equal(inputListener?.("\x1bp"), undefined);
-  assert.equal(inputListener?.("\x1bn"), undefined);
-
-  compositor.dispose();
-});
-
-test("terminal split keyboard scroll accepts configured shortcuts", () => {
-  const terminal = new FakeTerminal();
-  const renderRequests: Array<boolean | undefined> = [];
-  let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
-  const tui = {
-    terminal,
-    addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
-      inputListener = listener;
-      return () => {
-        inputListener = null;
-      };
-    },
-    requestRender(force?: boolean) {
-      renderRequests.push(force);
-    },
-    render() {
-      return Array.from({ length: 30 }, (_, index) => `line-${index}`);
-    },
-  };
-
-  const compositor = new TerminalSplitCompositor({
-    tui,
-    terminal,
-    keyboardScrollShortcuts: { up: "ctrl+shift+u", down: "ctrl+shift+d" },
-    renderCluster: () => ({ lines: ["cluster-a", "cluster-b"], cursor: null }),
-  });
-
-  compositor.install();
-  tui.render();
-
-  assert.equal(inputListener?.("\x1b[1;9A"), undefined);
-  assert.deepEqual(inputListener?.("\x1b[117;6u"), { consume: true });
-  assert.deepEqual(renderRequests, [undefined]);
-  assert.deepEqual(inputListener?.("\x1b[100;6u"), { consume: true });
-  assert.deepEqual(renderRequests, [undefined, undefined]);
+  assert.deepEqual(inputListener?.("\x1b[6~"), { consume: true });
+  assert.deepEqual(inputListener?.("\x1b[1;9A"), undefined);
+  assert.deepEqual(inputListener?.("\x1b[1;9B"), undefined);
 
   compositor.dispose();
 });

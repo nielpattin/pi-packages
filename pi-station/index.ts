@@ -6,8 +6,6 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
 import {
-   isKeyRelease,
-   matchesKey,
    type AutocompleteProvider,
    type SelectItem,
    SelectList,
@@ -18,19 +16,6 @@ import {
 import { readFileSync, writeFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
 import { join, dirname } from "node:path";
 import { StationBarState } from "./state/index.ts";
-import type {
-   ChatJumpRole,
-   ChatJumpDirection,
-   ChatJumpShortcutAction,
-   StationShortcutAction,
-} from "./shortcut-manager/index.ts";
-import {
-   CHAT_JUMP_SHORTCUTS,
-   reservedShortcuts,
-   parseShortcutOverride,
-   shortcutUsageKey,
-   resolveShortcutConfig,
-} from "./shortcut-manager/index.ts";
 import {
    STASH_PREVIEW_WIDTH,
    readPersistedStashHistory,
@@ -65,7 +50,7 @@ import { readCoreContextUsage } from "./context-usage.ts";
 import { renderFixedEditorCluster } from "./fixed-editor/cluster.ts";
 import { emergencyTerminalModeReset, TerminalSplitCompositor } from "./fixed-editor/terminal-split.ts";
 import { getDefaultColors } from "./theme.ts";
-import { matchesConfiguredShortcut } from "./shortcuts.ts";
+import { DEFAULT_STATION_SHORTCUTS } from "./shortcut-manager/index.ts";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Configuration
@@ -75,6 +60,7 @@ let config: StationConfig = {
    customItems: [],
    scrollBar: true,
    fixedEditor: true,
+   shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
 };
 
 const CUSTOM_COMPACTION_STATUS_KEY = "compact-policy";
@@ -426,7 +412,6 @@ function getCurrentEditorText(ctx: any, editor: any): string {
 }
 
 const DEFAULT_BASH_MODE_SETTINGS: BashModeSettings = {
-   toggleShortcut: "ctrl+b",
    transcriptMaxLines: 2000,
    transcriptMaxBytes: 512 * 1024,
 };
@@ -434,17 +419,6 @@ const DEFAULT_BASH_MODE_SETTINGS: BashModeSettings = {
 function parseBashModeSettings(settings: Record<string, unknown>): BashModeSettings {
    const raw = isRecord(settings.bashMode) ? settings.bashMode : {};
 
-   const configuredToggleShortcut = parseShortcutOverride(raw.toggleShortcut);
-   const toggleShortcut =
-      configuredToggleShortcut && !reservedShortcuts().has(shortcutUsageKey(configuredToggleShortcut))
-         ? configuredToggleShortcut
-         : DEFAULT_BASH_MODE_SETTINGS.toggleShortcut;
-
-   if (configuredToggleShortcut && toggleShortcut !== configuredToggleShortcut) {
-      console.debug(
-         `[station-bar] Bash mode shortcut conflict: "${configuredToggleShortcut}" replaced with "${toggleShortcut}"`,
-      );
-   }
    const transcriptMaxLines =
       typeof raw.transcriptMaxLines === "number" && Number.isFinite(raw.transcriptMaxLines)
          ? Math.max(100, Math.floor(raw.transcriptMaxLines))
@@ -455,7 +429,6 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
          : DEFAULT_BASH_MODE_SETTINGS.transcriptMaxBytes;
 
    return {
-      toggleShortcut,
       transcriptMaxLines,
       transcriptMaxBytes,
    };
@@ -468,11 +441,9 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
 export default function stationBar(pi: ExtensionAPI) {
    const startupSettings = readSettings();
    config = parseStationConfig(startupSettings["station"]);
-   let resolvedShortcuts = resolveShortcutConfig(startupSettings);
    let bashModeSettings = parseBashModeSettings(startupSettings);
 
    const state = new StationBarState(config);
-   state.resolvedShortcuts = resolvedShortcuts;
 
    let enabled = true;
    state.sessionStartTime = Date.now();
@@ -489,7 +460,6 @@ export default function stationBar(pi: ExtensionAPI) {
    let fixedEditorContainer: any = null;
    let fixedWidgetContainerAbove: any = null;
    let fixedWidgetContainerBelow: any = null;
-   let stashShortcutInputUnsubscribe: (() => void) | null = null;
 
    let lastUserPrompt = "";
    let showLastPrompt = true;
@@ -742,15 +712,13 @@ export default function stationBar(pi: ExtensionAPI) {
       bashModeSettings = parseBashModeSettings(settings);
 
       state.startSession(ctx, {
-         resolvedShortcuts: resolveShortcutConfig(settings),
          showLastPrompt: settings.showLastPrompt !== false,
          customCompactionEnabled,
       });
 
       currentCtx = state.currentCtx;
       lastUserPrompt = state.lastUserPrompt;
-      stashedEditorText = state.stashedEditorText;
-      resolvedShortcuts = state.resolvedShortcuts;
+      stashedEditorText = null;
       showLastPrompt = state.showLastPrompt;
       currentThinkingLevel = state.currentThinkingLevel;
       getThinkingLevelFn = state.getThinkingLevelFn;
@@ -772,8 +740,6 @@ export default function stationBar(pi: ExtensionAPI) {
       restoreFooterStatusRepaintHook?.();
       restoreFooterStatusRepaintHook = null;
       teardownFixedEditorCompositor({ resetExtendedKeyboardModes: true });
-      stashShortcutInputUnsubscribe?.();
-      stashShortcutInputUnsubscribe = null;
       bashIntegration.session?.dispose();
       bashIntegration.session = null;
       bashIntegration.active = false;
@@ -902,23 +868,6 @@ export default function stationBar(pi: ExtensionAPI) {
       persistStashHistory(stashedPromptHistory);
    }
 
-   function copyTextToClipboard(ctx: any, text: string, successMessage?: string): void {
-      copyToClipboard(text);
-      if (successMessage) {
-         ctx.ui.notify(successMessage, "info");
-      }
-   }
-
-   function getEditorTextForClipboard(ctx: any): string | null {
-      const text = getCurrentEditorText(ctx, currentEditor);
-      if (hasNonWhitespaceText(text)) {
-         return text;
-      }
-
-      ctx.ui.notify("Editor is empty", "info");
-      return null;
-   }
-
    async function selectItemFromList(ctx: any, title: string, items: string[]): Promise<string | null> {
       const selectItems: SelectItem[] = items.map((entry, index) => ({
          value: String(index),
@@ -1003,88 +952,6 @@ export default function stationBar(pi: ExtensionAPI) {
       }
    }
 
-   function isStashShortcutInput(data: string): boolean {
-      if (isKeyRelease(data)) return false;
-
-      return (
-         data === "ß" ||
-         data === "\x1bs" ||
-         data === "\x1bS" ||
-         /^\x1b\[(?:83|115)(?::\d*)?(?::\d*)?;3(?::\d+)?u$/.test(data) ||
-         data === "\x1b[27;3;115~" ||
-         data === "\x1b[27;3;83~" ||
-         matchesKey(data, "alt+s")
-      );
-   }
-
-   function getChatJumpShortcutAction(data: string): ChatJumpShortcutAction | null {
-      return (
-         CHAT_JUMP_SHORTCUTS.find(({ shortcutKey }) => matchesConfiguredShortcut(data, resolvedShortcuts[shortcutKey]))
-            ?.action ?? null
-      );
-   }
-
-   function isPromptHistoryShortcutInput(data: string): boolean {
-      return (
-         matchesConfiguredShortcut(data, resolvedShortcuts.stashHistory) ||
-         (resolvedShortcuts.stashHistory === "ctrl+alt+h" &&
-            (/^\x1b\[104(?::\d*)?(?::\d*)?;7(?::\d+)?u$/.test(data) ||
-               data === "\x1b[27;7;104~" ||
-               data === "\x1b[27;7;72~"))
-      );
-   }
-
-   function getStationShortcutAction(data: string): StationShortcutAction | null {
-      if (isKeyRelease(data)) return null;
-
-      if (isPromptHistoryShortcutInput(data)) {
-         return { kind: "stashHistory" };
-      }
-      if (matchesConfiguredShortcut(data, resolvedShortcuts.copyEditor)) {
-         return { kind: "copyEditor" };
-      }
-      if (matchesConfiguredShortcut(data, resolvedShortcuts.cutEditor)) {
-         return { kind: "cutEditor" };
-      }
-      if (matchesConfiguredShortcut(data, bashModeSettings.toggleShortcut)) {
-         return { kind: "bashMode" };
-      }
-
-      const chatJumpAction = getChatJumpShortcutAction(data);
-      return chatJumpAction ? { kind: "chat", action: chatJumpAction } : null;
-   }
-
-   function runStationShortcut(ctx: any, action: StationShortcutAction): void {
-      if (action.kind === "stashHistory") {
-         void openStashHistory(ctx);
-         return;
-      }
-
-      if (action.kind === "copyEditor" || action.kind === "cutEditor") {
-         const text = getEditorTextForClipboard(ctx);
-         if (!text) return;
-
-         copyTextToClipboard(ctx, text, action.kind === "copyEditor" ? "Copied editor text" : undefined);
-         if (action.kind === "cutEditor") {
-            ctx.ui.setEditorText("");
-            ctx.ui.notify("Cut editor text", "info");
-         }
-         return;
-      }
-
-      if (action.kind === "bashMode") {
-         void bashIntegration.setActive(!bashIntegration.active, ctx as any);
-         return;
-      }
-
-      if (action.action.kind === "bottom") {
-         jumpChatToBottom(ctx);
-         return;
-      }
-
-      jumpToChatMessage(ctx, action.action.role, action.action.direction);
-   }
-
    function stashOrRestoreEditorText(ctx: any): void {
       const rawText = getCurrentEditorText(ctx, currentEditor);
       const hasStash = stashedEditorText !== null;
@@ -1142,16 +1009,14 @@ export default function stationBar(pi: ExtensionAPI) {
       state.isStreaming = false;
       state.liveAssistantUsage = null;
       currentCtx = ctx;
-      if (ctx.hasUI) {
-         if (stashedEditorText !== null) {
-            if (ctx.ui.getEditorText().trim() === "") {
-               ctx.ui.setEditorText(stashedEditorText);
-               stashedEditorText = null;
-               ctx.ui.setStatus("stash", undefined);
-               ctx.ui.notify("Stash restored", "info");
-            } else {
-               ctx.ui.notify("Stash preserved - clear editor then Alt+S to restore", "info");
-            }
+      if (ctx.hasUI && stashedEditorText !== null) {
+         if (ctx.ui.getEditorText().trim() === "") {
+            ctx.ui.setEditorText(stashedEditorText);
+            stashedEditorText = null;
+            ctx.ui.setStatus("stash", undefined);
+            ctx.ui.notify("Stash restored", "info");
+         } else {
+            ctx.ui.notify("Stash preserved. Clear editor then Alt+S to restore", "info");
          }
       }
       requestStatusRender();
@@ -1295,7 +1160,7 @@ export default function stationBar(pi: ExtensionAPI) {
       },
    });
 
-   pi.registerShortcut(bashModeSettings.toggleShortcut as any, {
+   pi.registerShortcut(config.shortcuts.bashMode as any, {
       description: "Toggle bash mode",
       handler: async (ctx) => {
          if (!enabled || !ctx.hasUI) return;
@@ -1303,7 +1168,7 @@ export default function stationBar(pi: ExtensionAPI) {
       },
    });
 
-   pi.registerShortcut("alt+s", {
+   pi.registerShortcut(config.shortcuts.stash as any, {
       description: "Stash/restore editor text",
       handler: async (ctx) => {
          if (!enabled || !ctx.hasUI) return;
@@ -1311,49 +1176,13 @@ export default function stationBar(pi: ExtensionAPI) {
       },
    });
 
-   pi.registerShortcut(resolvedShortcuts.stashHistory as any, {
+   pi.registerShortcut(config.shortcuts.stashHistory as any, {
       description: "Open prompt history picker",
       handler: async (ctx) => {
          if (!enabled || !ctx.hasUI) return;
          await openStashHistory(ctx);
       },
    });
-
-   pi.registerShortcut(resolvedShortcuts.copyEditor as any, {
-      description: "Copy full editor text",
-      handler: async (ctx) => {
-         if (!enabled || !ctx.hasUI) return;
-
-         const text = getEditorTextForClipboard(ctx);
-         if (!text) return;
-
-         copyTextToClipboard(ctx, text, "Copied editor text");
-      },
-   });
-
-   pi.registerShortcut(resolvedShortcuts.cutEditor as any, {
-      description: "Cut full editor text",
-      handler: async (ctx) => {
-         if (!enabled || !ctx.hasUI) return;
-
-         const text = getEditorTextForClipboard(ctx);
-         if (!text) return;
-
-         copyTextToClipboard(ctx, text);
-         ctx.ui.setEditorText("");
-         ctx.ui.notify("Cut editor text", "info");
-      },
-   });
-
-   for (const { shortcutKey, description, action } of CHAT_JUMP_SHORTCUTS) {
-      pi.registerShortcut(resolvedShortcuts[shortcutKey] as any, {
-         description,
-         handler: async (ctx) => {
-            if (!enabled || !ctx.hasUI) return;
-            runStationShortcut(ctx, { kind: "chat", action });
-         },
-      });
-   }
 
    function buildSegmentContext(ctx: any, theme: Theme): SegmentContext {
       const layoutDef = DEFAULT_LAYOUT;
@@ -1624,11 +1453,7 @@ export default function stationBar(pi: ExtensionAPI) {
          tui,
          terminal: tui.terminal,
          scrollBar: config.scrollBar,
-         keyboardScrollShortcuts: {
-            up: resolvedShortcuts.scrollChatUp,
-            down: resolvedShortcuts.scrollChatDown,
-         },
-         onCopySelection: (text) => copyTextToClipboard(ctx, text),
+         onCopySelection: (text) => copyToClipboard(text),
          accentColor: (text: string) => ctx.ui.theme.fg("accent", text),
          getShowHardwareCursor: () => typeof tui.getShowHardwareCursor === "function" && tui.getShowHardwareCursor(),
          renderRootOverlay: (width) => {
@@ -1667,104 +1492,6 @@ export default function stationBar(pi: ExtensionAPI) {
       if (fixedWidgetContainerBelow?.render) compositor.hideRenderable(fixedWidgetContainerBelow);
       compositor.install();
       tui.requestRender(true);
-   }
-
-   function isChatMessageComponentForRole(component: unknown, role: ChatJumpRole): boolean {
-      const componentName =
-         typeof component === "object" && component !== null ? component.constructor?.name : undefined;
-      if (role === "assistant") {
-         return componentName === "AssistantMessageComponent";
-      }
-
-      return componentName === "UserMessageComponent" || componentName === "SkillInvocationMessageComponent";
-   }
-
-   function renderLineCount(component: unknown, width: number): number {
-      if (typeof component !== "object" || component === null) return 0;
-
-      const render = Reflect.get(component, "render");
-      if (typeof render !== "function") return 0;
-
-      const lines = render.call(component, width);
-      return Array.isArray(lines) ? lines.length : 0;
-   }
-
-   function collectMessageStartLines(
-      component: unknown,
-      width: number,
-      role: ChatJumpRole,
-      offset: number,
-   ): {
-      targets: number[];
-      lineCount: number;
-   } {
-      const lineCount = renderLineCount(component, width);
-      if (isChatMessageComponentForRole(component, role)) {
-         return { targets: [offset], lineCount };
-      }
-
-      const children = typeof component === "object" && component !== null ? Reflect.get(component, "children") : null;
-      if (!Array.isArray(children) || children.length === 0) {
-         return { targets: [], lineCount };
-      }
-
-      const targets: number[] = [];
-      let childOffset = offset;
-      let childrenLineCount = 0;
-      for (const child of children) {
-         const result = collectMessageStartLines(child, width, role, childOffset);
-         targets.push(...result.targets);
-         childOffset += result.lineCount;
-         childrenLineCount += result.lineCount;
-      }
-
-      return { targets, lineCount: Math.max(lineCount, childrenLineCount) };
-   }
-
-   function collectChatMessageStartLines(role: ChatJumpRole): number[] {
-      const children = Array.isArray(tuiRef?.children) ? tuiRef.children : [];
-      const width = Math.max(1, tuiRef?.terminal?.columns ?? 80);
-      const targets: number[] = [];
-      let offset = 0;
-
-      for (const child of children) {
-         const result = collectMessageStartLines(child, width, role, offset);
-         targets.push(...result.targets);
-         offset += result.lineCount;
-      }
-
-      return [...new Set(targets)].sort((a, b) => a - b);
-   }
-
-   function jumpToChatMessage(ctx: any, role: ChatJumpRole, direction: ChatJumpDirection): void {
-      if (!fixedEditorCompositor) {
-         ctx.ui.notify("Chat message jumps require /station fixed-editor on", "warning");
-         return;
-      }
-
-      const targets = collectChatMessageStartLines(role);
-      const label = role === "assistant" ? "LLM" : "user";
-      if (targets.length === 0) {
-         ctx.ui.notify(`No ${label} messages found`, "info");
-         return;
-      }
-
-      const jumped =
-         direction === "previous"
-            ? fixedEditorCompositor.jumpToPreviousRootTarget(targets)
-            : fixedEditorCompositor.jumpToNextRootTarget(targets);
-      if (!jumped) {
-         ctx.ui.notify(`No ${direction} ${label} message`, "info");
-      }
-   }
-
-   function jumpChatToBottom(ctx: any): void {
-      if (!fixedEditorCompositor) {
-         ctx.ui.notify("Chat bottom jump requires /station fixed-editor on", "warning");
-         return;
-      }
-
-      fixedEditorCompositor.jumpToRootBottom();
    }
 
    function followSubmittedEditorToBottom(): void {
@@ -1859,30 +1586,6 @@ export default function stationBar(pi: ExtensionAPI) {
          return;
       }
 
-      stashShortcutInputUnsubscribe?.();
-      stashShortcutInputUnsubscribe =
-         typeof ctx.ui.onTerminalInput === "function"
-            ? ctx.ui.onTerminalInput((data: string) => {
-                 if (!enabled || !ctx.hasUI || tuiRef?.hasOverlay?.()) {
-                    return undefined;
-                 }
-                 if (isStashShortcutInput(data)) {
-                    stashOrRestoreEditorText(ctx);
-                    tuiRef?.requestRender();
-                    return { consume: true };
-                 }
-
-                 const stationShortcutAction = getStationShortcutAction(data);
-                 if (!stationShortcutAction) {
-                    return undefined;
-                 }
-
-                 runStationShortcut(ctx, stationShortcutAction);
-                 tuiRef?.requestRender();
-                 return { consume: true };
-              })
-            : null;
-
       teardownFixedEditorCompositor();
       ctx.ui.setWidget("station-top", undefined);
       ctx.ui.setWidget("station-secondary", undefined);
@@ -1903,10 +1606,6 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             onSubmitCommand: (command) => void bashIntegration.runCommand(command, ctx),
             onEditorSubmit: () => followSubmittedEditorToBottom(),
-            editorBoundaryShortcuts: {
-               start: resolvedShortcuts.editorStart,
-               end: resolvedShortcuts.editorEnd,
-            },
             onInterrupt: () => {
                bashIntegration.session?.interrupt();
                ctx.ui.notify("Sent interrupt to shell", "info");
@@ -1997,17 +1696,6 @@ export default function stationBar(pi: ExtensionAPI) {
          const originalHandleInput = editor.handleInput.bind(editor);
          editor.handleInput = (data: string) => {
             state.lastEditorInputAt = Date.now();
-
-            if (isStashShortcutInput(data)) {
-               stashOrRestoreEditorText(ctx);
-               return;
-            }
-
-            const stationShortcutAction = getStationShortcutAction(data);
-            if (stationShortcutAction) {
-               runStationShortcut(ctx, stationShortcutAction);
-               return;
-            }
 
             if (!autocompleteFixed && !getInstalledAutocompleteProvider()) {
                autocompleteFixed = true;
