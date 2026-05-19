@@ -32,7 +32,7 @@ Station bar runs as a custom editor with fixed layout compositor. Configure via 
 
 When `fixedEditor` is enabled (default): chat/feed scrolls above a fixed cluster containing station bar, editor, bash transcript, and last-prompt display. Uses the terminal's alternate screen buffer for composited scrolling.
 
-You can select chat text and continue scrolling the chat viewport with the mouse wheel while keeping the selection active.
+You can select chat text and continue scrolling the chat viewport with the mouse wheel while keeping the selection active. Mouse selection now copies only visible chat text, not trailing padding cells.
 
 When disabled: station bar widgets attach to pi's regular TUI layout using `aboveEditor`/`belowEditor` placements.
 
