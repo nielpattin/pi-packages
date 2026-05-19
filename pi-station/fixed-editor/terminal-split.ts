@@ -303,6 +303,10 @@ function sliceColumns(text: string, startCol: number, endCol: number): string {
    return result;
 }
 
+function selectableLineWidth(line: string): number {
+   return visibleWidth(stripAnsi(line).replace(/[ \t]+$/g, ""));
+}
+
 function compareSelectionPoints(a: SelectionPoint, b: SelectionPoint): number {
    return a.line === b.line ? a.col - b.col : a.line - b.line;
 }
@@ -1008,9 +1012,9 @@ export class TerminalSplitCompositor {
       const range = this.getSelectionRangeForLine(lineIndex, area);
       if (!range) return line;
 
-      const plain = stripAnsi(line);
-      const startCol = Math.max(0, Math.min(range.startCol, visibleWidth(plain)));
-      const endCol = Math.max(startCol, Math.min(range.endCol, visibleWidth(plain)));
+      const width = selectableLineWidth(line);
+      const startCol = Math.max(0, Math.min(range.startCol, width));
+      const endCol = Math.max(startCol, Math.min(range.endCol, width));
       if (startCol === endCol) return line;
 
       const parts = sliceStyledColumns(line, [0, startCol, endCol, Number.POSITIVE_INFINITY]);
@@ -1081,9 +1085,11 @@ export class TerminalSplitCompositor {
       const lines = this.selectionArea === "root" ? this.rootLines : this.visibleClusterLines;
       const selected: string[] = [];
       for (let lineIndex = start.line; lineIndex <= end.line; lineIndex++) {
-         const line = stripAnsi(lines[lineIndex] ?? "");
-         const startCol = lineIndex === start.line ? start.col : 0;
-         const endCol = lineIndex === end.line ? end.col : Number.POSITIVE_INFINITY;
+         const rawLine = lines[lineIndex] ?? "";
+         const line = stripAnsi(rawLine);
+         const width = selectableLineWidth(rawLine);
+         const startCol = Math.min(lineIndex === start.line ? start.col : 0, width);
+         const endCol = Math.min(lineIndex === end.line ? end.col : Number.POSITIVE_INFINITY, width);
          selected.push(sliceColumns(line, startCol, endCol));
       }
 

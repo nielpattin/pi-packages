@@ -1052,6 +1052,46 @@ test("terminal split selection highlighting does not duplicate wide glyphs", () 
   }
 });
 
+test("terminal split selection highlight excludes trailing line padding", () => {
+  const terminal = new FakeTerminal();
+  let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
+  const copied: string[] = [];
+  const rootLines = ["alpha     "];
+  const tui = {
+    terminal,
+    addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
+      inputListener = listener;
+      return () => {
+        inputListener = null;
+      };
+    },
+    requestRender() {},
+    render() {
+      return rootLines;
+    },
+  };
+
+  const compositor = new TerminalSplitCompositor({
+    tui,
+    terminal,
+    onCopySelection: (text) => copied.push(text),
+    renderCluster: () => ({ lines: ["cluster-a", "cluster-b"], cursor: null }),
+  });
+
+  compositor.install();
+  tui.render(40);
+
+  assert.deepEqual(inputListener?.("\x1b[<0;1;1M"), { consume: true });
+  assert.deepEqual(inputListener?.("\x1b[<32;10;1M"), { consume: true });
+  const highlighted = tui.render(40)[0] ?? "";
+  assert.equal(highlighted, "\x1b[7malpha\x1b[27m     ");
+
+  assert.deepEqual(inputListener?.("\x1b[<0;10;1m"), { consume: true });
+  assert.deepEqual(copied, ["alpha"]);
+
+  compositor.dispose();
+});
+
 test("terminal split copies chat and fixed cluster selections", () => {
   const terminal = new FakeTerminal();
   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
