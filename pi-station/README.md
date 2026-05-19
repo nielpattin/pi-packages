@@ -2,7 +2,7 @@
 
 Custom status bar extension for [pi](https://github.com/badlogic/pi-mono) with fixed editor layout, bash mode, editor stash, prompt history, and configurable segments.
 
-![Thumbnail](assets/thumbnail.png)
+<img width="1672" height="941" alt="thumbnail" src="https://github.com/user-attachments/assets/7aec1c64-1e2b-403c-b614-025f076968de" />
 
 ## Demo
 
