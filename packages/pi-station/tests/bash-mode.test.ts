@@ -33,6 +33,20 @@ function getMethod(target: object, name: string): Function {
    return method;
 }
 
+function getManagedShellTestPath(): string | null {
+   if (process.platform === "win32") {
+      return null;
+   }
+
+   for (const shellPath of ["/bin/zsh", "/usr/bin/zsh", "/bin/bash", "/usr/bin/bash"]) {
+      if (existsSync(shellPath)) {
+         return shellPath;
+      }
+   }
+
+   return null;
+}
+
 function ensureEditorModuleLinks(): { cleanup: () => void } {
    const nodeModulesDir = join(process.cwd(), "node_modules", "@earendil-works");
    mkdirSync(nodeModulesDir, { recursive: true });
@@ -365,13 +379,16 @@ test("deterministic path completion handles bash argument position", async () =>
 });
 
 test("managed shell session preserves cwd changes across commands", async () => {
-   if (process.platform === "win32") return;
+   const shellPath = getManagedShellTestPath();
+   if (!shellPath) {
+      return;
+   }
    const cwd = mkdtempSync(join(tmpdir(), "station-shell-"));
    const childDir = join(cwd, "child");
    mkdirSync(childDir, { recursive: true });
    const store = new BashTranscriptStore({ transcriptMaxBytes: 64 * 1024, transcriptMaxLines: 100 });
    const session = new ManagedShellSession(
-      "/bin/zsh",
+      shellPath,
       cwd,
       store,
       () => {},
@@ -404,11 +421,14 @@ test("managed shell session preserves cwd changes across commands", async () => 
 });
 
 test("managed shell session recovers cleanly after interrupt", async () => {
-   if (process.platform === "win32") return;
+   const shellPath = getManagedShellTestPath();
+   if (!shellPath) {
+      return;
+   }
    const cwd = mkdtempSync(join(tmpdir(), "station-shell-interrupt-"));
    const store = new BashTranscriptStore({ transcriptMaxBytes: 64 * 1024, transcriptMaxLines: 100 });
    const session = new ManagedShellSession(
-      "/bin/zsh",
+      shellPath,
       cwd,
       store,
       () => {},
