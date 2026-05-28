@@ -38,15 +38,34 @@ if (!existsSync(PKG_JSON_PATH)) {
    process.exit(1);
 }
 
+function shouldUseShell(command) {
+   return process.platform === "win32" && command === "pnpm";
+}
+
+function quoteShellArg(arg) {
+   return `"${arg.replaceAll('"', '\\"')}"`;
+}
+
 function run(command, args, opts = {}) {
    console.log(`  $ ${[command, ...args].join(" ")}`);
-   const result = spawnSync(command, args, {
-      cwd: opts.cwd ?? ROOT,
-      encoding: "utf8",
-      stdio: opts.silent ? "pipe" : "inherit",
-   });
+   const useShell = shouldUseShell(command);
+   const result = useShell
+      ? spawnSync(`${command} ${args.map(quoteShellArg).join(" ")}`, {
+           cwd: opts.cwd ?? ROOT,
+           encoding: "utf8",
+           shell: true,
+           stdio: opts.silent ? "pipe" : "inherit",
+        })
+      : spawnSync(command, args, {
+           cwd: opts.cwd ?? ROOT,
+           encoding: "utf8",
+           stdio: opts.silent ? "pipe" : "inherit",
+        });
    if (result.status !== 0 && !opts.ignoreError) {
       console.error(`Command failed: ${[command, ...args].join(" ")}`);
+      if (result.error) {
+         console.error(result.error.message);
+      }
       process.exit(result.status ?? 1);
    }
    return result.stdout ?? "";
