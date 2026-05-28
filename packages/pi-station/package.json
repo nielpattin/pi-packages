@@ -1,0 +1,55 @@
+{
+   "name": "@nielpattin/pi-station",
+   "version": "0.6.4",
+   "description": "Station bar status extension for pi coding agent",
+   "keywords": [
+      "coding-agent",
+      "extension",
+      "pi",
+      "pi-package",
+      "station-bar",
+      "status-bar"
+   ],
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/packages/pi-station#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
+   "license": "MIT",
+   "author": "Niel Pattin",
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nielpattin/pi-packages.git",
+      "directory": "packages/pi-station"
+   },
+   "files": [
+      "*.ts",
+      "bash-integration",
+      "bash-mode",
+      "fixed-editor",
+      "layout",
+      "shortcut-manager",
+      "stash",
+      "state",
+      "theme.example.json",
+      "README.md",
+      "CHANGELOG.md"
+   ],
+   "type": "module",
+   "main": "./index.ts",
+   "publishConfig": {
+      "access": "public"
+   },
+   "scripts": {
+      "test": "vitest run"
+   },
+   "peerDependencies": {
+      "@earendil-works/pi-ai": "*",
+      "@earendil-works/pi-coding-agent": "*",
+      "@earendil-works/pi-tui": "*"
+   },
+   "pi": {
+      "extensions": [
+         "./index.ts"
+      ]
+   }
+}

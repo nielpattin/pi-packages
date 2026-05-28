@@ -1,0 +1,29 @@
+packages:
+   - "packages/*"
+allowBuilds:
+   "@google/genai": true
+   koffi: true
+   protobufjs: true
+   esbuild: true
+   better-sqlite3: true
+
+minimumReleaseAgeExclude:
+   - "@earendil-works/*"
+   - "@mariozechner/*"
+   - "@oxlint/*"
+   - "@oxfmt/*"
+   - "@aws-sdk/*"
+   - "@rolldown/*"
+   - "@smithy/*"
+   - oxlint
+   - oxfmt
+
+# Supply chain security
+minimumReleaseAge: 7200 # 5 days (or 1440 for 1 day)
+trustPolicy: "no-downgrade"
+trustPolicyExclude:
+   - "@mariozechner/clipboard-*"
+blockExoticSubdeps: true
+
+# Extra hardening (recommended in v11)
+strictDepBuilds: true

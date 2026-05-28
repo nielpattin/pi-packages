@@ -1,0 +1,60 @@
+{
+   "name": "@nielpattin/pi-simplify",
+   "version": "0.2.6",
+   "description": "A Pi extension that reviews recently changed code for clarity, consistency, and maintainability.",
+   "keywords": [
+      "ai",
+      "ai-agent",
+      "code-review",
+      "coding-assistant",
+      "developer-tools",
+      "llm",
+      "pi-coding-agent",
+      "pi-extension",
+      "pi-package",
+      "refactor",
+      "simplify"
+   ],
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/packages/pi-simplify#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
+   "license": "MIT",
+   "author": "Matt Devy",
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nielpattin/pi-packages.git",
+      "directory": "packages/pi-simplify"
+   },
+   "files": [
+      "src",
+      "!src/**/*.test.ts",
+      "README.md",
+      "CHANGELOG.md"
+   ],
+   "type": "module",
+   "main": "./src/index.ts",
+   "publishConfig": {
+      "access": "public"
+   },
+   "scripts": {
+      "typecheck": "tsc --noEmit",
+      "test": "vitest run",
+      "check": "vitest run && tsc --noEmit",
+      "prepublishOnly": "pnpm check"
+   },
+   "peerDependencies": {
+      "@earendil-works/pi-ai": "^0.75.4",
+      "@earendil-works/pi-coding-agent": "^0.75.4",
+      "@earendil-works/pi-tui": "^0.75.4",
+      "@sinclair/typebox": "^0.34.0"
+   },
+   "engines": {
+      "node": ">=24"
+   },
+   "pi": {
+      "extensions": [
+         "./src/index.ts"
+      ]
+   }
+}
