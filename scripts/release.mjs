@@ -166,26 +166,26 @@ const changelog = readFileSync(CHANGELOG_PATH, "utf8");
 writeFileSync(CHANGELOG_PATH, changelog.replace("## [Unreleased]", `## [${newVersion}] - ${DATE}`));
 console.log("  CHANGELOG promoted\n");
 
+const releaseTag = `${PKG}@${newVersion}`;
+
 console.log("Committing and tagging...");
 stageChangedFiles();
-run("git", ["commit", "-m", `chore: release ${PKG} v${newVersion}`]);
-run("git", ["tag", `v${PKG}@${newVersion}`]);
-console.log("  Done\n");
-
-console.log("Pushing to origin...");
-run("git", ["push", "origin", "main"]);
-run("git", ["push", "origin", `v${PKG}@${newVersion}`]);
+run("git", ["commit", "-m", `chore: release ${PKG} ${newVersion}`]);
+run("git", ["tag", releaseTag]);
 console.log("  Done\n");
 
 const promotedChangelog = readFileSync(CHANGELOG_PATH, "utf8");
-writeFileSync(CHANGELOG_PATH, promotedChangelog.replace(/^/, "## [Unreleased]\n\n"));
+writeFileSync(CHANGELOG_PATH, promotedChangelog.replace(/^(## \[)/m, "## [Unreleased]\n\n$1"));
 console.log("Re-instated [Unreleased] section...\n");
 
 console.log("Committing changelog reset...");
 stageChangedFiles();
 run("git", ["commit", "-m", `chore: add [Unreleased] section for ${PKG}`]);
-run("git", ["push", "origin", "main"]);
 console.log("  Done\n");
 
-console.log(`=== Released ${PKG} v${newVersion} ===`);
+console.log("Pushing to origin...");
+run("git", ["push", "origin", "main", releaseTag]);
+console.log("  Done\n");
+
+console.log(`=== Released ${PKG} ${newVersion} ===`);
 console.log("Run 'bash publish.sh <package>' to trigger npm publish via GitHub Actions.");

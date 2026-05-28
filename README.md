@@ -82,8 +82,8 @@ The release script keeps packages independently versioned and automates:
 3. Run `pnpm check`, `pnpm test`, `pnpm coverage`, and `pnpm --dir packages/<pkg> pack --dry-run`.
 4. Bump the target package version with `pnpm version`.
 5. Promote `[Unreleased]` to `[version] - date` in that package changelog.
-6. Commit and tag `v<pkg>@<version>`.
-7. Push `main` and the tag.
+6. Commit and tag `<pkg>@<version>`.
+7. Re-instate `[Unreleased]`, commit it, then push `main` and the package tag together.
 8. Recreate `[Unreleased]`, commit, and push the changelog reset.
 
 ## Publish

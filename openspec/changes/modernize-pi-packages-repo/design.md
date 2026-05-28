@@ -8,7 +8,7 @@ The repo hosts independent Pi extension packages. Existing modernization work ha
 
 - Move all package projects to `packages/<name>` and update all repository automation to that structure.
 - Keep each package independently versioned and released.
-- Add CI for Node 24 with pnpm install, check, tests, and build.
+- Add CI for Node 24 with pnpm install, check, tests, and coverage.
 - Make coverage thresholds realistic and enforceable under Vitest v4.
 - Document the repository purpose, package map, commands, hooks, and release flow.
 - Preserve existing staged work and avoid committing.
@@ -26,7 +26,7 @@ The repo hosts independent Pi extension packages. Existing modernization work ha
    - Rationale: It scales beyond three packages and matches the requested rpiv-style layout.
    - Alternative considered: keep root package folders and only fix docs. Rejected because it does not address the structural goal.
 
-2. Keep `dist` build artifacts as package outputs.
+2. Keep package output decisions isolated from the workspace layout change.
    - Rationale: Existing package metadata and publish workflows rely on built JavaScript. Raw TypeScript publishing needs a separate compatibility spike against Pi package loading behavior.
    - Alternative considered: publish source TypeScript immediately. Rejected as out of scope and higher risk.
 

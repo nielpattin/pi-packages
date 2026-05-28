@@ -5,12 +5,12 @@ The repository already contains multiple independent Pi extensions, but its root
 ## What Changes
 
 - Move `pi-caveman`, `pi-simplify`, and `pi-station` under `packages/`.
-- Update workspace, TypeScript, Vitest, formatting, linting, build, publish, release, README, and GitHub workflow paths for the new structure.
-- Add Node 24 CI that installs with pnpm and runs check, tests, and build.
+- Update workspace, TypeScript, Vitest, formatting, linting, validation, publish, release, README, and GitHub workflow paths for the new structure.
+- Add Node 24 CI that installs with pnpm and runs check, tests, and coverage.
 - Fix Vitest coverage thresholds so coverage gates are actually enforced with realistic initial global thresholds.
 - Strengthen per-package release automation with full pre-release gates and changelog validation.
 - Align hooks and documentation with the actual local quality gates.
-- Keep the current dist build model and defer raw TypeScript package publishing until a one-package Pi loading spike validates behavior.
+- Keep package publishing explicit and defer raw TypeScript decisions to a follow-up change.
 
 ## Capabilities
 

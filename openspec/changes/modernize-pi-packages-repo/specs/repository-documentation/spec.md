@@ -24,5 +24,5 @@ Repository documentation SHALL describe Node 24, `packages/*`, current hooks, va
 
 #### Scenario: User follows documented commands
 
-- **WHEN** a user follows README commands for install, build, release, publish, and hooks
+- **WHEN** a user follows README commands for install, validation, release, publish, and hooks
 - **THEN** the commands match files and scripts present in the repository
