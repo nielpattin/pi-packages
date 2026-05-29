@@ -6,26 +6,26 @@ This file summarizes the latest package changelog entries. Package changelogs re
 
 ### @nielpattin/pi-caveman
 
-## [1.0.3] - 2026-05-22
+## 1.0.5
 
-### Added
+### Patch Changes
 
-- Initial structured CHANGELOG.
-
-### Changed
-
-- Minor internal improvements.
+- 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
 
 ### @nielpattin/pi-simplify
 
-## [0.2.1] - 2026-05-14
+## 0.2.7
 
-### Fixed
+### Patch Changes
 
-- Migrate to `@earendil-works` namespace.
+- 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
 
 ### @nielpattin/pi-station
 
-## [0.6.5] - 2026-05-28
+## 0.6.6
+
+### Patch Changes
+
+- 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
 
 <!-- /package-changelog-summary -->

@@ -24,10 +24,13 @@ function latestSection(changelog) {
       const end = next ? next.index : changelog.length;
       if (next) heading.lastIndex = next.index;
 
+      const body = changelog.slice(start, end).trim();
+      const cleaned = body.replace(/^All notable changes[\s\S]*?v2\.0\.0\.html\)\.\s*/m, "").trim();
+
       return {
          version: match[1],
          date: match[2],
-         body: changelog.slice(start, end).trim(),
+         body: cleaned || body,
       };
    }
 
@@ -55,7 +58,7 @@ function summary() {
 }
 
 function update(content, generated) {
-   const replacement = `${startMarker}\n${generated}\n${endMarker}`;
+   const replacement = `${startMarker}\n${generated}\n\n${endMarker}`;
 
    if (!content.includes(startMarker) || !content.includes(endMarker)) {
       return `${content.trimEnd()}\n\n${replacement}\n`;
