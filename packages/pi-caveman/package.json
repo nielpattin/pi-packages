@@ -33,6 +33,9 @@
    "peerDependencies": {
       "@earendil-works/pi-coding-agent": "*"
    },
+   "engines": {
+      "node": ">=24"
+   },
    "pi": {
       "extensions": [
          "./index.ts"

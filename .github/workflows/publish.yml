@@ -4,13 +4,17 @@ on:
    workflow_dispatch:
       inputs:
          package:
-            description: Package to publish
+            description: Package directory to publish
             required: true
             type: choice
             options:
                - pi-caveman
                - pi-simplify
                - pi-station
+         tag:
+            description: Git tag to publish, for example @nielpattin/pi-station@0.6.6
+            required: true
+            type: string
 
 permissions:
    contents: read
@@ -22,6 +26,11 @@ jobs:
       steps:
          - name: Checkout
            uses: actions/checkout@v6
+           with:
+              fetch-depth: 0
+
+         - name: Checkout tag
+           run: git checkout --detach "${{ inputs.tag }}"
 
          - name: Setup pnpm
            uses: pnpm/action-setup@v4
@@ -38,14 +47,28 @@ jobs:
          - name: Install dependencies
            run: pnpm install --frozen-lockfile
 
-         - name: Check
-           run: pnpm check
+         - name: Verify package and tag
+           shell: bash
+           run: |
+              set -euo pipefail
 
-         - name: Test
-           run: pnpm test
+              pkg="${{ inputs.package }}"
+              tag="${{ inputs.tag }}"
+              manifest="packages/$pkg/package.json"
 
-         - name: Coverage
-           run: pnpm coverage
+              if [ ! -f "$manifest" ]; then
+                echo "package not found: $pkg" >&2
+                exit 1
+              fi
+
+              actual_version="$(node -p "JSON.parse(require('fs').readFileSync('$manifest', 'utf8')).version")"
+              package_name="$(node -p "JSON.parse(require('fs').readFileSync('$manifest', 'utf8')).name")"
+              expected_tag="$package_name@$actual_version"
+
+              if [ "$tag" != "$expected_tag" ]; then
+                echo "tag mismatch: expected $expected_tag, got $tag" >&2
+                exit 1
+              fi
 
          - name: Pack dry run
            run: pnpm --dir packages/${{ inputs.package }} pack --dry-run

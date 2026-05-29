@@ -1,9 +1,8 @@
 # pi-packages
 
-[![CI](https://github.com/nielpattin/pi-packages/actions/workflows/ci.yml/badge.svg)](https://github.com/nielpattin/pi-packages/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
-Independent [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) extensions focused on developer workflow. This repo exists to keep small, focused Pi packages in one workspace while preserving independent package versioning, release notes, and npm publishing.
+Independent [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) extensions focused on developer workflow. This repo keeps small Pi packages in one workspace while preserving independent package versions, release notes, and npm publishing.
 
 Packages publish raw TypeScript source. Pi loads `.ts` extension entrypoints through jiti, so this repo does not build packages to `dist/` before publishing.
 
@@ -13,7 +12,7 @@ Packages publish raw TypeScript source. Pi loads `.ts` extension entrypoints thr
 | ------------------------------------- | -------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------- |
 | [pi-caveman](./packages/pi-caveman)   | Terse communication modes and compact review, commit, and memory-writing skills. | `pnpm add @nielpattin/pi-caveman`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-caveman)  | 1.0.4   |
 | [pi-simplify](./packages/pi-simplify) | Reviews recent code changes for clarity, consistency, and maintainability.       | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.6   |
-| [pi-station](./packages/pi-station)   | Station bar status extension for the Pi coding agent TUI.                        | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.6.4   |
+| [pi-station](./packages/pi-station)   | Station bar status extension for the Pi coding agent TUI.                        | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.6.5   |
 
 ## Prerequisites
 
@@ -37,10 +36,12 @@ pnpm coverage  # run Vitest coverage with enforced thresholds
 pnpm check     # lint, format check, and TypeScript typecheck
 ```
 
-Git hooks run automatically through Husky:
+Git hooks are the validation source for this repo:
 
 - pre-commit: `pnpm check`
-- pre-push: `pnpm test`
+- pre-push: `pnpm test` and `node scripts/require-changeset.mjs origin/main`
+
+GitHub has no CI workflow for routine pushes. Run the local hooks before pushing.
 
 ## Package Validation
 
@@ -58,62 +59,57 @@ The dry-run output should include TypeScript source files and package docs, and 
 
 1. Create `packages/pi-foo/` with `package.json` and `tsconfig.json`.
 2. The root workspace already includes `packages/*` in `pnpm-workspace.yaml` and root `package.json`.
-3. Create `CHANGELOG.md` with a `## [Unreleased]` header.
-4. Ensure the package has:
+3. Ensure the package has:
    - `"type": "module"`
+   - `"engines": { "node": ">=24" }`
    - `main` pointing to the TypeScript source entrypoint
-   - `pi.extensions` pointing to the TypeScript source entrypoint
+   - `pi.extensions` or `pi.skills` pointing to package resources
    - a `test` script when it has tests
-   - source files and `CHANGELOG.md` in `files[]`
+   - source files and docs in `files[]`
    - repository metadata with `directory: "packages/pi-foo"`
+4. Add a changeset with `pnpm changeset` for package-impacting changes.
 
-## Release
+## Changesets Release Flow
+
+Packages are versioned independently with Changesets.
 
 ```bash
-# 1. Draft changelog entries in packages/<pkg>/CHANGELOG.md under [Unreleased]
-# 2. Commit any pending work, because the release script requires a clean tree
-node scripts/release.mjs pi-station patch
+pnpm changeset          # record the package and semver impact
+pnpm version-packages   # apply changesets and sync the root changelog summary
 ```
 
-The release script keeps packages independently versioned and automates:
+`pnpm version-packages` runs `changeset version` and then `pnpm changelog:sync`. Changesets updates package versions and package changelogs. `CHANGELOG.md` summarizes the latest package changelog entries and is generated from package changelogs.
 
-1. Verify the working tree is clean.
-2. Validate `packages/<pkg>/CHANGELOG.md` has `## [Unreleased]` and warn if that section has no bullet entries.
-3. Run `pnpm check`, `pnpm test`, `pnpm coverage`, and `pnpm --dir packages/<pkg> pack --dry-run`.
-4. Bump the target package version with `pnpm version`.
-5. Promote `[Unreleased]` to `[version] - date` in that package changelog.
-6. Commit and tag `<pkg>@<version>`.
-7. Re-instate `[Unreleased]`, commit it, then push `main` and the package tag together.
-8. Recreate `[Unreleased]`, commit, and push the changelog reset.
+Changesets uses scoped package tags such as `@nielpattin/pi-station@0.6.6`. Prefer that tag convention for new releases.
+
+The legacy `scripts/release.mjs` script is kept for reference during the transition. Prefer Changesets for new releases.
+
+`pnpm release` runs `changeset publish` and can publish packages to npm. Do not run release, publish, push, or commit steps unless explicitly intended.
 
 ## Publish
 
+Publishing is manual, exact, and tag-only. The GitHub publish workflow accepts a package plus a Changesets tag, checks out that tag, verifies the selected package version, runs package-local `pack --dry-run`, then publishes only that package.
+
 ```bash
-bash publish.sh            # all packages, one workflow dispatch per package
-bash publish.sh pi-station # one package
+./publish.sh pi-station --tag '@nielpattin/pi-station@0.6.6'
 ```
 
-`publish.sh` triggers `.github/workflows/publish.yml`. The workflow checks out the repo, installs with `pnpm install --frozen-lockfile`, runs check, test, coverage, verifies the selected package with `pnpm --dir packages/<pkg> pack --dry-run`, and publishes from `packages/<pkg>`.
+The publish workflow installs dependencies and packages the selected package. It does not run `pnpm check`, `pnpm test`, or `pnpm coverage`.
 
-## CI
+## Aggregate Packages
 
-`.github/workflows/ci.yml` runs on Node 24 with pnpm 11:
-
-1. `pnpm install --frozen-lockfile`
-2. `pnpm check`
-3. `pnpm test`
-4. `pnpm coverage`
+Aggregate package collections are intentionally deferred. Pi package docs require bundled dependencies and `node_modules/` resource paths for other pi packages. Publishable aggregates such as `@nielpattin/pi-packages`, `@nielpattin/pi-extensions`, or `@nielpattin/pi-skills` should only be added after local package installation tests prove those paths work for this repo's raw TypeScript packages.
 
 ## Project Structure
 
 ```text
 pi-packages/
+├── .changeset/                   # Changesets config and notes
 ├── .github/workflows/
-│   ├── ci.yml                    # Node 24 verification
-│   └── publish.yml               # npm publish via GitHub Actions
+│   └── publish.yml               # exact manual npm publish
 ├── .husky/
 │   ├── pre-commit                # pnpm check
-│   └── pre-push                  # pnpm test
+│   └── pre-push                  # pnpm test + changeset gate
 ├── .nvmrc                        # Node 24
 ├── openspec/                     # change proposals and specs
 ├── packages/
@@ -121,8 +117,11 @@ pi-packages/
 │   ├── pi-simplify               # independent npm package
 │   └── pi-station                # independent npm package
 ├── scripts/
-│   └── release.mjs               # per-package release orchestrator
+│   ├── release.mjs               # legacy per-package release orchestrator
+│   ├── require-changeset.mjs     # local changeset gate
+│   └── sync-monorepo-changelog.mjs
 ├── publish.sh                    # gh workflow dispatch helper
+├── CHANGELOG.md                  # generated package changelog summary
 ├── oxlint.config.ts              # oxlint config
 ├── oxfmt.config.ts               # oxfmt config
 ├── package.json                  # workspaces, shared devDeps, scripts
@@ -135,6 +134,7 @@ pi-packages/
 
 | Tool       | Config                | Purpose                        |
 | ---------- | --------------------- | ------------------------------ |
+| Changesets | `.changeset/`         | Versioning and changelogs      |
 | oxlint     | `oxlint.config.ts`    | Linting                        |
 | oxfmt      | `oxfmt.config.ts`     | Formatting                     |
 | Vitest     | `vitest.config.ts`    | Testing and coverage           |

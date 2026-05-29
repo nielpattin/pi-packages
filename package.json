@@ -12,9 +12,15 @@
       "check": "oxlint . && oxfmt --check . && tsc --noEmit -p tsconfig.json",
       "typecheck": "tsc --noEmit -p tsconfig.json",
       "prepare": "husky",
-      "release": "node scripts/release.mjs"
+      "changeset": "changeset",
+      "version-packages": "changeset version && pnpm changelog:sync",
+      "release": "changeset publish",
+      "changelog:sync": "node scripts/sync-monorepo-changelog.mjs",
+      "changeset:check": "node scripts/require-changeset.mjs"
    },
    "devDependencies": {
+      "@changesets/changelog-github": "^0.7.0",
+      "@changesets/cli": "^2.31.0",
       "@earendil-works/pi-ai": "^0.75.4",
       "@earendil-works/pi-coding-agent": "^0.75.4",
       "@earendil-works/pi-tui": "^0.75.4",

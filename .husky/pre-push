@@ -1,1 +1,2 @@
 pnpm test
+node scripts/require-changeset.mjs origin/main

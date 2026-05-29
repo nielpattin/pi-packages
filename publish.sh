@@ -4,25 +4,52 @@ set -euo pipefail
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 cd "$script_dir"
 
-packages_dir="$script_dir/packages"
+usage() {
+  cat <<'USAGE'
+Usage:
+  ./publish.sh <package> --tag <tag>
 
-if [ $# -eq 0 ]; then
-  for dir in "$packages_dir"/*/; do
-    pkg="$(basename "$dir")"
-    if [ -f "$dir/package.json" ]; then
-      echo "=== triggering publish: $pkg ==="
-      gh workflow run publish.yml -f "package=$pkg"
-    fi
-  done
-else
-  for pkg in "$@"; do
-    if [ ! -d "$packages_dir/$pkg" ] || [ ! -f "$packages_dir/$pkg/package.json" ]; then
-      echo "error: package not found: $pkg" >&2
-      exit 1
-    fi
-    echo "=== triggering publish: $pkg ==="
-    gh workflow run publish.yml -f "package=$pkg"
-  done
+Example:
+  ./publish.sh pi-station --tag '@nielpattin/pi-station@0.6.6'
+USAGE
+}
+
+packages_dir="$script_dir/packages"
+package=""
+tag=""
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --tag)
+      tag="${2:-}"
+      shift 2
+      ;;
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    *)
+      if [ -n "$package" ]; then
+        echo "error: only one package can be published per tag" >&2
+        exit 1
+      fi
+      package="$1"
+      shift
+      ;;
+  esac
+done
+
+if [ -z "$package" ] || [ -z "$tag" ]; then
+  usage >&2
+  exit 1
 fi
 
+manifest="$packages_dir/$package/package.json"
+if [ ! -f "$manifest" ]; then
+  echo "error: package not found: $package" >&2
+  exit 1
+fi
+
+echo "=== triggering publish: $package from $tag ==="
+gh workflow run publish.yml -f "package=$package" -f "tag=$tag"
 echo "=== done ==="
