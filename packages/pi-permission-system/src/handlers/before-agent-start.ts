@@ -4,12 +4,15 @@ import { createActiveToolsCacheKey, createBeforeAgentStartPromptStateKey } from 
 import type { PermissionSession } from "#src/permission-session";
 import { resolveSkillPromptEntries } from "#src/skill-prompt-sanitizer";
 import { sanitizeAvailableToolsSection } from "#src/system-prompt-sanitizer";
-import { getToolNameFromValue, type ToolRegistry } from "#src/tool-registry";
+import type { ToolRegistry } from "#src/tool-registry";
 import type { PermissionState } from "#src/types";
 
 /** Minimal subset of BeforeAgentStartEvent used by this handler. */
 interface BeforeAgentStartPayload {
    systemPrompt: string;
+   systemPromptOptions?: {
+      selectedTools?: string[];
+   };
 }
 
 /**
@@ -31,7 +34,7 @@ export function shouldExposeTool(
  *
  * Constructor deps:
  * - `session` — encapsulates all mutable session state
- * - `toolRegistry` — Pi tool API subset (getAll + setActive)
+ * - `toolRegistry` — Pi tool API subset (setActive)
  */
 export class AgentPrepHandler {
    constructor(
@@ -45,18 +48,10 @@ export class AgentPrepHandler {
       this.session.refreshConfig(ctx);
 
       const agentName = this.session.resolveAgentName(ctx, event.systemPrompt);
-      const allTools = this.toolRegistry.getAll();
-      const allowedTools: string[] = [];
-
-      for (const tool of allTools) {
-         const toolName = getToolNameFromValue(tool);
-         if (!toolName) {
-            continue;
-         }
-         if (shouldExposeTool(toolName, agentName, (t, a) => this.session.getToolPermission(t, a))) {
-            allowedTools.push(toolName);
-         }
-      }
+      const candidateTools = event.systemPromptOptions?.selectedTools ?? [];
+      const allowedTools = candidateTools.filter((toolName) =>
+         shouldExposeTool(toolName, agentName, (t, a) => this.session.getToolPermission(t, a)),
+      );
 
       const activeToolsCacheKey = createActiveToolsCacheKey(allowedTools);
       if (this.session.shouldUpdateActiveTools(activeToolsCacheKey)) {

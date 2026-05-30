@@ -35,8 +35,8 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
    } as unknown as ExtensionContext;
 }
 
-function makeEvent(systemPrompt = "You are an assistant.") {
-   return { systemPrompt };
+function makeEvent(systemPrompt = "You are an assistant.", selectedTools: string[] = []) {
+   return { systemPrompt, systemPromptOptions: { selectedTools } };
 }
 
 function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>> = {}): PermissionSession {
@@ -135,25 +135,47 @@ describe("AgentPrepHandler.handle", () => {
       expect(session.resolveAgentName).toHaveBeenCalledWith(ctx, "<active_agent name='x'>");
    });
 
-   it("filters out denied tools from allowed list", async () => {
+   it("filters denied tools from the current active tool list", async () => {
       const { handler, toolRegistry } = makeHandler({
-         session: { getToolPermission: vi.fn().mockReturnValue("deny") },
+         session: {
+            getToolPermission: vi.fn((toolName: string) => (toolName === "write" ? "deny" : "allow")),
+         },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "write" }, { name: "read" }]),
+            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "write" }, { name: "ls" }]),
          },
       });
-      await handler.handle(makeEvent(), makeCtx());
-      expect(toolRegistry.setActive).toHaveBeenCalledWith([]);
+      await handler.handle(makeEvent("You are an assistant.", ["read", "write"]), makeCtx());
+      expect(toolRegistry.setActive).toHaveBeenCalledWith(["read"]);
    });
 
-   it("includes allowed and ask tools in the active list", async () => {
+   it("does not activate registered built-in tools that are not currently active", async () => {
       const { handler, toolRegistry } = makeHandler({
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "write" }]),
+            getAll: vi
+               .fn()
+               .mockReturnValue([
+                  { name: "read" },
+                  { name: "bash" },
+                  { name: "edit" },
+                  { name: "write" },
+                  { name: "grep" },
+                  { name: "find" },
+                  { name: "ls" },
+               ]),
          },
       });
-      await handler.handle(makeEvent(), makeCtx());
-      expect(toolRegistry.setActive).toHaveBeenCalledWith(["read", "write"]);
+      await handler.handle(makeEvent("You are an assistant.", ["read", "bash", "edit", "write"]), makeCtx());
+      expect(toolRegistry.setActive).toHaveBeenCalledWith(["read", "bash", "edit", "write"]);
+   });
+
+   it("keeps an explicitly active built-in tool when policy allows it", async () => {
+      const { handler, toolRegistry } = makeHandler({
+         toolRegistry: {
+            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "grep" }, { name: "find" }, { name: "ls" }]),
+         },
+      });
+      await handler.handle(makeEvent("You are an assistant.", ["read", "grep"]), makeCtx());
+      expect(toolRegistry.setActive).toHaveBeenCalledWith(["read", "grep"]);
    });
 
    it("commits active-tools cache key after applying", async () => {
