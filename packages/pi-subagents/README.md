@@ -59,8 +59,10 @@ Common options:
 Check status and retrieve results from a background agent.
 
 ```text
-get_subagent_result({ agent_id: "agent-abc123", wait: true })
+get_subagent_result({ agent_id: "agent-abc123" })
 ```
+
+Use `wait: true` only when you intentionally want to block until completion.
 
 ### `steer_subagent`
 

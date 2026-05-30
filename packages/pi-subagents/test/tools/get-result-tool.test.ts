@@ -57,6 +57,20 @@ describe("GetResultTool", () => {
       expect(parameters.properties).not.toHaveProperty("verbose");
    });
 
+   it("describes wait as an explicit blocking action", () => {
+      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const parameters = tool.toToolDefinition().parameters as {
+         properties: { wait?: { description?: string } };
+      };
+
+      expect(tool.toToolDefinition().description).toBe(
+         "Check status and retrieve results from a background agent. Use wait: true only when the user asked to wait for completion.",
+      );
+      expect(parameters.properties.wait?.description).toBe(
+         "If true, block until completion. Use only when the user asked to wait. Default: false.",
+      );
+   });
+
    it("renders collapsed and expanded result output", async () => {
       const records = new Map([["agent-1", createTestAgent({ result: "line one\nline two", completedAt: 3500 })]]);
       const tool = new GetResultTool(makeManager(records), makeNotifications(), testRegistry);
@@ -126,7 +140,9 @@ describe("GetResultTool", () => {
    it("shows running message for in-progress agent", async () => {
       const records = new Map([["agent-1", createTestAgent({ status: "running", completedAt: undefined })]]);
       const result = await execute(makeManager(records), makeNotifications(), { agent_id: "agent-1" });
-      expect(result.content[0].text).toContain("still running");
+      expect(result.content[0].text).toContain(
+         "Agent is still running. Check back later, or use wait: true only if the user asked to wait.",
+      );
    });
 
    it("shows error for failed agent", async () => {

@@ -67,7 +67,7 @@ export class GetResultTool {
          `Description: ${record.description}\n\n`;
 
       if (record.status === "running") {
-         output += "Agent is still running. Use wait: true or check back later.";
+         output += "Agent is still running. Check back later, or use wait: true only if the user asked to wait.";
       } else if (record.status === "error") {
          output += `Error: ${record.error}`;
       } else {
@@ -102,14 +102,14 @@ export class GetResultTool {
          label: "Get Agent Result",
          promptSnippet: "get_subagent_result: Check status and retrieve results from a background agent.",
          description:
-            "Check status and retrieve results from a background agent. Use the agent ID returned by Agent with run_in_background.",
+            "Check status and retrieve results from a background agent. Use wait: true only when the user asked to wait for completion.",
          parameters: Type.Object({
             agent_id: Type.String({
                description: "The agent ID to check.",
             }),
             wait: Type.Optional(
                Type.Boolean({
-                  description: "If true, wait for the agent to complete before returning. Default: false.",
+                  description: "If true, block until completion. Use only when the user asked to wait. Default: false.",
                }),
             ),
          }),

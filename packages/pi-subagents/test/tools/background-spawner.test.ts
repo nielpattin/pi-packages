@@ -140,6 +140,18 @@ describe("spawnBackground", () => {
       expect(result.content[0].text).toContain("started");
    });
 
+   it("tells the parent not to retrieve results while the agent is still running unless the user asked to wait", () => {
+      const { manager, runtime } = createToolDeps();
+      const result = spawnBackground(manager, runtime, runtime.agentActivity, makeParams());
+      const text = result.content[0].text;
+
+      expect(text).toContain("You will be notified when this agent completes.");
+      expect(text).toContain(
+         "Do not call get_subagent_result while it is still running unless the user asked to wait.",
+      );
+      expect(text).not.toContain("Use get_subagent_result to retrieve full results");
+   });
+
    it("includes output file path in result when present", () => {
       const record = createTestAgent({ status: "running" });
       record.execution = { session: toAgentSession(createMockSession()), outputFile: "/sessions/bg.jsonl" };
