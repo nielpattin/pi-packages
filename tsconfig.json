@@ -17,7 +17,11 @@
       "noImplicitOverride": true,
       "noUnusedLocals": false,
       "noUnusedParameters": false,
-      "noPropertyAccessFromIndexSignature": false
+      "noPropertyAccessFromIndexSignature": false,
+      "paths": {
+         "#src/*": ["./packages/pi-subagents/src/*"],
+         "#test/*": ["./packages/pi-subagents/test/*"]
+      }
    },
-   "exclude": ["node_modules", "**/*.test.ts", "packages/pi-station/tests"]
+   "exclude": ["node_modules", "**/*.test.ts", "packages/pi-station/tests", "packages/pi-permission-system"]
 }

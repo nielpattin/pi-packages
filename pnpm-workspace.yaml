@@ -6,6 +6,7 @@ allowBuilds:
    protobufjs: true
    esbuild: true
    better-sqlite3: true
+   tree-sitter-bash: true
 
 minimumReleaseAgeExclude:
    - "@earendil-works/*"

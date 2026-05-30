@@ -1,0 +1,61 @@
+{
+   "name": "@nielpattin/pi-subagents",
+   "version": "0.1.0",
+   "description": "Pi extension for spawning and managing autonomous subagents.",
+   "keywords": [
+      "agent",
+      "autonomous",
+      "pi",
+      "pi-extension",
+      "pi-package",
+      "subagent"
+   ],
+   "homepage": "https://github.com/nielpattin/pi-packages/tree/main/packages/pi-subagents#readme",
+   "bugs": {
+      "url": "https://github.com/nielpattin/pi-packages/issues"
+   },
+   "license": "MIT",
+   "author": "Niel Pattin",
+   "repository": {
+      "type": "git",
+      "url": "git+https://github.com/nielpattin/pi-packages.git",
+      "directory": "packages/pi-subagents"
+   },
+   "files": [
+      "src",
+      ".pi/agents",
+      "README.md",
+      "CHANGELOG.md",
+      "LICENSE"
+   ],
+   "type": "module",
+   "main": "./src/index.ts",
+   "imports": {
+      "#src/*": "./src/*",
+      "#test/*": "./test/*"
+   },
+   "exports": {
+      ".": "./src/service/service.ts"
+   },
+   "publishConfig": {
+      "access": "public"
+   },
+   "scripts": {
+      "test": "vitest run --config vitest.config.ts",
+      "check": "pnpm test && tsc --noEmit -p tsconfig.json"
+   },
+   "peerDependencies": {
+      "@earendil-works/pi-ai": "^0.78.0",
+      "@earendil-works/pi-coding-agent": "^0.78.0",
+      "@earendil-works/pi-tui": "^0.78.0",
+      "@sinclair/typebox": "^0.34.0"
+   },
+   "engines": {
+      "node": ">=24"
+   },
+   "pi": {
+      "extensions": [
+         "./src/index.ts"
+      ]
+   }
+}

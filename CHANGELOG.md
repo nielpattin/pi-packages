@@ -12,6 +12,14 @@ This file summarizes the latest package changelog entries. Package changelogs re
 
 - 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
 
+### @nielpattin/pi-permission-system
+
+## 0.1.0
+
+### Minor Changes
+
+- Initial `@nielpattin/pi-permission-system` package.
+
 ### @nielpattin/pi-simplify
 
 ## 0.2.7
@@ -27,5 +35,13 @@ This file summarizes the latest package changelog entries. Package changelogs re
 ### Patch Changes
 
 - 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
+
+### @nielpattin/pi-subagents
+
+## 0.1.0
+
+### Minor Changes
+
+- Initial `@nielpattin/pi-subagents` package.
 
 <!-- /package-changelog-summary -->
