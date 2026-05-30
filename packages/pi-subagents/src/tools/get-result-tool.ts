@@ -1,11 +1,12 @@
 import { defineTool } from "@earendil-works/pi-coding-agent";
+import { Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
 import type { AgentConfigLookup } from "#src/config/agent-types";
-import { getAgentConversation } from "#src/lifecycle/agent-runner";
 import { getSessionContextPercent } from "#src/lifecycle/usage";
-import { formatLifetimeTokens, textResult } from "#src/tools/helpers";
+import { buildDetails, formatLifetimeTokens, textResult } from "#src/tools/helpers";
+import { renderAgentResult } from "#src/tools/result-renderer";
 import type { Agent } from "#src/types";
-import { formatDuration, getDisplayName } from "#src/ui/display";
+import { buildInvocationTags, formatDuration, getDisplayName } from "#src/ui/display";
 
 // ---- Deps interfaces ----
 
@@ -28,7 +29,7 @@ export class GetResultTool {
 
    async execute(
       _toolCallId: string,
-      params: { agent_id: string; wait?: boolean; verbose?: boolean },
+      params: { agent_id: string; wait?: boolean },
       _signal: AbortSignal,
       _onUpdate: unknown,
       _ctx: unknown,
@@ -79,15 +80,20 @@ export class GetResultTool {
          this.notifications.cancelNudge(params.agent_id);
       }
 
-      // Verbose: include full conversation
-      if (params.verbose && record.session) {
-         const conversation = getAgentConversation(record.session);
-         if (conversation) {
-            output += `\n\n--- Agent Conversation ---\n${conversation}`;
-         }
-      }
+      const invocationTags = buildInvocationTags(record.invocation);
+      const details = buildDetails(
+         {
+            displayName,
+            description: record.description,
+            subagentType: record.type,
+            ...invocationTags,
+         },
+         record,
+         undefined,
+         { activity: record.status === "queued" ? "queued…" : undefined },
+      );
 
-      return textResult(output);
+      return textResult(output, details);
    }
 
    toToolDefinition() {
@@ -106,16 +112,26 @@ export class GetResultTool {
                   description: "If true, wait for the agent to complete before returning. Default: false.",
                }),
             ),
-            verbose: Type.Optional(
-               Type.Boolean({
-                  description:
-                     "If true, include the agent's full conversation (messages + tool calls). Default: false.",
-               }),
-            ),
          }),
+         renderResult(result: any, { expanded, isPartial }: any, theme: any) {
+            const details = result.details;
+            if (!details) {
+               const text = result.content[0]?.type === "text" ? result.content[0].text : "";
+               return new Text(text, 0, 0);
+            }
+            const resultText = result.content[0]?.type === "text" ? result.content[0].text : "";
+            return new Text(
+               renderAgentResult(details, resultText, expanded, isPartial, theme, {
+                  expandedLineLimit: null,
+                  overflowHint: null,
+               }),
+               0,
+               0,
+            );
+         },
          execute: (
             toolCallId: string,
-            params: { agent_id: string; wait?: boolean; verbose?: boolean },
+            params: { agent_id: string; wait?: boolean },
             signal: AbortSignal,
             onUpdate: unknown,
             ctx: unknown,

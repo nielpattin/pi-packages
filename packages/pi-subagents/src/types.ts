@@ -2,12 +2,13 @@
  * types.ts — Type definitions for the subagent system.
  */
 
-import type { ThinkingLevel } from "@earendil-works/pi-ai";
+import type { ThinkingLevel as PiThinkingLevel } from "@earendil-works/pi-ai";
 import type { AgentSessionEvent } from "@earendil-works/pi-coding-agent";
 import type { ModelRegistry } from "#src/session/model-resolver";
 
 export { Agent } from "#src/lifecycle/agent";
-export type { AgentSessionEvent, ThinkingLevel };
+export type { AgentSessionEvent };
+export type ThinkingLevel = PiThinkingLevel | "off";
 
 /**
  * Narrow session interface for event subscription.

@@ -9,6 +9,13 @@
 import type { AgentDetails, Theme } from "#src/ui/display";
 import { formatMs, formatTurns, SPINNER } from "#src/ui/display";
 
+export interface RenderAgentResultOptions {
+   expandedLineLimit?: number | null;
+   overflowHint?: string | null;
+}
+
+const DEFAULT_OVERFLOW_HINT = "  ... (use get_subagent_result with verbose for full output)";
+
 // ---- Dispatcher ----
 
 /** Dispatch to the per-status renderer based on details.status and isPartial. */
@@ -18,11 +25,12 @@ export function renderAgentResult(
    expanded: boolean,
    isPartial: boolean,
    theme: Theme,
+   options?: RenderAgentResultOptions,
 ): string {
    if (isPartial || details.status === "running") return renderRunning(details, theme);
    if (details.status === "background") return renderBackground(details, theme);
    if (details.status === "completed" || details.status === "steered")
-      return renderCompleted(details, resultText, expanded, theme);
+      return renderCompleted(details, resultText, expanded, theme, options);
    if (details.status === "stopped") return renderStopped(details, theme);
    return renderFailed(details, theme);
 }
@@ -44,7 +52,13 @@ export function renderBackground(details: AgentDetails, theme: Theme): string {
 }
 
 /** Render completed or steered status with optional expanded result text. */
-export function renderCompleted(details: AgentDetails, resultText: string, expanded: boolean, theme: Theme): string {
+export function renderCompleted(
+   details: AgentDetails,
+   resultText: string,
+   expanded: boolean,
+   theme: Theme,
+   options: RenderAgentResultOptions = {},
+): string {
    const duration = formatMs(details.durationMs);
    const isSteered = details.status === "steered";
    const icon = isSteered ? theme.fg("warning", "\u2713") : theme.fg("success", "\u2713");
@@ -54,12 +68,15 @@ export function renderCompleted(details: AgentDetails, resultText: string, expan
 
    if (expanded) {
       if (resultText) {
-         const lines = resultText.split("\n").slice(0, 50);
+         const allLines = resultText.split("\n");
+         const expandedLineLimit = "expandedLineLimit" in options ? (options.expandedLineLimit ?? null) : 50;
+         const lines = expandedLineLimit === null ? allLines : allLines.slice(0, expandedLineLimit);
          for (const l of lines) {
             line += "\n" + theme.fg("dim", `  ${l}`);
          }
-         if (resultText.split("\n").length > 50) {
-            line += "\n" + theme.fg("muted", "  ... (use get_subagent_result with verbose for full output)");
+         const overflowHint = options.overflowHint === undefined ? DEFAULT_OVERFLOW_HINT : options.overflowHint;
+         if (overflowHint && expandedLineLimit !== null && allLines.length > expandedLineLimit) {
+            line += "\n" + theme.fg("muted", overflowHint);
          }
       }
    } else {

@@ -7,6 +7,7 @@
 import type { AgentConfig } from "#src/types";
 
 const READ_ONLY_TOOLS = ["read", "bash", "grep", "find", "ls"];
+const OMNI_TOOLS = ["read"];
 
 export const DEFAULT_AGENTS: Map<string, AgentConfig> = new Map([
    [
@@ -26,9 +27,9 @@ export const DEFAULT_AGENTS: Map<string, AgentConfig> = new Map([
       },
    ],
    [
-      "Explore",
+      "explore",
       {
-         name: "Explore",
+         name: "explore",
          displayName: "Explore",
          description: "Fast codebase exploration agent (read-only)",
          builtinToolNames: READ_ONLY_TOOLS,
@@ -58,19 +59,46 @@ Use Bash ONLY for read-only operations: ls, git status, git log, git diff, find,
 - Make independent tool calls in parallel for efficiency
 - Adapt search approach based on thoroughness level specified
 
+# Analysis Standards
+- Separate observed evidence from interpretation.
+- Evidence must be concrete facts from reads/searches, with absolute file paths and line references when available.
+- Interpretation must include a confidence level: high, medium, or low.
+- Do not present read-only findings as a final diagnosis.
+- When diagnosing issues, describe the most likely cause and state what needs verification.
+- Do not use phrases like "Primary Root Cause" unless runtime evidence proves it.
+- Rank findings as primary, secondary, or speculative.
+- Keep direct causes above secondary or speculative contributors.
+- Be concise. Collapse low-value context such as large call-site dumps, unrelated matches, and broad backend context unless it directly answers the prompt.
+- Always state "Not verified / limits" for anything that requires runtime behavior, browser timing, latency measurement, command execution, or tests.
+- Always end with "Recommended next checks" containing exact files, searches, or commands the main agent should run to confirm or falsify the interpretation.
+
 # Output
-- Use absolute file paths in all references
-- Report findings as regular messages
-- Do not use emojis
-- Be thorough and precise`,
+- Use absolute file paths in all references.
+- Report findings as regular messages.
+- Do not use emojis.
+- Be thorough and precise.
+
+Use this structure unless the user asks for a different format:
+
+## Summary
+
+## Evidence observed
+
+## Interpretation + confidence
+
+## Primary / secondary / speculative ranking
+
+## Not verified / limits
+
+## Recommended next checks`,
          promptMode: "replace",
          isDefault: true,
       },
    ],
    [
-      "Plan",
+      "plan",
       {
-         name: "Plan",
+         name: "plan",
          displayName: "Plan",
          description: "Software architect for implementation planning (read-only)",
          builtinToolNames: READ_ONLY_TOOLS,
@@ -116,6 +144,38 @@ You are STRICTLY PROHIBITED from:
 ### Critical Files for Implementation
 List 3-5 files most critical for implementing this plan:
 - /absolute/path/to/file.ts - [Brief reason]`,
+         promptMode: "replace",
+         isDefault: true,
+      },
+   ],
+   [
+      "omni",
+      {
+         name: "omni",
+         displayName: "omni",
+         description: "Visual inspection agent for images and screenshots",
+         builtinToolNames: OMNI_TOOLS,
+         extensions: false,
+         skills: false,
+         model: "google/gemini-3.1-flash-lite",
+         thinking: "off",
+         runInBackground: false,
+         systemPrompt: `You are an omni visual inspector. Your job is to look at images and
+describe what you see in rich textual detail.
+
+When given a file path, use the read tool to inspect the image before answering.
+
+When describing:
+- Start with the overall layout and structure.
+- Describe colors, typography, spacing, and visual hierarchy.
+- Note any text visible in the image (transcribe it).
+- Call out interactive elements: buttons, inputs, dropdowns, links.
+- Mention alignment issues, spacing inconsistencies, or visual bugs.
+- For diagrams/charts: describe axes, data trends, labels, and key values.
+- For code screenshots: transcribe the visible code accurately.
+
+Be thorough. Your output is consumed by another AI that cannot see images.
+Do NOT suggest changes. Only describe.`,
          promptMode: "replace",
          isDefault: true,
       },

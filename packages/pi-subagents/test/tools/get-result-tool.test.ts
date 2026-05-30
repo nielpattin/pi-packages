@@ -9,6 +9,13 @@ import { STUB_CTX } from "#test/helpers/stub-ctx";
 
 const testRegistry = new AgentTypeRegistry(() => new Map());
 
+function makeTheme() {
+   return {
+      fg: (color: string, text: string) => `[${color}:${text}]`,
+      bold: (text: string) => `**${text}**`,
+   };
+}
+
 function makeManager(records: Map<string, Agent> = new Map()): GetResultToolManager {
    return { getRecord: (id: string) => records.get(id) };
 }
@@ -20,7 +27,7 @@ function makeNotifications() {
 async function execute(
    manager: GetResultToolManager,
    notifications: GetResultToolNotifications,
-   params: { agent_id: string; wait?: boolean; verbose?: boolean },
+   params: { agent_id: string; wait?: boolean },
 ) {
    const tool = new GetResultTool(manager, notifications, testRegistry);
    return tool.execute("tc-1", params, new AbortController().signal, undefined, STUB_CTX);
@@ -37,6 +44,69 @@ describe("GetResultTool", () => {
       expect(tool.toToolDefinition().promptSnippet).toBe(
          "get_subagent_result: Check status and retrieve results from a background agent.",
       );
+   });
+
+   it("exposes only agent_id and wait parameters", () => {
+      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const parameters = tool.toToolDefinition().parameters as {
+         properties: Record<string, unknown>;
+      };
+
+      expect(parameters.properties).toHaveProperty("agent_id");
+      expect(parameters.properties).toHaveProperty("wait");
+      expect(parameters.properties).not.toHaveProperty("verbose");
+   });
+
+   it("renders collapsed and expanded result output", async () => {
+      const records = new Map([["agent-1", createTestAgent({ result: "line one\nline two", completedAt: 3500 })]]);
+      const tool = new GetResultTool(makeManager(records), makeNotifications(), testRegistry);
+      const result = await tool.execute(
+         "tc-1",
+         { agent_id: "agent-1" },
+         new AbortController().signal,
+         undefined,
+         STUB_CTX,
+      );
+      const renderResult = tool.toToolDefinition().renderResult;
+
+      expect(renderResult).toBeTypeOf("function");
+      const collapsed = renderResult!(result, { expanded: false, isPartial: false }, makeTheme() as never, {} as never)
+         .render(120)
+         .join("\n");
+      const expanded = renderResult!(result, { expanded: true, isPartial: false }, makeTheme() as never, {} as never)
+         .render(120)
+         .join("\n");
+
+      expect(collapsed).toContain("[success:✓]");
+      expect(collapsed).toContain("[dim:  ⎿  Done]");
+      expect(collapsed).not.toContain("line one");
+      expect(expanded).toContain("[dim:  line one]");
+      expect(expanded).toContain("[dim:  line two]");
+   });
+
+   it("renders every expanded result line without overflow or verbose hints", async () => {
+      const manyLines = Array.from({ length: 55 }, (_, i) => `line ${i + 1}`).join("\n");
+      const records = new Map([["agent-1", createTestAgent({ result: manyLines, completedAt: 3500 })]]);
+      const tool = new GetResultTool(makeManager(records), makeNotifications(), testRegistry);
+      const result = await tool.execute(
+         "tc-1",
+         { agent_id: "agent-1" },
+         new AbortController().signal,
+         undefined,
+         STUB_CTX,
+      );
+      const renderResult = tool.toToolDefinition().renderResult;
+
+      expect(renderResult).toBeTypeOf("function");
+      const expanded = renderResult!(result, { expanded: true, isPartial: false }, makeTheme() as never, {} as never)
+         .render(120)
+         .join("\n");
+
+      expect(expanded).toContain("[dim:  line 51]");
+      expect(expanded).toContain("[dim:  line 55]");
+      expect(expanded).not.toContain("overflow");
+      expect(expanded).not.toContain("verbose");
+      expect(expanded).not.toContain("use get_subagent_result");
    });
 
    it("returns not-found message for unknown agent ID", async () => {
@@ -113,13 +183,21 @@ describe("GetResultTool", () => {
       expect(record.notification.resultConsumed).toBe(true);
    });
 
-   it("includes conversation when verbose=true", async () => {
+   it("does not include conversation transcript when extra verbose input is provided", async () => {
       const record = createTestAgent();
       const session = createMockSession({ messages: [{ role: "user", content: "hello" }] });
       record.execution = { session: toAgentSession(session), outputFile: undefined };
       const records = new Map([["agent-1", record]]);
-      const result = await execute(makeManager(records), makeNotifications(), { agent_id: "agent-1", verbose: true });
-      expect(result.content[0].text).toContain("--- Agent Conversation ---");
-      expect(result.content[0].text).toContain("[User]: hello");
+      const result = await new GetResultTool(makeManager(records), makeNotifications(), testRegistry).execute(
+         "tc-1",
+         { agent_id: "agent-1", verbose: true } as never,
+         new AbortController().signal,
+         undefined,
+         STUB_CTX,
+      );
+
+      expect(result.content[0].text).toContain("All done.");
+      expect(result.content[0].text).not.toContain("--- Agent Conversation ---");
+      expect(result.content[0].text).not.toContain("[User]: hello");
    });
 });

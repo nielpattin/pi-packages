@@ -71,13 +71,13 @@ describe("AgentTypeRegistry", () => {
    describe("resolveType", () => {
       it("returns canonical key for exact match", () => {
          const registry = makeRegistry();
-         expect(registry.resolveType("Explore")).toBe("Explore");
+         expect(registry.resolveType("explore")).toBe("explore");
          expect(registry.resolveType("general-purpose")).toBe("general-purpose");
       });
 
       it("returns canonical key for case-insensitive match", () => {
          const registry = makeRegistry();
-         expect(registry.resolveType("explore")).toBe("Explore");
+         expect(registry.resolveType("explore")).toBe("explore");
          expect(registry.resolveType("GENERAL-PURPOSE")).toBe("general-purpose");
       });
 
@@ -90,15 +90,28 @@ describe("AgentTypeRegistry", () => {
    describe("resolveAgentConfig", () => {
       it("returns config for a known enabled type", () => {
          const registry = makeRegistry();
-         const config = registry.resolveAgentConfig("Explore");
-         expect(config.name).toBe("Explore");
+         const config = registry.resolveAgentConfig("explore");
+         expect(config.name).toBe("explore");
          expect(config.promptMode).toBe("replace");
       });
 
       it("performs case-insensitive lookup", () => {
          const registry = makeRegistry();
          const config = registry.resolveAgentConfig("explore");
-         expect(config.name).toBe("Explore");
+         expect(config.name).toBe("explore");
+      });
+
+      it("returns the omni visual inspection default config", () => {
+         const registry = makeRegistry();
+         const config = registry.resolveAgentConfig("omni");
+         expect(config.name).toBe("omni");
+         expect(config.description).toBe("Visual inspection agent for images and screenshots");
+         expect(config.builtinToolNames).toEqual(["read"]);
+         expect(config.extensions).toBe(false);
+         expect(config.skills).toBe(false);
+         expect(config.model).toBe("google/gemini-3.1-flash-lite");
+         expect(config.thinking).toBe("off");
+         expect(config.systemPrompt).toContain("Do NOT suggest changes. Only describe.");
       });
 
       it("falls back to general-purpose for unknown type", () => {
@@ -131,8 +144,9 @@ describe("AgentTypeRegistry", () => {
          const registry = makeRegistry();
          const types = registry.getAvailableTypes();
          expect(types).toContain("general-purpose");
-         expect(types).toContain("Explore");
-         expect(types).toContain("Plan");
+         expect(types).toContain("explore");
+         expect(types).toContain("plan");
+         expect(types).toContain("omni");
       });
 
       it("excludes disabled agents", () => {
@@ -158,8 +172,9 @@ describe("AgentTypeRegistry", () => {
          const registry = makeRegistry(new Map([["auditor", makeAgentConfig({ name: "auditor" })]]));
          const names = registry.getDefaultAgentNames();
          expect(names).toContain("general-purpose");
-         expect(names).toContain("Explore");
-         expect(names).toContain("Plan");
+         expect(names).toContain("explore");
+         expect(names).toContain("plan");
+         expect(names).toContain("omni");
          expect(names).not.toContain("auditor");
       });
    });
@@ -183,6 +198,7 @@ describe("AgentTypeRegistry", () => {
          const registry = makeRegistry();
          expect(registry.isValidType("general-purpose")).toBe(true);
          expect(registry.isValidType("Explore")).toBe(true);
+         expect(registry.isValidType("omni")).toBe(true);
       });
 
       it("returns true case-insensitively", () => {
@@ -216,6 +232,12 @@ describe("AgentTypeRegistry", () => {
          expect(names).toEqual(["read", "bash", "grep", "find", "ls"]);
       });
 
+      it("returns only read for Omni", () => {
+         const registry = makeRegistry();
+         const names = registry.getToolNamesForType("omni");
+         expect(names).toEqual(["read"]);
+      });
+
       it("returns custom tool names for user agent", () => {
          const registry = makeRegistry(
             new Map([["auditor", makeAgentConfig({ name: "auditor", builtinToolNames: ["read", "grep"] })]]),
@@ -235,8 +257,8 @@ describe("AgentTypeRegistry", () => {
          expect(AgentTypeRegistry.DEFAULT_AGENT_NAMES).toBeDefined();
       });
 
-      it("contains the three built-in default names", () => {
-         expect(AgentTypeRegistry.DEFAULT_AGENT_NAMES).toEqual(["general-purpose", "Explore", "Plan"]);
+      it("contains the four built-in default names", () => {
+         expect(AgentTypeRegistry.DEFAULT_AGENT_NAMES).toEqual(["general-purpose", "explore", "plan", "omni"]);
       });
 
       it("is no longer exported from types.ts", async () => {

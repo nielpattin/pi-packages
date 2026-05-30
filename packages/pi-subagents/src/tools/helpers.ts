@@ -77,7 +77,8 @@ export function buildTypeListText(registry: TypeListRegistry, agentDir: string):
    const defaultDescs = defaultNames.map((name) => {
       const cfg = registry.resolveAgentConfig(name);
       const modelSuffix = cfg.model ? ` (${getModelLabelFromConfig(cfg.model)})` : "";
-      return `- ${name}: ${cfg.description}${modelSuffix}`;
+      const label = cfg.displayName && cfg.displayName !== "Agent" ? cfg.displayName : name;
+      return `- ${label}: ${cfg.description}${modelSuffix}`;
    });
 
    const customDescs = userNames.map((name) => {
