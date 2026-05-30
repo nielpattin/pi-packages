@@ -1180,20 +1180,42 @@ export class TerminalSplitCompositor {
       }
 
       const lines = this.selectionArea === "root" ? this.rootLines : this.visibleClusterLines;
-      const selected: string[] = [];
+      let selected = "";
       for (let lineIndex = start.line; lineIndex <= end.line; lineIndex++) {
          const rawLine = lines[lineIndex] ?? "";
          const line = stripAnsi(rawLine);
          const width = selectableLineWidth(rawLine);
-         const startCol = Math.min(lineIndex === start.line ? start.col : 0, width);
+         const selectedStartCol = lineIndex === start.line ? start.col : 0;
+         const contentStartCol = this.selectionArea === "root" ? this.rootLineContentStart(lineIndex) : 0;
+         const startCol = Math.min(Math.max(selectedStartCol, contentStartCol), width);
          const endCol = Math.min(lineIndex === end.line ? end.col : Number.POSITIVE_INFINITY, width);
-         selected.push(sliceColumns(line, startCol, endCol));
+         const text = sliceColumns(line, startCol, endCol);
+         if (lineIndex === start.line) {
+            selected = text;
+         } else if (this.isSoftWrappedRootLine(lineIndex - 1)) {
+            selected += text;
+         } else {
+            selected += `\n${text}`;
+         }
       }
 
-      return selected
-         .join("\n")
-         .replace(/[ \t]+$/gm, "")
-         .trimEnd();
+      return selected.replace(/[ \t]+$/gm, "").trimEnd();
+   }
+
+   private rootLineContentStart(lineIndex: number): number {
+      return stripAnsi(this.rootLines[lineIndex] ?? "").startsWith(" ") ? 1 : 0;
+   }
+
+   private isSoftWrappedRootLine(lineIndex: number): boolean {
+      if (this.selectionArea !== "root") {
+         return false;
+      }
+
+      const rawLine = this.rootLines[lineIndex] ?? "";
+      const paddedWidth = visibleWidth(stripAnsi(rawLine));
+      const contentWidth = selectableLineWidth(rawLine);
+      const viewportWidth = Math.max(1, this.terminal.columns || 80);
+      return paddedWidth >= viewportWidth - 1 && contentWidth >= viewportWidth - 2;
    }
 
    private getSelectionRangeForLine(
@@ -1213,9 +1235,11 @@ export class TerminalSplitCompositor {
          return null;
       }
 
+      const selectedStartCol = lineIndex === start.line ? start.col : 0;
+      const contentStartCol = area === "root" ? this.rootLineContentStart(lineIndex) : 0;
       return {
          endCol: lineIndex === end.line ? end.col : Number.POSITIVE_INFINITY,
-         startCol: lineIndex === start.line ? start.col : 0,
+         startCol: Math.max(selectedStartCol, contentStartCol),
       };
    }
 

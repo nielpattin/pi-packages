@@ -1,7 +1,7 @@
 import { vi, test } from "vitest";
 
 import assert from "node:assert/strict";
-import { TUI, visibleWidth } from "@earendil-works/pi-tui";
+import { Text, TUI, visibleWidth } from "@earendil-works/pi-tui";
 import { CURSOR_MARKER, renderFixedEditorCluster } from "../fixed-editor/cluster.ts";
 import {
    TerminalSplitCompositor,
@@ -1192,6 +1192,96 @@ test("terminal split selection highlight excludes trailing line padding", () => 
 
    assert.deepEqual(inputListener?.("\x1b[<0;10;1m"), { consume: true });
    assert.deepEqual(copied, ["alpha"]);
+
+   compositor.dispose();
+});
+
+const wrappedSelectionFixture = "fixture:/pi-station/wrapped-selection/2026-05-30T09-25-39Z.json";
+
+test("terminal split preserves normal root text left padding", () => {
+   const terminal = new FakeTerminal();
+   const tui = new TUI(terminal as any);
+   tui.addChild(new Text(wrappedSelectionFixture, 1, 0));
+
+   const compositor = new TerminalSplitCompositor({
+      renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
+      scrollBar: false,
+      terminal,
+      tui,
+   });
+
+   compositor.install();
+   const rendered = tui.render(40).map((line) => line.replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, ""));
+
+   assert.equal(rendered[0]?.startsWith(" fixture:"), true);
+   assert.equal(rendered[1]?.startsWith(" 2026"), true);
+
+   compositor.dispose();
+});
+
+test("terminal split copies wrapped root text as one logical line", () => {
+   const terminal = new FakeTerminal();
+   const tui = new TUI(terminal as any);
+   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
+   const copied: string[] = [];
+   tui.addInputListener = (listener: (data: string) => { consume?: boolean; data?: string } | undefined) => {
+      inputListener = listener;
+      return () => {
+         inputListener = null;
+      };
+   };
+   tui.addChild(new Text(wrappedSelectionFixture, 1, 0));
+
+   const compositor = new TerminalSplitCompositor({
+      onCopySelection: (text) => copied.push(text),
+      renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
+      scrollBar: false,
+      terminal,
+      tui,
+   });
+
+   compositor.install();
+   tui.render(40);
+
+   assert.deepEqual(inputListener?.("\x1b[<0;2;1M"), { consume: true });
+   assert.deepEqual(inputListener?.("\x1b[<32;4;2M"), { consume: true });
+   assert.deepEqual(inputListener?.("\x1b[<0;4;2m"), { consume: true });
+
+   assert.deepEqual(copied, [wrappedSelectionFixture.slice(0, 40)]);
+
+   compositor.dispose();
+});
+
+test("terminal split ignores outer root padding when selection starts before content", () => {
+   const terminal = new FakeTerminal();
+   const tui = new TUI(terminal as any);
+   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
+   const copied: string[] = [];
+   tui.addInputListener = (listener: (data: string) => { consume?: boolean; data?: string } | undefined) => {
+      inputListener = listener;
+      return () => {
+         inputListener = null;
+      };
+   };
+   tui.addChild(new Text("- pnpm check", 1, 0));
+
+   const compositor = new TerminalSplitCompositor({
+      onCopySelection: (text) => copied.push(text),
+      renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
+      scrollBar: false,
+      terminal,
+      tui,
+   });
+
+   compositor.install();
+   tui.render(40);
+
+   assert.deepEqual(inputListener?.("\x1b[<0;1;1M"), { consume: true });
+   assert.deepEqual(inputListener?.("\x1b[<32;14;1M"), { consume: true });
+   assert.equal(tui.render(40)[0]?.startsWith(" \x1b[7m-"), true);
+   assert.deepEqual(inputListener?.("\x1b[<0;14;1m"), { consume: true });
+
+   assert.deepEqual(copied, ["- pnpm check"]);
 
    compositor.dispose();
 });
