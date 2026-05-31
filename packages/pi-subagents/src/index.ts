@@ -9,6 +9,7 @@
  *
  * Commands:
  *   /agents                 — Interactive agent management menu
+ *   /orchestrator           - Toggle orchestrator mode (injects sub-agent guidance into system prompt)
  */
 
 import { join } from "node:path";
@@ -22,6 +23,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import { loadCustomAgents } from "#src/config/custom-agents";
+import { buildOrchestratorGuidance } from "#src/config/orchestrator-guidance";
 import { SessionLifecycleHandler, ToolStartHandler } from "#src/handlers/index";
 import { AgentManager, type AgentManagerObserver } from "#src/lifecycle/agent-manager";
 import { ConcreteAgentRunner, type RunnerDeps } from "#src/lifecycle/agent-runner";
@@ -212,6 +214,59 @@ export default function (pi: ExtensionAPI) {
    // ---- steer_subagent tool ----
 
    pi.registerTool(new SteerTool(manager, pi.events).toToolDefinition());
+
+   // ---- Orchestrator mode ----
+
+   pi.on("before_agent_start", (event) => {
+      if (!runtime.orchestratorMode) return {};
+
+      const guidance = buildOrchestratorGuidance(registry);
+      if (!guidance) return {};
+
+      return {
+         systemPrompt: event.systemPrompt + "\n\n" + guidance,
+      };
+   });
+
+   pi.registerCommand("orchestrator", {
+      description: "Toggle orchestrator mode (injects enabled agent guidance into system prompt)",
+      handler: async (args, _ctx) => {
+         const command = args.trim().toLowerCase();
+         if (command === "off") {
+            runtime.orchestratorMode = false;
+            pi.sendMessage({
+               customType: "orchestrator",
+               content: "Orchestrator mode **disabled**.",
+               display: true,
+            });
+            return;
+         }
+
+         if (command === "on" || !runtime.orchestratorMode) {
+            runtime.orchestratorMode = true;
+            const guidance = buildOrchestratorGuidance(registry);
+            const count = guidance
+               ? registry.getAvailableTypes().filter((type) => registry.resolveAgentConfig(type).guidance?.trim())
+                    .length
+               : 0;
+            pi.sendMessage({
+               customType: "orchestrator",
+               content:
+                  `Orchestrator mode **enabled**. Guidance will be loaded from ${count} enabled agent config${count === 1 ? "" : "s"}. ` +
+                  "Use `/orchestrator off` or `/orchestrator` again to disable.",
+               display: true,
+            });
+            return;
+         }
+
+         runtime.orchestratorMode = false;
+         pi.sendMessage({
+            customType: "orchestrator",
+            content: "Orchestrator mode **disabled**.",
+            display: true,
+         });
+      },
+   });
 
    // ---- /agents interactive menu ----
 

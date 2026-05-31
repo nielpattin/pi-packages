@@ -16,6 +16,8 @@ export const DEFAULT_AGENTS: Map<string, AgentConfig> = new Map([
          name: "general-purpose",
          displayName: "Agent",
          description: "General-purpose agent for complex, multi-step tasks",
+         guidance:
+            "Use this agent for broad implementation work, multi-step coding tasks, and focused file edits when a more specialized enabled agent is not a better fit.",
          // builtinToolNames omitted — means "all available tools" (resolved at lookup time)
          // inheritContext / runInBackground / isolated omitted — strategy fields, callers decide per-call.
          // Setting them to false would lock callsite intent (see resolveAgentInvocationConfig in invocation-config.ts).
@@ -32,6 +34,8 @@ export const DEFAULT_AGENTS: Map<string, AgentConfig> = new Map([
          name: "explore",
          displayName: "Explore",
          description: "Fast codebase exploration agent (read-only)",
+         guidance:
+            "Use this agent for read-only codebase exploration, searches, evidence gathering, and understanding existing implementation before planning or editing.",
          builtinToolNames: READ_ONLY_TOOLS,
          extensions: true,
          skills: true,
@@ -101,6 +105,8 @@ Use this structure unless the user asks for a different format:
          name: "plan",
          displayName: "Plan",
          description: "Software architect for implementation planning (read-only)",
+         guidance:
+            "Use this agent for read-only architecture analysis and implementation planning before making non-trivial code changes.",
          builtinToolNames: READ_ONLY_TOOLS,
          extensions: true,
          skills: true,
@@ -154,6 +160,8 @@ List 3-5 files most critical for implementing this plan:
          name: "omni",
          displayName: "omni",
          description: "Visual inspection agent for images and screenshots",
+         guidance:
+            "Use this agent for visual inspection of images, screenshots, layouts, diagrams, and code screenshots when visual evidence is needed.",
          builtinToolNames: OMNI_TOOLS,
          extensions: false,
          skills: false,

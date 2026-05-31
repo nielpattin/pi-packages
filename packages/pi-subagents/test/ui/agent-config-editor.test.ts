@@ -396,9 +396,11 @@ describe("buildEjectContent", () => {
          runInBackground: true,
          isolated: true,
          isolation: "worktree",
+         guidance: "Use this agent when focused guidance is needed.",
       };
       const content = buildEjectContent(cfg);
       expect(content).toContain("display_name: My Agent");
+      expect(content).toContain("guidance: Use this agent when focused guidance is needed.");
       expect(content).toContain("tools: read, bash");
       expect(content).toContain("model: claude-sonnet");
       expect(content).toContain("thinking: low");

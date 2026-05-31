@@ -37,6 +37,8 @@ export interface AgentPromptConfig {
    name: string;
    promptMode: "replace" | "append";
    systemPrompt: string;
+   /** Guidance text appended to the system prompt when this agent is active. */
+   guidance?: string;
 }
 
 /** Unified agent configuration — used for both default and user-defined agents. */

@@ -54,6 +54,10 @@ export class SubagentRuntime {
     */
    widget: WidgetLike | null = null;
 
+   // ── Orchestrator mode ───────────────────────────────────────────────────
+   /** Whether orchestrator mode is active (toggled via /orchestrator command). */
+   orchestratorMode: boolean = false;
+
    // ── Session-context methods ──────────────────────────────────────────────
 
    /** Store the active Pi session context (called from session_start). */

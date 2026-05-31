@@ -38,6 +38,7 @@ export function buildMenuOptions(cfg: { isDefault?: boolean; enabled?: boolean }
 export function buildEjectContent(cfg: AgentConfig): string {
    const fmFields: string[] = [];
    fmFields.push(`description: ${cfg.description}`);
+   if (cfg.guidance) fmFields.push(`guidance: ${cfg.guidance}`);
    if (cfg.displayName) fmFields.push(`display_name: ${cfg.displayName}`);
    fmFields.push(`tools: ${cfg.builtinToolNames?.join(", ") ?? "all"}`);
    if (cfg.model) fmFields.push(`model: ${cfg.model}`);
