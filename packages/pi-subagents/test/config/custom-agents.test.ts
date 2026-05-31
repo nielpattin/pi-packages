@@ -125,6 +125,20 @@ No tools.`,
       expect(result.get("notool")!.builtinToolNames).toEqual([]);
    });
 
+   it("handles tools: all → built-in tool defaults", () => {
+      writeAgent(
+         "alltools",
+         `---
+tools: all
+---
+
+All tools.`,
+      );
+
+      const result = loadCustomAgents(tmpDir);
+      expect(result.get("alltools")!.builtinToolNames).toEqual(BUILTIN_TOOL_NAMES);
+   });
+
    it("handles extensions: false → no extensions", () => {
       writeAgent(
          "noext",

@@ -76,7 +76,7 @@ function loadFromDir(dir: string, agents: Map<string, AgentConfig>, source: "pro
 }
 
 // ---- Field parsers ----
-// All follow the same convention: omitted → default, "none"/empty → nothing, value → exact.
+// All follow the same convention: omitted/"all" → default, "none"/empty → nothing, value → exact.
 
 /** Extract a string or undefined. */
 function str(val: unknown): string | undefined {
@@ -105,10 +105,11 @@ function parseCsvField(val: unknown): string[] | undefined {
 
 /**
  * Parse a comma-separated list field with defaults.
- * omitted → defaults; "none"/empty → []; csv → listed items.
+ * omitted/"all" → defaults; "none"/empty → []; csv → listed items.
  */
 function csvList(val: unknown, defaults: string[]): string[] {
    if (val === undefined || val === null) return defaults;
+   if (typeof val === "string" && val.trim() === "all") return defaults;
    return parseCsvField(val) ?? [];
 }
 
