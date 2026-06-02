@@ -7,6 +7,7 @@ export interface StationConfig {
    customItems: CustomStatusItem[];
    scrollBar: boolean;
    fixedEditor: boolean;
+   readStyle: boolean;
    shortcuts: StationShortcuts;
 }
 
@@ -102,6 +103,7 @@ export function parseStationConfig(value: unknown): StationConfig {
       customItems: [],
       fixedEditor: true,
       scrollBar: true,
+      readStyle: true,
       shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
    };
 
@@ -113,6 +115,7 @@ export function parseStationConfig(value: unknown): StationConfig {
       customItems: normalizeCustomItems(value.customItems),
       fixedEditor: value.fixedEditor !== false,
       scrollBar: value.scrollBar !== false,
+      readStyle: value.readStyle !== false,
       shortcuts: resolveStationShortcuts(value.shortcuts),
    };
 }

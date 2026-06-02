@@ -1,10 +1,18 @@
-import { copyToClipboard } from "@earendil-works/pi-coding-agent";
+import { copyToClipboard, createReadTool } from "@earendil-works/pi-coding-agent";
 import type { ExtensionAPI, ReadonlyFooterDataProvider, Theme } from "@earendil-works/pi-coding-agent";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
-import { SelectList, SettingsList, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
-import type { AutocompleteProvider, SelectItem } from "@earendil-works/pi-tui";
+import {
+   SelectList,
+   SettingsList,
+   Text,
+   getCapabilities,
+   hyperlink,
+   truncateToWidth,
+   visibleWidth,
+} from "@earendil-works/pi-tui";
+import type { AutocompleteProvider, Component, SelectItem } from "@earendil-works/pi-tui";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { StationBarState } from "./state/index.ts";
 import {
    STASH_PREVIEW_WIDTH,
@@ -14,6 +22,7 @@ import {
    readPersistedStashHistory,
 } from "./stash/index.ts";
 import { homedir } from "node:os";
+import { pathToFileURL } from "node:url";
 
 import type { ColorScheme, SegmentContext } from "./types.ts";
 import type { StationConfig } from "./station-config.ts";
@@ -50,6 +59,7 @@ let config: StationConfig = {
    customItems: [],
    fixedEditor: true,
    scrollBar: true,
+   readStyle: true,
    shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
 };
 
@@ -421,6 +431,25 @@ function writeStationSetting(cwd: string, update: (existingStationSetting: unkno
    }
 }
 
+function writeGlobalStationSetting(update: (existingStationSetting: unknown) => unknown): boolean {
+   const settingsPath = getSettingsPath();
+   const settings = readWritableSettingsFile(settingsPath);
+   if (settings === null) {
+      return false;
+   }
+
+   settings["station"] = update(settings["station"]);
+
+   try {
+      mkdirSync(dirname(settingsPath), { recursive: true });
+      writeFileSync(settingsPath, `${JSON.stringify(settings, null, 2)}\n`);
+      return true;
+   } catch (error) {
+      console.debug(`[station-bar] Failed to persist global station setting to ${settingsPath}:`, error);
+      return false;
+   }
+}
+
 function hasNonWhitespaceText(text: string): boolean {
    return text.trim().length > 0;
 }
@@ -452,6 +481,111 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
    };
 }
 
+const READ_PATH_DISPLAY_WIDTH = 96;
+
+function shortenPath(path: string): string {
+   const home = homedir();
+   if (path.startsWith(home)) {
+      return `~${path.slice(home.length)}`;
+   }
+   return path;
+}
+
+function middleTruncatePath(path: string, maxWidth = READ_PATH_DISPLAY_WIDTH): string {
+   if (visibleWidth(path) <= maxWidth) {
+      return path;
+   }
+
+   const tailWidth = Math.max(16, Math.floor(maxWidth * 0.6));
+   const headWidth = Math.max(8, maxWidth - tailWidth - 1);
+   const head = truncateToWidth(path, headWidth, "", true);
+   const tailSource = path.slice(-tailWidth * 2);
+   const tail = truncateToWidth(
+      tailSource.slice(Math.max(0, visibleWidth(tailSource) - tailWidth)),
+      tailWidth,
+      "",
+      true,
+   );
+   return `${head}…${tail}`;
+}
+
+function getReadPathArg(args: unknown): string {
+   if (!isRecord(args)) {
+      return "";
+   }
+   const path = args.file_path ?? args.path;
+   return typeof path === "string" ? path : "";
+}
+
+function renderReadPath(rawPath: string, theme: Theme, cwd: string, maxWidth = READ_PATH_DISPLAY_WIDTH): string {
+   if (!rawPath) {
+      return theme.fg("toolOutput", "...");
+   }
+
+   const displayPath = middleTruncatePath(shortenPath(rawPath), maxWidth);
+   const styledPath = theme.fg("accent", displayPath);
+   if (!getCapabilities().hyperlinks) {
+      return styledPath;
+   }
+
+   const absolutePath = isAbsolute(rawPath) ? rawPath : resolve(cwd, rawPath);
+   return hyperlink(styledPath, pathToFileURL(absolutePath).href);
+}
+
+class ReadCallRow implements Component {
+   constructor(
+      private readonly args: unknown,
+      private readonly theme: Theme,
+      private readonly cwd: string,
+   ) {}
+
+   render(width: number): string[] {
+      const prefix = `${this.theme.fg("accent", "→")} ${this.theme.fg("toolTitle", this.theme.bold("Read"))} `;
+      const lineInfo = formatReadLineRange(this.args, this.theme);
+      const pathWidth = Math.max(8, width - visibleWidth(prefix) - visibleWidth(lineInfo));
+      const pathDisplay = renderReadPath(getReadPathArg(this.args), this.theme, this.cwd, pathWidth);
+      return [`${prefix}${pathDisplay}${lineInfo}`];
+   }
+
+   invalidate(): void {}
+}
+
+function formatReadLineRange(args: unknown, theme: Theme): string {
+   if (!isRecord(args)) {
+      return "";
+   }
+   if (typeof args.offset !== "number" && typeof args.limit !== "number") {
+      return "";
+   }
+
+   const startLine = typeof args.offset === "number" ? args.offset : 1;
+   const endLine = typeof args.limit === "number" ? startLine + args.limit - 1 : "";
+   return theme.fg("warning", `:${startLine}${endLine ? `-${endLine}` : ""}`);
+}
+
+function registerReadTool(pi: ExtensionAPI) {
+   pi.registerTool({
+      name: "read",
+      label: "read",
+      description: "Read the contents of a file. Supports text files and images (jpg, png, gif, webp).",
+      parameters: createReadTool(process.cwd()).parameters,
+      renderShell: "self",
+
+      async execute(toolCallId, params, signal, onUpdate, ctx) {
+         const original = createReadTool(ctx.cwd);
+         return original.execute(toolCallId, params, signal, onUpdate);
+      },
+
+      renderCall(args, theme, context) {
+         return new ReadCallRow(args, theme, context.cwd);
+      },
+
+      renderResult(_result, _options, _theme, _context) {
+         return new Text("", 0, 0);
+      },
+   });
+}
+
 // ═══════════════════════════════════════════════════════════════════════════
 // Extension
 // ═══════════════════════════════════════════════════════════════════════════
@@ -460,6 +594,10 @@ export default function stationBar(pi: ExtensionAPI) {
    const startupSettings = readSettings();
    config = parseStationConfig(startupSettings["station"]);
    let bashModeSettings = parseBashModeSettings(startupSettings);
+
+   if (config.readStyle) {
+      registerReadTool(pi);
+   }
 
    const state = new StationBarState(config);
 
@@ -1059,6 +1197,7 @@ export default function stationBar(pi: ExtensionAPI) {
 
          let needsCustomEditorRefresh = false;
          let needsScrollBarRefresh = false;
+         let needsReadStyleRefresh = false;
          const valueFor = (value: boolean): string => (value ? "ON" : "OFF");
 
          await ctx.ui.custom<void>(
@@ -1079,8 +1218,15 @@ export default function stationBar(pi: ExtensionAPI) {
                         label: "Scroll Bar",
                         values: ["ON", "OFF"],
                      },
+                     {
+                        currentValue: valueFor(config.readStyle),
+                        description: "Opencode-style read rows. Reload OFF for full Pi default shell.",
+                        id: "readStyle",
+                        label: "Read Style",
+                        values: ["ON", "OFF"],
+                     },
                   ],
-                  2,
+                  3,
                   {
                      cursor: "→ ",
                      description: (text: string) => text,
@@ -1105,6 +1251,17 @@ export default function stationBar(pi: ExtensionAPI) {
                               : { scrollBar: config.scrollBar },
                         );
                         needsScrollBarRefresh = true;
+                     } else if (id === "readStyle") {
+                        config.readStyle = newValue === "ON";
+                        const saved = writeGlobalStationSetting((existing) =>
+                           isRecord(existing)
+                              ? { ...existing, readStyle: config.readStyle }
+                              : { readStyle: config.readStyle },
+                        );
+                        needsReadStyleRefresh = saved;
+                        if (!saved) {
+                           ctx.ui.notify("Failed to save Read Style setting", "error");
+                        }
                      }
                   },
                   () => done(),
@@ -1141,6 +1298,9 @@ export default function stationBar(pi: ExtensionAPI) {
             setupCustomEditor(ctx);
          } else if (needsScrollBarRefresh && enabled && config.fixedEditor) {
             fixedEditorCompositor?.setScrollBar(config.scrollBar);
+         }
+         if (needsReadStyleRefresh && enabled) {
+            ctx.ui.notify(`Read style saved: ${config.readStyle ? "ON" : "OFF"}. Run /reload to apply.`, "info");
          }
       },
    });
