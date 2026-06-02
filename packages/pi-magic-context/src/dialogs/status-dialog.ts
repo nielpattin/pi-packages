@@ -19,6 +19,7 @@ import { estimateTokens } from "#core/hooks/magic-context/read-session-formattin
 import { formatThresholdPercent } from "#core/shared/format-threshold";
 import packageJson from "../../package.json";
 import { resolveSessionId } from "../commands/pi-command-utils";
+import { sessionLog } from "#core/shared/logger";
 
 const COLORS = {
    system: "#c084fc",
@@ -32,6 +33,12 @@ const COLORS = {
 
 /** Refresh cadence while dialog is open. */
 const REFRESH_INTERVAL_MS = 1000;
+const STATUS_DIALOG_PROFILE = process.env.PI_MAGIC_CONTEXT_PROFILE_STATUS === "1";
+
+function profileStatusDialog(sessionId: string, message: string): void {
+   if (!STATUS_DIALOG_PROFILE) return;
+   sessionLog(sessionId, message);
+}
 
 export interface StatusDialogDeps {
    db: ContextDatabase;
@@ -98,9 +105,15 @@ export async function showStatusDialog(
    const sessionId = resolveSessionId(ctx);
    if (!sessionId) throw new Error("No active Pi session is available.");
 
+   const showStart = performance.now();
+   profileStatusDialog(sessionId, "status-dialog: showStatusDialog before ctx.ui.custom");
    await ctx.ui.custom<undefined>(
-      (tui, theme, _keybindings, done) =>
-         new StatusDialogComponent({
+      (tui, theme, _keybindings, done) => {
+         profileStatusDialog(
+            sessionId,
+            `status-dialog: factory invoked after ${(performance.now() - showStart).toFixed(0)}ms`,
+         );
+         return new StatusDialogComponent({
             pi,
             ctx,
             deps,
@@ -108,11 +121,16 @@ export async function showStatusDialog(
             theme,
             tui,
             done,
-         }),
+         });
+      },
       {
          overlay: true,
          overlayOptions: { anchor: "center", width: "88%", minWidth: 78, margin: 1 },
       },
+   );
+   profileStatusDialog(
+      sessionId,
+      `status-dialog: ctx.ui.custom resolved after ${(performance.now() - showStart).toFixed(0)}ms`,
    );
 }
 
@@ -137,36 +155,45 @@ class StatusDialogComponent implements Component {
    private readonly props: StatusDialogProps;
    private detail: StatusDialogDetail;
    private refreshTimer: ReturnType<typeof setInterval> | null = null;
+   private initialRefreshTimer: ReturnType<typeof setTimeout> | null = null;
+   private initialRefreshQueued = false;
    private closed = false;
 
    constructor(props: StatusDialogProps) {
+      const constructorStart = performance.now();
       this.props = props;
-      this.detail = buildPiStatusDetail(props.pi, props.ctx, props.deps, props.sessionId);
+      profileStatusDialog(props.sessionId, "status-dialog: component constructor start");
+      this.detail = buildCachedPiStatusDetail(props.ctx, props.deps, props.sessionId);
+      profileStatusDialog(
+         props.sessionId,
+         `status-dialog: component constructor cached detail ready after ${(performance.now() - constructorStart).toFixed(0)}ms`,
+      );
       this.refreshTimer = setInterval(() => {
-         if (this.closed) return;
-         try {
-            this.detail = buildPiStatusDetail(this.props.pi, this.props.ctx, this.props.deps, this.props.sessionId);
-            this.props.tui.requestRender();
-         } catch {
-            // best effort; keep previous detail
-         }
+         this.refreshDetail("interval");
       }, REFRESH_INTERVAL_MS);
+      profileStatusDialog(
+         props.sessionId,
+         `status-dialog: component constructor done after ${(performance.now() - constructorStart).toFixed(0)}ms`,
+      );
    }
 
    handleInput(data: string): void {
       if (matchesKey(data, "escape") || matchesKey(data, "ctrl+c") || matchesKey(data, "return")) {
+         profileStatusDialog(this.props.sessionId, "status-dialog: close input received");
          this.close();
       }
    }
 
    private close(): void {
       if (this.closed) return;
+      const closeStart = performance.now();
       this.closed = true;
-      if (this.refreshTimer) {
-         clearInterval(this.refreshTimer);
-         this.refreshTimer = null;
-      }
+      this.clearTimers();
       this.props.done(undefined);
+      profileStatusDialog(
+         this.props.sessionId,
+         `status-dialog: close completed after ${(performance.now() - closeStart).toFixed(0)}ms`,
+      );
    }
 
    invalidate(): void {
@@ -174,12 +201,51 @@ class StatusDialogComponent implements Component {
    }
 
    render(width: number): string[] {
+      const renderStart = performance.now();
       const innerWidth = Math.max(20, width - 4);
       const inner = wrapStatusLines(renderInner(this.detail, this.props.theme, innerWidth), innerWidth);
-      return drawBorder(inner, width, this.props.theme);
+      const lines = drawBorder(inner, width, this.props.theme);
+      this.scheduleInitialRefresh();
+      profileStatusDialog(
+         this.props.sessionId,
+         `status-dialog: render(${width}) completed after ${(performance.now() - renderStart).toFixed(0)}ms (${lines.length} lines)`,
+      );
+      return lines;
    }
 
    dispose(): void {
+      this.clearTimers();
+   }
+
+   private scheduleInitialRefresh(): void {
+      if (this.closed || this.initialRefreshQueued) return;
+      this.initialRefreshQueued = true;
+      this.initialRefreshTimer = setTimeout(() => {
+         this.initialRefreshTimer = null;
+         this.refreshDetail("initial");
+      }, 0);
+   }
+
+   private refreshDetail(reason: "initial" | "interval"): void {
+      if (this.closed) return;
+      const refreshStart = performance.now();
+      try {
+         this.detail = buildPiStatusDetail(this.props.pi, this.props.ctx, this.props.deps, this.props.sessionId);
+         this.props.tui.requestRender();
+         profileStatusDialog(
+            this.props.sessionId,
+            `status-dialog: ${reason} refresh completed after ${(performance.now() - refreshStart).toFixed(0)}ms`,
+         );
+      } catch {
+         // best effort; keep previous detail
+      }
+   }
+
+   private clearTimers(): void {
+      if (this.initialRefreshTimer) {
+         clearTimeout(this.initialRefreshTimer);
+         this.initialRefreshTimer = null;
+      }
       if (this.refreshTimer) {
          clearInterval(this.refreshTimer);
          this.refreshTimer = null;
@@ -292,12 +358,94 @@ function drawBorder(inner: string[], width: number, theme: Theme): string[] {
    return out;
 }
 
+function buildCachedPiStatusDetail(
+   ctx: ExtensionCommandContext,
+   deps: StatusDialogDeps,
+   sessionId: string,
+): StatusDialogDetail {
+   const usage = ctx.getContextUsage?.();
+   const meta = getOrCreateSessionMeta(deps.db, sessionId);
+   const metaRow = readSessionMetaRow(deps.db, sessionId);
+   const inputTokens = typeof usage?.tokens === "number" ? usage.tokens : meta.lastInputTokens;
+   const usagePercentage = typeof usage?.percent === "number" ? usage.percent : meta.lastContextPercentage;
+   const contextLimit =
+      typeof usage?.contextWindow === "number" && usage.contextWindow > 0
+         ? usage.contextWindow
+         : usagePercentage > 0
+           ? Math.round(inputTokens / (usagePercentage / 100))
+           : 0;
+   const modelKey = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
+   const threshold = resolveExecuteThresholdDetail(deps.executeThresholdPercentage ?? 65, modelKey, 65, {
+      tokensConfig: deps.executeThresholdTokens,
+      contextLimit: contextLimit || undefined,
+      sessionId,
+   });
+   const cacheTtl = meta.cacheTtl || "5m";
+   const cacheTtlMs = parseTtlString(cacheTtl);
+   const elapsed = meta.lastResponseTime > 0 ? Date.now() - meta.lastResponseTime : 0;
+   const cacheRemainingMs = meta.lastResponseTime > 0 ? Math.max(0, cacheTtlMs - elapsed) : cacheTtlMs;
+   const cacheExpired = meta.lastResponseTime > 0 && cacheRemainingMs === 0;
+   const nudgeInterval = deps.nudgeIntervalTokens ?? 20_000;
+   const historyBudgetPercentage = deps.historyBudgetPercentage ?? 0.15;
+   const compressionBudget =
+      contextLimit > 0
+         ? Math.floor(contextLimit * (Math.min(threshold.percentage, 80) / 100) * historyBudgetPercentage)
+         : null;
+   const conversationTokens = Math.max(0, inputTokens - meta.systemPromptTokens - meta.toolCallTokens);
+
+   return {
+      sessionId,
+      usagePercentage,
+      inputTokens,
+      systemPromptTokens: meta.systemPromptTokens,
+      compartmentCount: 0,
+      factCount: 0,
+      memoryCount: 0,
+      memoryBlockCount: Number(metaRow?.memory_block_count ?? 0),
+      sessionNoteCount: 0,
+      readySmartNoteCount: 0,
+      pendingOpsCount: 0,
+      historianRunning: meta.compartmentInProgress,
+      historianFailureCount: Number(metaRow?.historian_failure_count ?? 0),
+      historianLastFailureAt:
+         typeof metaRow?.historian_last_failure_at === "number" ? metaRow.historian_last_failure_at : null,
+      historianLastError: metaRow?.historian_last_error ?? null,
+      cacheTtl,
+      lastResponseTime: meta.lastResponseTime,
+      cacheRemainingMs,
+      cacheExpired,
+      lastNudgeTokens: meta.lastNudgeTokens,
+      lastNudgeBand: meta.lastNudgeBand ?? "",
+      lastTransformError: meta.lastTransformError,
+      isSubagent: meta.isSubagent,
+      contextLimit,
+      executeThreshold: threshold.percentage,
+      protectedTagCount: deps.protectedTags ?? 20,
+      nudgeInterval,
+      nextNudgeAfter: meta.lastNudgeTokens + nudgeInterval,
+      historyBlockTokens: 0,
+      compressionBudget,
+      compressionUsage: null,
+      activeTags: 0,
+      droppedTags: 0,
+      totalTags: 0,
+      activeBytes: 0,
+      compartmentTokens: 0,
+      factTokens: 0,
+      memoryTokens: 0,
+      conversationTokens,
+      toolCallTokens: meta.toolCallTokens,
+      toolDefinitionTokens: 0,
+   };
+}
+
 export function buildPiStatusDetail(
    pi: ExtensionAPI,
    ctx: ExtensionCommandContext,
    deps: StatusDialogDeps,
    sessionId: string,
 ): StatusDialogDetail {
+   const perfStart = performance.now();
    const usage = ctx.getContextUsage?.();
    const meta = getOrCreateSessionMeta(deps.db, sessionId);
    const inputTokens = typeof usage?.tokens === "number" ? usage.tokens : meta.lastInputTokens;
@@ -330,11 +478,16 @@ export function buildPiStatusDetail(
    // ctx.getSystemPrompt() when available; fall back to the stored value
    // so the dialog still has a sensible number outside command context.
    let systemPromptTokens = meta.systemPromptTokens;
+   const perfSysPromptStart = performance.now();
    try {
       const sysPrompt = typeof ctx.getSystemPrompt === "function" ? ctx.getSystemPrompt() : undefined;
       if (typeof sysPrompt === "string" && sysPrompt.length > 0) {
          systemPromptTokens = estimateTokens(sysPrompt);
       }
+      profileStatusDialog(
+         sessionId,
+         `status-dialog: getSystemPrompt took ${(performance.now() - perfSysPromptStart).toFixed(0)}ms (${typeof sysPrompt === "string" ? sysPrompt.length : 0} chars, ${systemPromptTokens} tokens)`,
+      );
    } catch {
       // best effort; fall back to stored
    }
@@ -366,6 +519,7 @@ export function buildPiStatusDetail(
    // schema. This is a structural estimate (not the exact wire payload), but
    // matches Host's calibrated bucket within a reasonable margin.
    let toolDefinitionTokens = 0;
+   const perfToolsStart = performance.now();
    try {
       const tools = pi.getAllTools?.() ?? [];
       for (const tool of tools) {
@@ -373,6 +527,10 @@ export function buildPiStatusDetail(
             `${tool.name ?? ""}\n${tool.description ?? ""}\n${safeStringify(tool.parameters)}`,
          );
       }
+      profileStatusDialog(
+         sessionId,
+         `status-dialog: getAllTools took ${(performance.now() - perfToolsStart).toFixed(0)}ms (${tools.length} tools, ${toolDefinitionTokens} tokens)`,
+      );
    } catch {
       // best effort
    }
@@ -405,6 +563,11 @@ export function buildPiStatusDetail(
       contextLimit > 0
          ? Math.floor(contextLimit * (Math.min(threshold.percentage, 80) / 100) * historyBudgetPercentage)
          : null;
+
+   profileStatusDialog(
+      sessionId,
+      `status-dialog: buildPiStatusDetail total ${(performance.now() - perfStart).toFixed(0)}ms`,
+   );
 
    return {
       sessionId,

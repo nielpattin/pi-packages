@@ -10,8 +10,16 @@ import { getTagsBySession } from "#core/features/magic-context/storage-tags";
 import { executeStatus } from "#core/hooks/magic-context/execute-status";
 import { formatBytes } from "#core/hooks/magic-context/format-bytes";
 import { describeError } from "#core/shared/error-message";
+import { sessionLog } from "#core/shared/logger";
 import { showStatusDialog } from "../dialogs/status-dialog";
 import { resolveSessionId, sendCtxStatusMessage } from "./pi-command-utils";
+
+const CTX_STATUS_PROFILE = process.env.PI_MAGIC_CONTEXT_PROFILE_STATUS === "1";
+
+function profileCtxStatus(sessionId: string, message: string): void {
+   if (!CTX_STATUS_PROFILE) return;
+   sessionLog(sessionId, message);
+}
 
 export interface RegisterCtxStatusDeps {
    db: ContextDatabase;
@@ -75,8 +83,14 @@ export function registerCtxStatusCommand(pi: ExtensionAPI, deps: RegisterCtxStat
          }
 
          try {
+            const commandStart = performance.now();
+            profileCtxStatus(sessionId, `ctx-status: handler entered (hasUI=${ctx.hasUI ? "yes" : "no"})`);
             if (ctx.hasUI) {
                await showStatusDialog(pi, ctx, currentDeps);
+               profileCtxStatus(
+                  sessionId,
+                  `ctx-status: dialog completed after ${(performance.now() - commandStart).toFixed(0)}ms`,
+               );
                return;
             }
 
