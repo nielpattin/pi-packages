@@ -10,7 +10,6 @@ Packages publish raw TypeScript source. Pi loads `.ts` extension entrypoints thr
 
 | Package                                                 | Role                                                                              | Install                                     | npm                                                                   | Version |
 | ------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------- | ------- |
-| [pi-caveman](./packages/pi-caveman)                     | Terse communication modes and compact review, commit, and memory-writing skills.  | `pnpm add @nielpattin/pi-caveman`           | [npm](https://www.npmjs.com/package/@nielpattin/pi-caveman)           | 1.0.5   |
 | [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents. | `pnpm add @nielpattin/pi-permission-system` | [npm](https://www.npmjs.com/package/@nielpattin/pi-permission-system) | 0.1.0   |
 | [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.        | `pnpm add @nielpattin/pi-simplify`          | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify)          | 0.2.7   |
 | [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`           | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)           | 0.6.6   |
@@ -50,7 +49,6 @@ GitHub has no CI workflow for routine pushes. Run the local hooks before pushing
 Use package dry runs to verify npm tarball contents before publishing:
 
 ```bash
-pnpm --dir packages/pi-caveman pack --dry-run
 pnpm --dir packages/pi-simplify pack --dry-run
 pnpm --dir packages/pi-permission-system pack --dry-run
 pnpm --dir packages/pi-subagents pack --dry-run
@@ -117,7 +115,6 @@ pi-packages/
 ├── .nvmrc                        # Node 24
 ├── openspec/                     # change proposals and specs
 ├── packages/
-│   ├── pi-caveman                # independent npm package
 │   ├── pi-permission-system      # independent npm package
 │   ├── pi-simplify               # independent npm package
 │   ├── pi-station                # independent npm package

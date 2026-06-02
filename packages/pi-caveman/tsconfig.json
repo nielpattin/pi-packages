@@ -1,8 +1,0 @@
-{
-   "extends": "../../tsconfig.json",
-   "compilerOptions": {
-      "rootDir": "."
-   },
-   "include": ["index.ts", "extensions/caveman/**/*.ts"],
-   "exclude": ["node_modules"]
-}

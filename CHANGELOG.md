@@ -4,14 +4,6 @@ This file summarizes the latest package changelog entries. Package changelogs re
 
 <!-- package-changelog-summary -->
 
-### @nielpattin/pi-caveman
-
-## 1.0.5
-
-### Patch Changes
-
-- 7424211: Modernize release and publish metadata for the pnpm and Node 24 Changesets workflow.
-
 ### @nielpattin/pi-permission-system
 
 ## 0.1.0
