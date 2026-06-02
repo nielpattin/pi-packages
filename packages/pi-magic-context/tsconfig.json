@@ -1,0 +1,19 @@
+{
+   "compilerOptions": {
+      "target": "ESNext",
+      "module": "ESNext",
+      "moduleResolution": "bundler",
+      "noEmit": true,
+      "sourceMap": true,
+      "strict": true,
+      "esModuleInterop": true,
+      "skipLibCheck": true,
+      "forceConsistentCasingInFileNames": true,
+      "resolveJsonModule": true,
+      "isolatedModules": true,
+      "lib": ["ES2022"],
+      "types": ["node"]
+   },
+   "include": ["src/**/*.ts", "src/**/*.d.ts"],
+   "exclude": ["node_modules", "dist", "**/*.test.ts", "**/__tests__/**", "core/tui/**"]
+}
