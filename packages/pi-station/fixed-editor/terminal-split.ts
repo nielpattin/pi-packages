@@ -707,11 +707,12 @@ export class TerminalSplitCompositor {
 
       const rawRows = this.getRawRows();
       const renderWidth = Math.max(1, width);
+      const rootRenderWidth = this.scrollBar ? Math.max(1, width - 1) : renderWidth;
       const cluster = this.getCluster(renderWidth, rawRows);
       const scrollableRows = Math.max(1, rawRows - cluster.lines.length);
-      const overlayLines = this.renderRootOverlay?.(renderWidth, rawRows);
+      const overlayLines = this.renderRootOverlay?.(rootRenderWidth, rawRows);
       const useOverlay = Array.isArray(overlayLines);
-      const lines = useOverlay ? overlayLines : (this.originalRender?.(renderWidth) ?? []);
+      const lines = useOverlay ? overlayLines : (this.originalRender?.(rootRenderWidth) ?? []);
       if (useOverlay !== this.renderedRootOverlayActive) {
          this.scrollOffset = 0;
          this.lastRootLineCount = 0;
