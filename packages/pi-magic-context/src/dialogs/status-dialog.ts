@@ -1,5 +1,12 @@
 import type { ExtensionAPI, ExtensionCommandContext, Theme } from "@earendil-works/pi-coding-agent";
-import { type Component, matchesKey, type TUI, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import {
+   type Component,
+   matchesKey,
+   type TUI,
+   truncateToWidth,
+   visibleWidth,
+   wrapTextWithAnsi,
+} from "@earendil-works/pi-tui";
 import { getCompartments, getSessionFacts } from "#core/features/magic-context/compartment-storage";
 import { getMemoryCount } from "#core/features/magic-context/memory/storage-memory";
 import type { ContextDatabase } from "#core/features/magic-context/storage";
@@ -104,7 +111,7 @@ export async function showStatusDialog(
          }),
       {
          overlay: true,
-         overlayOptions: { anchor: "center", width: 78 },
+         overlayOptions: { anchor: "center", width: "88%", minWidth: 78, margin: 1 },
       },
    );
 }
@@ -167,12 +174,8 @@ class StatusDialogComponent implements Component {
    }
 
    render(width: number): string[] {
-      // drawBorder reserves 2 chars for left/right border + 1 char padding
-      // each side, leaving width-4 for inner content. Pass this through to
-      // renderInner so the segmented bar can fill the available row width
-      // instead of being capped at a hardcoded 56 chars.
       const innerWidth = Math.max(20, width - 4);
-      const inner = renderInner(this.detail, this.props.theme, innerWidth);
+      const inner = wrapStatusLines(renderInner(this.detail, this.props.theme, innerWidth), innerWidth);
       return drawBorder(inner, width, this.props.theme);
    }
 
@@ -259,13 +262,19 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
    return lines;
 }
 
+function wrapStatusLines(lines: string[], innerWidth: number): string[] {
+   return lines.flatMap((line) => {
+      if (line.length === 0) return [""];
+      return wrapTextWithAnsi(line, innerWidth);
+   });
+}
+
 /**
- * Wrap inner lines with a Unicode rounded-corner border. The border uses the
- * theme's borderMuted color so the overlay reads as a distinct surface.
+ * Wrap inner lines with a visible Unicode rounded-corner border.
  */
 function drawBorder(inner: string[], width: number, theme: Theme): string[] {
    const innerWidth = Math.max(20, width - 4); // 2 chars border + 1 padding each side
-   const border = (s: string) => theme.fg("borderMuted", s);
+   const border = (s: string) => theme.fg("accent", s);
 
    const top = border(`╭${"─".repeat(innerWidth + 2)}╮`);
    const bottom = border(`╰${"─".repeat(innerWidth + 2)}╯`);
@@ -274,7 +283,7 @@ function drawBorder(inner: string[], width: number, theme: Theme): string[] {
    const out: string[] = [];
    out.push(top);
    for (const raw of inner) {
-      const line = truncateToWidth(raw, innerWidth, "…");
+      const line = truncateToWidth(raw, innerWidth, "");
       const visible = visibleWidth(line);
       const pad = " ".repeat(Math.max(0, innerWidth - visible));
       out.push(`${side} ${line}${pad} ${side}`);
