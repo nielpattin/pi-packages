@@ -148,3 +148,5 @@ vite.config.ts.timestamp-*
 .oxlint_cache/
 
 docs/
+!packages/pi-magic-context/docs/
+!packages/pi-magic-context/docs/**

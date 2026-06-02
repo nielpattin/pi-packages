@@ -10,8 +10,13 @@ This is a flattened package. The Pi adapter lives in `src/`; the shared runtime 
 src/      Pi extension entry, commands, tools, context handler, subagent runner
 core/     Shared Magic Context runtime used by the Pi adapter
 assets/   Local JSON schema copy
+docs/     Package documentation split by topic
 scripts/  Local doctor and smoke checks
 ```
+
+## Docs
+
+See [`docs/`](./docs/) for architecture, configuration, commands, tools, status overlay, storage, runtime pipeline, and operations references.
 
 ## Pi registration
 
