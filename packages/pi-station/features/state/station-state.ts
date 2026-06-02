@@ -1,7 +1,7 @@
 import type { ReadonlyFooterDataProvider } from "@earendil-works/pi-coding-agent";
 import type { TerminalSplitCompositor } from "../fixed-editor/terminal-split.ts";
 import { readPersistedStashHistory } from "../stash/index.ts";
-import type { StationConfig } from "../station-config.ts";
+import type { StationConfig } from "../../station-config.ts";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Types

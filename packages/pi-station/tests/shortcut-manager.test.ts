@@ -1,7 +1,7 @@
 import { test } from "vitest";
 
 import assert from "node:assert/strict";
-import { DEFAULT_STATION_SHORTCUTS, resolveStationShortcuts } from "../shortcut-manager/index.ts";
+import { DEFAULT_STATION_SHORTCUTS, resolveStationShortcuts } from "../features/shortcut-manager/index.ts";
 
 test("resolveStationShortcuts uses defaults when no overrides exist", () => {
    assert.deepEqual(resolveStationShortcuts(undefined), DEFAULT_STATION_SHORTCUTS);

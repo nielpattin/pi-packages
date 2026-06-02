@@ -1,13 +1,13 @@
 import { visibleWidth } from "@earendil-works/pi-tui";
 import type { ColorValue, CustomItemPosition, CustomStatusItem, PresetDef, StatusLineSegmentId } from "./types.ts";
-import { DEFAULT_STATION_SHORTCUTS, resolveStationShortcuts } from "./shortcut-manager/index.ts";
-import type { StationShortcuts } from "./shortcut-manager/index.ts";
+import { DEFAULT_STATION_SHORTCUTS, resolveStationShortcuts } from "./features/shortcut-manager/index.ts";
+import type { StationShortcuts } from "./features/shortcut-manager/index.ts";
 
 export interface StationConfig {
    customItems: CustomStatusItem[];
    scrollBar: boolean;
    fixedEditor: boolean;
-   readStyle: boolean;
+   hashline: boolean;
    shortcuts: StationShortcuts;
 }
 
@@ -103,7 +103,7 @@ export function parseStationConfig(value: unknown): StationConfig {
       customItems: [],
       fixedEditor: true,
       scrollBar: true,
-      readStyle: true,
+      hashline: true,
       shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
    };
 
@@ -115,7 +115,7 @@ export function parseStationConfig(value: unknown): StationConfig {
       customItems: normalizeCustomItems(value.customItems),
       fixedEditor: value.fixedEditor !== false,
       scrollBar: value.scrollBar !== false,
-      readStyle: value.readStyle !== false,
+      hashline: value.hashline !== false,
       shortcuts: resolveStationShortcuts(value.shortcuts),
    };
 }

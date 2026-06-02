@@ -7,9 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Added Hashline read and edit tools with pi-station read row rendering.
+
 ### Fixed
 
-- Added compact read tool rows with width-aware path truncation.
 - Chat scrollbar now has 1 column of padding between content and scrollbar indicator.
 
 ## 0.6.6

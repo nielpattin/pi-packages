@@ -26,6 +26,7 @@
       "@earendil-works/pi-tui": "^0.78.0",
       "@sinclair/typebox": "^0.34.49",
       "@types/node": "^25.7.0",
+      "@types/xxhashjs": "^0.2.4",
       "@vitest/coverage-v8": "^4.1.6",
       "husky": "^9.1.7",
       "lint-staged": "^17.0.5",

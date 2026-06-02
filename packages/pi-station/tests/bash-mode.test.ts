@@ -13,17 +13,17 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { appendProjectHistory, matchHistoryEntries, readGlobalShellHistory } from "../bash-mode/history.ts";
-import { BashTranscriptStore } from "../bash-mode/transcript.ts";
+import { appendProjectHistory, matchHistoryEntries, readGlobalShellHistory } from "../features/bash-mode/history.ts";
+import { BashTranscriptStore } from "../features/bash-mode/transcript.ts";
 import {
    BashAutocompleteProvider,
    BashCompletionEngine,
    ModeAwareAutocompleteProvider,
    OneOffBashAutocompleteProvider,
    getOneOffBashCommandContext,
-} from "../bash-mode/completion.ts";
+} from "../features/bash-mode/completion.ts";
 import { getIcons } from "../icons.ts";
-import { ManagedShellSession } from "../bash-mode/shell-session.ts";
+import { ManagedShellSession } from "../features/bash-mode/shell-session.ts";
 
 function getMethod(target: object, name: string): Function {
    const method = Reflect.get(target, name);
@@ -470,7 +470,7 @@ test("bash editor Tab accepts the current ghost suggestion without opening autoc
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let accepted = false;
 
       getMethod(BashModeEditor.prototype, "handleInput").call(
@@ -514,7 +514,7 @@ test("bash editor does not submit pasted multiline input while bracketed paste i
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { CustomEditor } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
 
@@ -579,7 +579,7 @@ test("bash editor refreshes shell ghost state after a bracketed paste completes"
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { CustomEditor } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
 
@@ -654,7 +654,7 @@ test("bash editor inserts Finder file drops as path strings", async () => {
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { KeybindingsManager } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
       const keybindings = KeybindingsManager.create();
@@ -773,7 +773,7 @@ test("bash editor refreshGhostSuggestion reuses the ghost scheduling path", asyn
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let scheduled = false;
 
       getMethod(BashModeEditor.prototype, "refreshGhostSuggestion").call({
@@ -792,7 +792,7 @@ test("bash editor dismiss clears autocomplete when mode turns off", async () => 
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let aborted = false;
       let cancelled = false;
       let rendered = false;
@@ -844,7 +844,7 @@ test("bash editor shell history state does not clobber the base prompt history i
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const fakeEditor = {
          clearGhostSuggestion() {},
          getExpandedText() {
@@ -877,7 +877,7 @@ test("bash editor escape exits bash mode", async () => {
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let exited = false;
       let interrupted = false;
 
@@ -918,7 +918,7 @@ test("bash editor right arrow accepts an empty-prompt ghost suggestion without s
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let accepted = false;
       let submitted = false;
 
@@ -966,7 +966,7 @@ test("bash editor right arrow accepts ghost text for one-off bang commands", asy
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let accepted = false;
 
       getMethod(BashModeEditor.prototype, "handleInput").call(
@@ -1008,7 +1008,7 @@ test("bash editor runs copied Pi app action handlers for alt-enter", async () =>
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { KeybindingsManager } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
       const { setKittyProtocolActive } = await import("../../../node_modules/@earendil-works/pi-tui/dist/keys.js");
@@ -1050,7 +1050,7 @@ test("bash editor command-z undoes deleted text for supported encodings only", a
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { KeybindingsManager } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
       const keybindings = KeybindingsManager.create();
@@ -1158,7 +1158,7 @@ test("bash editor command-z resets shell history and updates ghost state", async
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { KeybindingsManager } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
       const keybindings = KeybindingsManager.create();
@@ -1221,7 +1221,7 @@ test("bash editor command arrows jump to editor boundaries", async () => {
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { KeybindingsManager } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
       const keybindings = KeybindingsManager.create();
@@ -1264,7 +1264,7 @@ test("bash editor enter does not accept ghost text while a shell command is runn
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let warned = false;
       let submitted = false;
 
@@ -1317,7 +1317,7 @@ test("bash editor enter submits the typed command without accepting ghost text",
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let submittedCommand = "";
 
       getMethod(BashModeEditor.prototype, "handleInput").call(
@@ -1364,7 +1364,7 @@ test("one-off bang submit does not accept ghost text before submitting", async (
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const { CustomEditor } =
          await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
 
@@ -1432,7 +1432,7 @@ test("bash editor does not accept a hidden ghost suggestion when the cursor is n
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       const accepted = getMethod(BashModeEditor.prototype, "acceptGhostSuggestion").call({
          clearGhostSuggestion() {},
          getCursor() {
@@ -1457,7 +1457,7 @@ test("bash editor submit clears the prompt and refreshes the empty ghost suggest
    const links = ensureEditorModuleLinks();
 
    try {
-      const { BashModeEditor } = await import("../bash-mode/editor.ts");
+      const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
       let submitted = false;
       let cleared = false;
       let refreshed = false;

@@ -2,7 +2,7 @@ import { vi, test } from "vitest";
 
 import assert from "node:assert/strict";
 import { Text, TUI, visibleWidth } from "@earendil-works/pi-tui";
-import { CURSOR_MARKER, renderFixedEditorCluster } from "../fixed-editor/cluster.ts";
+import { CURSOR_MARKER, renderFixedEditorCluster } from "../features/fixed-editor/cluster.ts";
 import {
    TerminalSplitCompositor,
    beginSynchronizedOutput,
@@ -12,7 +12,7 @@ import {
    moveCursor,
    resetScrollRegion,
    setScrollRegion,
-} from "../fixed-editor/terminal-split.ts";
+} from "../features/fixed-editor/terminal-split.ts";
 
 class FakeTerminal {
    columns = 40;

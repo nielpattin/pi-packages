@@ -1,29 +1,19 @@
-import { copyToClipboard, createReadTool } from "@earendil-works/pi-coding-agent";
+import { copyToClipboard } from "@earendil-works/pi-coding-agent";
 import type { ExtensionAPI, ReadonlyFooterDataProvider, Theme } from "@earendil-works/pi-coding-agent";
 import type { AssistantMessage } from "@earendil-works/pi-ai";
-import {
-   SelectList,
-   SettingsList,
-   Text,
-   getCapabilities,
-   hyperlink,
-   truncateToWidth,
-   visibleWidth,
-} from "@earendil-works/pi-tui";
-import type { AutocompleteProvider, Component, SelectItem } from "@earendil-works/pi-tui";
+import { SelectList, SettingsList, truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import type { AutocompleteProvider, SelectItem } from "@earendil-works/pi-tui";
 import { existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
-import { dirname, isAbsolute, join, resolve } from "node:path";
-import { StationBarState } from "./state/index.ts";
+import { dirname, join } from "node:path";
+import { StationBarState } from "./features/state/index.ts";
 import {
    STASH_PREVIEW_WIDTH,
    buildStashPreview,
    persistStashHistory,
    pushStashHistory,
    readPersistedStashHistory,
-} from "./stash/index.ts";
+} from "./features/stash/index.ts";
 import { homedir } from "node:os";
-import { pathToFileURL } from "node:url";
-
 import type { ColorScheme, SegmentContext } from "./types.ts";
 import type { StationConfig } from "./station-config.ts";
 import {
@@ -31,25 +21,26 @@ import {
    ModeAwareAutocompleteProvider,
    OneOffBashAutocompleteProvider,
    getOneOffBashCommandContext,
-} from "./bash-mode/completion.ts";
-import { BashModeEditor } from "./bash-mode/editor.ts";
-import { BashModeIntegration } from "./bash-integration/index.ts";
-import type { BashModeSettings } from "./bash-mode/types.ts";
+} from "./features/bash-mode/completion.ts";
+import { BashModeEditor } from "./features/bash-mode/editor.ts";
+import { registerHashline } from "./features/hashline/register.ts";
+import { BashModeIntegration } from "./features/bash-integration/index.ts";
+import type { BashModeSettings } from "./features/bash-mode/types.ts";
 import { DEFAULT_LAYOUT } from "./default-layout.ts";
 import {
    collectHiddenExtensionStatusKeys,
    getNotificationExtensionStatuses,
    parseStationConfig,
 } from "./station-config.ts";
-import { computeResponsiveLayout } from "./layout/index.ts";
+import { computeResponsiveLayout } from "./features/layout/index.ts";
 import { getGitStatus, invalidateGitBranch, invalidateGitStatus } from "./git-status.ts";
 import { ansi, getFgAnsiCode } from "./colors.ts";
 import { createRenderScheduler } from "./render-scheduler.ts";
 import { readCoreContextUsage } from "./context-usage.ts";
-import { renderFixedEditorCluster } from "./fixed-editor/cluster.ts";
-import { TerminalSplitCompositor, emergencyTerminalModeReset } from "./fixed-editor/terminal-split.ts";
+import { renderFixedEditorCluster } from "./features/fixed-editor/cluster.ts";
+import { TerminalSplitCompositor, emergencyTerminalModeReset } from "./features/fixed-editor/terminal-split.ts";
 import { getDefaultColors } from "./theme.ts";
-import { DEFAULT_STATION_SHORTCUTS } from "./shortcut-manager/index.ts";
+import { DEFAULT_STATION_SHORTCUTS } from "./features/shortcut-manager/index.ts";
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Configuration
@@ -59,7 +50,7 @@ let config: StationConfig = {
    customItems: [],
    fixedEditor: true,
    scrollBar: true,
-   readStyle: true,
+   hashline: true,
    shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
 };
 
@@ -481,111 +472,6 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
    };
 }
 
-const READ_PATH_DISPLAY_WIDTH = 96;
-
-function shortenPath(path: string): string {
-   const home = homedir();
-   if (path.startsWith(home)) {
-      return `~${path.slice(home.length)}`;
-   }
-   return path;
-}
-
-function middleTruncatePath(path: string, maxWidth = READ_PATH_DISPLAY_WIDTH): string {
-   if (visibleWidth(path) <= maxWidth) {
-      return path;
-   }
-
-   const tailWidth = Math.max(16, Math.floor(maxWidth * 0.6));
-   const headWidth = Math.max(8, maxWidth - tailWidth - 1);
-   const head = truncateToWidth(path, headWidth, "", true);
-   const tailSource = path.slice(-tailWidth * 2);
-   const tail = truncateToWidth(
-      tailSource.slice(Math.max(0, visibleWidth(tailSource) - tailWidth)),
-      tailWidth,
-      "",
-      true,
-   );
-   return `${head}…${tail}`;
-}
-
-function getReadPathArg(args: unknown): string {
-   if (!isRecord(args)) {
-      return "";
-   }
-   const path = args.file_path ?? args.path;
-   return typeof path === "string" ? path : "";
-}
-
-function renderReadPath(rawPath: string, theme: Theme, cwd: string, maxWidth = READ_PATH_DISPLAY_WIDTH): string {
-   if (!rawPath) {
-      return theme.fg("toolOutput", "...");
-   }
-
-   const displayPath = middleTruncatePath(shortenPath(rawPath), maxWidth);
-   const styledPath = theme.fg("accent", displayPath);
-   if (!getCapabilities().hyperlinks) {
-      return styledPath;
-   }
-
-   const absolutePath = isAbsolute(rawPath) ? rawPath : resolve(cwd, rawPath);
-   return hyperlink(styledPath, pathToFileURL(absolutePath).href);
-}
-
-class ReadCallRow implements Component {
-   constructor(
-      private readonly args: unknown,
-      private readonly theme: Theme,
-      private readonly cwd: string,
-   ) {}
-
-   render(width: number): string[] {
-      const prefix = `${this.theme.fg("accent", "→")} ${this.theme.fg("toolTitle", this.theme.bold("Read"))} `;
-      const lineInfo = formatReadLineRange(this.args, this.theme);
-      const pathWidth = Math.max(8, width - visibleWidth(prefix) - visibleWidth(lineInfo));
-      const pathDisplay = renderReadPath(getReadPathArg(this.args), this.theme, this.cwd, pathWidth);
-      return [`${prefix}${pathDisplay}${lineInfo}`];
-   }
-
-   invalidate(): void {}
-}
-
-function formatReadLineRange(args: unknown, theme: Theme): string {
-   if (!isRecord(args)) {
-      return "";
-   }
-   if (typeof args.offset !== "number" && typeof args.limit !== "number") {
-      return "";
-   }
-
-   const startLine = typeof args.offset === "number" ? args.offset : 1;
-   const endLine = typeof args.limit === "number" ? startLine + args.limit - 1 : "";
-   return theme.fg("warning", `:${startLine}${endLine ? `-${endLine}` : ""}`);
-}
-
-function registerReadTool(pi: ExtensionAPI) {
-   pi.registerTool({
-      name: "read",
-      label: "read",
-      description: "Read the contents of a file. Supports text files and images (jpg, png, gif, webp).",
-      parameters: createReadTool(process.cwd()).parameters,
-      renderShell: "self",
-
-      async execute(toolCallId, params, signal, onUpdate, ctx) {
-         const original = createReadTool(ctx.cwd);
-         return original.execute(toolCallId, params, signal, onUpdate);
-      },
-
-      renderCall(args, theme, context) {
-         return new ReadCallRow(args, theme, context.cwd);
-      },
-
-      renderResult(_result, _options, _theme, _context) {
-         return new Text("", 0, 0);
-      },
-   });
-}
-
 // ═══════════════════════════════════════════════════════════════════════════
 // Extension
 // ═══════════════════════════════════════════════════════════════════════════
@@ -595,8 +481,8 @@ export default function stationBar(pi: ExtensionAPI) {
    config = parseStationConfig(startupSettings["station"]);
    let bashModeSettings = parseBashModeSettings(startupSettings);
 
-   if (config.readStyle) {
-      registerReadTool(pi);
+   if (config.hashline) {
+      registerHashline(pi);
    }
 
    const state = new StationBarState(config);
@@ -1197,7 +1083,7 @@ export default function stationBar(pi: ExtensionAPI) {
 
          let needsCustomEditorRefresh = false;
          let needsScrollBarRefresh = false;
-         let needsReadStyleRefresh = false;
+         let needsHashlineRefresh = false;
          const valueFor = (value: boolean): string => (value ? "ON" : "OFF");
 
          await ctx.ui.custom<void>(
@@ -1219,10 +1105,10 @@ export default function stationBar(pi: ExtensionAPI) {
                         values: ["ON", "OFF"],
                      },
                      {
-                        currentValue: valueFor(config.readStyle),
-                        description: "Opencode-style read rows. Reload OFF for full Pi default shell.",
-                        id: "readStyle",
-                        label: "Read Style",
+                        currentValue: valueFor(config.hashline),
+                        description: "Hash-anchored read and edit tools. Reload required.",
+                        id: "hashline",
+                        label: "Hashline",
                         values: ["ON", "OFF"],
                      },
                   ],
@@ -1251,16 +1137,16 @@ export default function stationBar(pi: ExtensionAPI) {
                               : { scrollBar: config.scrollBar },
                         );
                         needsScrollBarRefresh = true;
-                     } else if (id === "readStyle") {
-                        config.readStyle = newValue === "ON";
+                     } else if (id === "hashline") {
+                        config.hashline = newValue === "ON";
                         const saved = writeGlobalStationSetting((existing) =>
                            isRecord(existing)
-                              ? { ...existing, readStyle: config.readStyle }
-                              : { readStyle: config.readStyle },
+                              ? { ...existing, hashline: config.hashline }
+                              : { hashline: config.hashline },
                         );
-                        needsReadStyleRefresh = saved;
+                        needsHashlineRefresh = saved;
                         if (!saved) {
-                           ctx.ui.notify("Failed to save Read Style setting", "error");
+                           ctx.ui.notify("Failed to save Hashline setting", "error");
                         }
                      }
                   },
@@ -1299,8 +1185,8 @@ export default function stationBar(pi: ExtensionAPI) {
          } else if (needsScrollBarRefresh && enabled && config.fixedEditor) {
             fixedEditorCompositor?.setScrollBar(config.scrollBar);
          }
-         if (needsReadStyleRefresh && enabled) {
-            ctx.ui.notify(`Read style saved: ${config.readStyle ? "ON" : "OFF"}. Run /reload to apply.`, "info");
+         if (needsHashlineRefresh && enabled) {
+            ctx.ui.notify(`Hashline saved: ${config.hashline ? "ON" : "OFF"}. Run /reload to apply.`, "info");
          }
       },
    });

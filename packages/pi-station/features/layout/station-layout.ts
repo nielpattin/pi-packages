@@ -3,13 +3,13 @@
 // No extension state or TUI dependencies.
 
 import { visibleWidth } from "@earendil-works/pi-tui";
-import type { CustomStatusItem, SegmentContext, StatusLineSegmentId } from "../types.ts";
-import { renderSegment } from "../segments.ts";
-import { getSeparator } from "../separators.ts";
-import { DEFAULT_LAYOUT } from "../default-layout.ts";
-import { getFgAnsiCode } from "../colors.ts";
-import { ansi } from "../colors.ts";
-import { mergeSegmentsWithCustomItems } from "../station-config.ts";
+import type { CustomStatusItem, SegmentContext, StatusLineSegmentId } from "../../types.ts";
+import { renderSegment } from "../../segments.ts";
+import { getSeparator } from "../../separators.ts";
+import { DEFAULT_LAYOUT } from "../../default-layout.ts";
+import { getFgAnsiCode } from "../../colors.ts";
+import { ansi } from "../../colors.ts";
+import { mergeSegmentsWithCustomItems } from "../../station-config.ts";
 
 export interface LayoutResult {
    topContent: string;
