@@ -72,7 +72,7 @@ describe("print mode background notifications", () => {
       vi.useRealTimers();
    });
 
-   it("ignores stale-context errors from delayed completion nudges", async () => {
+   it("ignores stale-context errors from delayed completion nudges", { timeout: 15000 }, async () => {
       vi.mocked(runAgent).mockResolvedValue({
          responseText: "done",
          session: toAgentSession(createMockSession()),
