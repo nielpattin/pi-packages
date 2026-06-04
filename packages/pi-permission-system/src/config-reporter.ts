@@ -26,6 +26,6 @@ export function buildResolvedConfigLogEntry(options: BuildResolvedConfigLogEntry
       ...options.policyPaths,
       legacyGlobalPolicyDetected: options.legacyGlobalPolicyDetected ?? false,
       legacyProjectPolicyDetected: options.legacyProjectPolicyDetected ?? false,
-      legacyExtensionConfigDetected: options.legacyExtensionConfigDetected ?? false
+      legacyExtensionConfigDetected: options.legacyExtensionConfigDetected ?? false,
    };
 }

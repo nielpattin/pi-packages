@@ -43,7 +43,7 @@ import { resolveProjectIdentity } from "#core/features/magic-context/memory/proj
 import {
    isEmptySidekickResult,
    SIDEKICK_SYSTEM_PROMPT,
-   stripThinkingBlocks
+   stripThinkingBlocks,
 } from "#core/features/magic-context/sidekick/core";
 import { log, sessionLog } from "#core/shared/logger";
 import { PiSubagentRunner } from "../subagent-runner";
@@ -94,7 +94,7 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
          if (!config) {
             ctx.ui.notify(
                "/ctx-aug: Sidekick is not configured. Add `sidekick.model` to your magic-context.jsonc to enable this command.",
-               "warning"
+               "warning",
             );
             return;
          }
@@ -102,7 +102,7 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
          if (prompt.length === 0) {
             ctx.ui.notify(
                "/ctx-aug: Usage `/ctx-aug <your prompt>` — provide a prompt to augment with project memory context.",
-               "info"
+               "info",
             );
             return;
          }
@@ -115,7 +115,7 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
          }
 
          sessionLog(sessionLabel, "/ctx-aug: spawning sidekick", {
-            model: config.model
+            model: config.model,
          });
 
          // Spawn sidekick as a Pi subprocess. The subagent inherits the
@@ -138,7 +138,7 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
             signal: ctx.signal,
             thinkingLevel: config.thinking_level,
             accountingSessionId: sessionLabel,
-            accountingSubagent: "sidekick"
+            accountingSubagent: "sidekick",
          });
 
          if (!result.ok) {
@@ -151,7 +151,7 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
             if (ctx.hasUI) {
                ctx.ui.notify(
                   `/ctx-aug: sidekick failed (${result.reason}). Sending prompt without augmentation.`,
-                  "warning"
+                  "warning",
                );
             }
             pi.sendUserMessage(prompt);
@@ -172,6 +172,6 @@ export function registerCtxAugCommand(pi: ExtensionAPI, config: PiSidekickConfig
 
          const augmentedPrompt = `${prompt}\n\n<sidekick-augmentation>\n${sidekickText}\n</sidekick-augmentation>`;
          pi.sendUserMessage(augmentedPrompt);
-      }
+      },
    });
 }

@@ -108,7 +108,7 @@ Check verifiable memories against actual repository state. Update stale wording,
 
 export function buildArchiveStalePrompt(
    projectPath: string,
-   userMemories?: Array<{ id: number; content: string }>
+   userMemories?: Array<{ id: number; content: string }>,
 ): string {
    const userProfileBlock =
       userMemories && userMemories.length > 0
@@ -236,7 +236,7 @@ Content: We changed the execute threshold to be configurable in the session wher
 export function buildMaintainDocsPrompt(
    projectPath: string,
    lastDreamAt: string | null,
-   existingDocs: { architecture: boolean; structure: boolean }
+   existingDocs: { architecture: boolean; structure: boolean },
 ): string {
    const hasAny = existingDocs.architecture || existingDocs.structure;
    const gitSinceClause = lastDreamAt
@@ -397,7 +397,7 @@ export function buildDreamTaskPrompt(
       lastDreamAt?: string | null;
       existingDocs?: { architecture: boolean; structure: boolean };
       userMemories?: Array<{ id: number; content: string }>;
-   }
+   },
 ): string {
    switch (task) {
       case "consolidate":
@@ -412,7 +412,7 @@ export function buildDreamTaskPrompt(
          return buildMaintainDocsPrompt(
             args.projectPath,
             args.lastDreamAt ?? null,
-            args.existingDocs ?? { architecture: false, structure: false }
+            args.existingDocs ?? { architecture: false, structure: false },
          );
    }
 }

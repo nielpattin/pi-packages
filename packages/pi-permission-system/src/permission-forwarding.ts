@@ -19,7 +19,7 @@ export const SUBAGENT_ENV_HINT_KEYS = [
    "PI_SUBAGENT_NAME",
    "PI_SUBAGENT_ID",
    "PI_SUBAGENT_SESSION",
-   "PI_SUBAGENT_ACTIVITY_FILE"
+   "PI_SUBAGENT_ACTIVITY_FILE",
 ] as const;
 /** Ordered list of env var names to check for the parent session ID. First match wins. */
 export const SUBAGENT_PARENT_SESSION_ENV_CANDIDATES: readonly string[] = [
@@ -27,7 +27,7 @@ export const SUBAGENT_PARENT_SESSION_ENV_CANDIDATES: readonly string[] = [
    "PI_AGENT_ROUTER_PARENT_SESSION_ID",
    // Shared convention for CLI-based subagent extensions
    // (nicobailon/pi-subagents, HazAT/pi-interactive-subagents, etc.)
-   "PI_SUBAGENT_PARENT_SESSION"
+   "PI_SUBAGENT_PARENT_SESSION",
 ] as const;
 
 /** @deprecated Use SUBAGENT_PARENT_SESSION_ENV_CANDIDATES */
@@ -81,7 +81,7 @@ function encodeSessionIdForPath(sessionId: string): string {
 
 export function createPermissionForwardingLocation(
    forwardingRootDir: string,
-   sessionId: string
+   sessionId: string,
 ): PermissionForwardingLocation {
    const normalizedSessionId = normalizePermissionForwardingSessionId(sessionId);
    if (!normalizedSessionId) {
@@ -91,7 +91,7 @@ export function createPermissionForwardingLocation(
    const sessionRootDir = join(
       forwardingRootDir,
       SESSION_FORWARDING_ROOT_DIRECTORY_NAME,
-      encodeSessionIdForPath(normalizedSessionId)
+      encodeSessionIdForPath(normalizedSessionId),
    );
 
    return {
@@ -99,7 +99,7 @@ export function createPermissionForwardingLocation(
       sessionRootDir,
       requestsDir: join(sessionRootDir, SESSION_FORWARDING_REQUESTS_DIRECTORY_NAME),
       responsesDir: join(sessionRootDir, SESSION_FORWARDING_RESPONSES_DIRECTORY_NAME),
-      label: "primary"
+      label: "primary",
    };
 }
 
@@ -139,7 +139,7 @@ export function resolvePermissionForwardingTargetSessionId(options: {
 
 export function isForwardedPermissionRequestForSession(
    request: Pick<ForwardedPermissionRequest, "targetSessionId">,
-   sessionId: string | null | undefined
+   sessionId: string | null | undefined,
 ): boolean {
    const normalizedRequestSessionId = normalizePermissionForwardingSessionId(request.targetSessionId);
    const normalizedSessionId = normalizePermissionForwardingSessionId(sessionId);

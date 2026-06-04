@@ -1,5 +1,6 @@
 import { log } from "../../shared/logger";
 import type { Database } from "../../shared/sqlite";
+import { healAllNullColumns } from "./storage-db";
 
 /**
  * Versioned migration framework for magic-context's SQLite database.
@@ -85,7 +86,7 @@ const MIGRATIONS: Migration[] = [
                db.exec("DROP TABLE session_notes");
             } else {
                throw new Error(
-                  `session_notes migration verification failed: expected ${sourceCount} rows, got ${migratedCount}`
+                  `session_notes migration verification failed: expected ${sourceCount} rows, got ${migratedCount}`,
                );
             }
          }
@@ -100,11 +101,11 @@ const MIGRATIONS: Migration[] = [
                db.exec("DROP TABLE smart_notes");
             } else {
                throw new Error(
-                  `smart_notes migration verification failed: expected ${sourceCount} rows, got ${migratedCount}`
+                  `smart_notes migration verification failed: expected ${sourceCount} rows, got ${migratedCount}`,
                );
             }
          }
-      }
+      },
    },
    {
       version: 2,
@@ -125,7 +126,7 @@ const MIGRATIONS: Migration[] = [
 				CREATE INDEX IF NOT EXISTS idx_plugin_messages_created
 					ON plugin_messages(created_at);
 			`);
-      }
+      },
    },
    {
       version: 3,
@@ -153,7 +154,7 @@ const MIGRATIONS: Migration[] = [
                 );
                 CREATE INDEX IF NOT EXISTS idx_um_status ON user_memories(status);
             `);
-      }
+      },
    },
    {
       version: 4,
@@ -212,7 +213,7 @@ const MIGRATIONS: Migration[] = [
                     VALUES (NEW.sha, NEW.project_path, NEW.message);
                 END;
             `);
-      }
+      },
    },
    {
       version: 5,
@@ -235,7 +236,7 @@ const MIGRATIONS: Migration[] = [
       // legacy NULL data.
       up: (db: Database) => {
          healAllNullColumns(db);
-      }
+      },
    },
    {
       version: 6,
@@ -277,9 +278,9 @@ const MIGRATIONS: Migration[] = [
                      FROM tags
                      WHERE tags.session_id = session_meta.session_id
                        AND tags.tag_number > session_meta.counter
-                 )`
+                 )`,
          ).run();
-      }
+      },
    },
    {
       version: 7,
@@ -300,7 +301,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "harness")) {
             db.exec("ALTER TABLE notes ADD COLUMN harness TEXT NOT NULL DEFAULT 'host'");
          }
-      }
+      },
    },
    {
       version: 8,
@@ -334,7 +335,7 @@ const MIGRATIONS: Migration[] = [
                 WHERE status = 'dropped';
             `);
          db.exec("ANALYZE tags;");
-      }
+      },
    },
    {
       version: 9,
@@ -364,7 +365,7 @@ const MIGRATIONS: Migration[] = [
                     PRIMARY KEY (provider_id, model_id, agent_name, tool_id)
                 );
             `);
-      }
+      },
    },
    {
       version: 10,
@@ -408,7 +409,7 @@ const MIGRATIONS: Migration[] = [
                 ON tags(session_id, message_id)
                 WHERE type = 'tool' AND tool_owner_message_id IS NULL;
             `);
-      }
+      },
    },
    {
       version: 11,
@@ -446,7 +447,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "todo_synthetic_state_json")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN todo_synthetic_state_json TEXT DEFAULT ''");
          }
-      }
+      },
    },
    {
       version: 12,
@@ -459,7 +460,7 @@ const MIGRATIONS: Migration[] = [
             ? db
                  .prepare(
                     `DELETE FROM memory_embeddings
-                           WHERE memory_id NOT IN (SELECT id FROM memories)`
+                           WHERE memory_id NOT IN (SELECT id FROM memories)`,
                  )
                  .run().changes
             : 0;
@@ -469,12 +470,12 @@ const MIGRATIONS: Migration[] = [
             ? db
                  .prepare(
                     `DELETE FROM git_commit_embeddings
-                           WHERE sha NOT IN (SELECT sha FROM git_commits)`
+                           WHERE sha NOT IN (SELECT sha FROM git_commits)`,
                  )
                  .run().changes
             : 0;
          log(`[migrations] v12 cleaned ${gitCommitEmbeddings} orphan git_commit_embeddings row(s)`);
-      }
+      },
    },
    {
       version: 13,
@@ -492,7 +493,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "pending_compaction_marker_state")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN pending_compaction_marker_state TEXT");
          }
-      }
+      },
    },
    {
       version: 14,
@@ -522,7 +523,7 @@ const MIGRATIONS: Migration[] = [
                     version      INTEGER NOT NULL DEFAULT 0
                 );
             `);
-      }
+      },
    },
    {
       version: 15,
@@ -539,7 +540,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "deferred_execute_state")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN deferred_execute_state TEXT");
          }
-      }
+      },
    },
    {
       version: 16,
@@ -554,7 +555,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "cache_alert_sent")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN cache_alert_sent INTEGER NOT NULL DEFAULT 0");
          }
-      }
+      },
    },
    {
       version: 17,
@@ -594,7 +595,7 @@ const MIGRATIONS: Migration[] = [
                 UPDATE session_meta SET auto_search_hint_decisions = '[]'
                 WHERE auto_search_hint_decisions IS NULL
             `);
-      }
+      },
    },
    {
       version: 18,
@@ -610,7 +611,7 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "pending_pi_compaction_marker_state")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN pending_pi_compaction_marker_state TEXT");
          }
-      }
+      },
    },
    {
       version: 19,
@@ -626,7 +627,7 @@ const MIGRATIONS: Migration[] = [
                 CREATE INDEX IF NOT EXISTS idx_compartment_state_lease_expires
                     ON compartment_state_lease(expires_at);
             `);
-      }
+      },
    },
    {
       version: 20,
@@ -656,7 +657,7 @@ const MIGRATIONS: Migration[] = [
                 CREATE INDEX IF NOT EXISTS idx_sai_subagent
                     ON subagent_invocations(subagent, started_at DESC);
             `);
-      }
+      },
    },
    {
       version: 21,
@@ -671,121 +672,9 @@ const MIGRATIONS: Migration[] = [
          if (!cols.some((c) => c.name === "total_input_tokens")) {
             db.exec("ALTER TABLE session_meta ADD COLUMN total_input_tokens INTEGER NOT NULL DEFAULT 0");
          }
-      }
-   }
+      },
+   },
 ];
-
-/**
- * Heal NULL columns added via ensureColumn against pre-existing rows.
- *
- * SQLite does NOT backfill column defaults when ALTER TABLE ADD COLUMN runs
- * on an already-populated table — old rows get NULL regardless of the
- * DEFAULT clause. isSessionMetaRow used to require strict typeof === "string"
- * / "number", which NULL fails, so rows with NULL columns were rejected,
- * getOrCreateSessionMeta returned zeroed defaults (lastResponseTime=0,
- * cacheTtl="5m"), the scheduler returned "execute" forever, and every
- * execute pass mutated message content — a sustained cache-bust cascade.
- *
- * The validator now tolerates NULL, but we normalize the data too so every
- * code path sees well-formed values. Each UPDATE is best-effort: if a column
- * doesn't exist yet (migration ran on a DB older than the ensureColumn call),
- * the UPDATE throws and we move on — the next schema upgrade runs ensureColumn
- * first, then this heal again.
- */
-function healAllNullColumns(db: Database): void {
-   healNullTextColumns(db);
-   healNullIntegerColumns(db);
-   healMissingMemoryBlockIds(db);
-}
-
-/**
- * One-shot heal for sessions upgraded from a build without memory_block_ids.
- *
- * Those sessions have a populated memory_block_cache but no ids — ctx_search's
- * visible-memory filter then silently no-ops. Clearing the cache forces the
- * next transform pass to regenerate BOTH cache + ids in one UPDATE. The
- * regenerated block is byte-identical (renderMemoryBlock is deterministic
- * over the same memory set in stable id order), so this does NOT cause an
- * Anthropic prompt-cache bust.
- *
- * Best-effort — wrapped because the columns may not exist on a brand-new DB
- * that hasn't finished ensureColumn yet.
- */
-function healMissingMemoryBlockIds(db: Database): void {
-   try {
-      db.prepare(
-         "UPDATE session_meta SET memory_block_cache = '' WHERE memory_block_cache != '' AND (memory_block_ids IS NULL OR memory_block_ids = '') AND memory_block_count > 0"
-      ).run();
-   } catch {
-      // Column missing on very fresh DBs — next startup reruns this after
-      // ensureColumn adds the column.
-   }
-}
-
-function healNullTextColumns(db: Database): void {
-   const columns: Array<[string, string]> = [
-      ["cache_ttl", ""],
-      ["last_nudge_band", ""],
-      ["last_transform_error", ""],
-      ["nudge_anchor_message_id", ""],
-      ["nudge_anchor_text", ""],
-      ["sticky_turn_reminder_text", ""],
-      ["sticky_turn_reminder_message_id", ""],
-      ["note_nudge_trigger_message_id", ""],
-      ["note_nudge_sticky_text", ""],
-      ["note_nudge_sticky_message_id", ""],
-      ["last_todo_state", ""],
-      ["todo_synthetic_call_id", ""],
-      ["todo_synthetic_anchor_message_id", ""],
-      ["todo_synthetic_state_json", ""],
-      ["system_prompt_hash", ""],
-      ["stripped_placeholder_ids", ""],
-      ["memory_block_cache", ""],
-      ["memory_block_ids", ""],
-      ["compaction_marker_state", ""],
-      ["key_files", ""]
-   ];
-   for (const [column, fallback] of columns) {
-      try {
-         db.prepare(`UPDATE session_meta SET ${column} = ? WHERE ${column} IS NULL`).run(fallback);
-      } catch {
-         // Ignore — the column may not exist yet on a brand-new DB that
-         // hasn't gone through all ensureColumn calls yet. The heal runs
-         // again on next startup.
-      }
-   }
-}
-
-function healNullIntegerColumns(db: Database): void {
-   // INTEGER columns added via ensureColumn against pre-existing rows.
-   // SQLite does not backfill the DEFAULT on ALTER TABLE, so old rows have
-   // NULL. The validator tolerates null as of this release, but we still
-   // normalize to 0 so subsequent reads from any path (including paths
-   // that bypass toSessionMeta) see a well-formed row.
-   const columns: Array<[string, number]> = [
-      ["times_execute_threshold_reached", 0],
-      ["compartment_in_progress", 0],
-      ["historian_failure_count", 0],
-      ["cleared_reasoning_through_tag", 0],
-      ["memory_block_count", 0],
-      ["system_prompt_tokens", 0],
-      ["conversation_tokens", 0],
-      ["tool_call_tokens", 0],
-      ["note_nudge_trigger_pending", 0],
-      ["observed_safe_input_tokens", 0],
-      ["cache_alert_sent", 0],
-      ["new_work_tokens", 0],
-      ["total_input_tokens", 0]
-   ];
-   for (const [column, fallback] of columns) {
-      try {
-         db.prepare(`UPDATE session_meta SET ${column} = ? WHERE ${column} IS NULL`).run(fallback);
-      } catch {
-         // Same rationale as the text heal — swallow missing-column errors
-         // on brand-new DBs; next startup reruns this.
-      }
-   }
-}
 
 function ensureMigrationsTable(db: Database): void {
    db.exec(`
@@ -874,7 +763,7 @@ export function runMigrations(db: Database): void {
             db.prepare("INSERT INTO schema_migrations (version, description, applied_at) VALUES (?, ?, ?)").run(
                migration.version,
                migration.description,
-               Date.now()
+               Date.now(),
             );
          })();
          log(`[migrations] applied v${migration.version}: ${migration.description}`);
@@ -887,7 +776,7 @@ export function runMigrations(db: Database): void {
             // applied multiple migrations while we were preparing
             // this one.
             log(
-               `[migrations] v${migration.version} already applied by sibling instance — resuming with re-read version`
+               `[migrations] v${migration.version} already applied by sibling instance — resuming with re-read version`,
             );
             const reReadVersion = getCurrentVersion(db);
             if (reReadVersion <= currentVersion) {
@@ -896,10 +785,10 @@ export function runMigrations(db: Database): void {
                // failure to avoid an infinite loop on a malformed
                // error.
                log(
-                  `[migrations] FAILED v${migration.version}: sibling-conflict shape but version not advanced (${reReadVersion} <= ${currentVersion}) — failing closed`
+                  `[migrations] FAILED v${migration.version}: sibling-conflict shape but version not advanced (${reReadVersion} <= ${currentVersion}) — failing closed`,
                );
                throw new Error(
-                  `Migration v${migration.version} failed: sibling conflict reported but version did not advance. Database may need manual repair.`
+                  `Migration v${migration.version} failed: sibling conflict reported but version did not advance. Database may need manual repair.`,
                );
             }
             currentVersion = reReadVersion;
@@ -908,10 +797,10 @@ export function runMigrations(db: Database): void {
             continue;
          }
          log(
-            `[migrations] FAILED v${migration.version}: ${migration.description} — ${error instanceof Error ? error.message : String(error)}`
+            `[migrations] FAILED v${migration.version}: ${migration.description} — ${error instanceof Error ? error.message : String(error)}`,
          );
          throw new Error(
-            `Migration v${migration.version} failed: ${error instanceof Error ? error.message : String(error)}. Database may need manual repair.`
+            `Migration v${migration.version} failed: ${error instanceof Error ? error.message : String(error)}. Database may need manual repair.`,
          );
       }
    }

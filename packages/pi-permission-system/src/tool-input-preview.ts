@@ -139,7 +139,7 @@ export function formatGenericToolInputForLog(input: unknown): string | undefined
 export function getToolInputPreviewForLog(
    result: PermissionCheckResult,
    input: unknown,
-   pathBearingTools: ReadonlySet<string>
+   pathBearingTools: ReadonlySet<string>,
 ): string | undefined {
    if (result.toolName === "bash" || result.toolName === "mcp" || result.source === "mcp") {
       return undefined;
@@ -156,7 +156,7 @@ export function getToolInputPreviewForLog(
 export function getPermissionLogContext(
    result: PermissionCheckResult,
    input: unknown,
-   pathBearingTools: ReadonlySet<string>
+   pathBearingTools: ReadonlySet<string>,
 ): {
    command?: string;
    target?: string;
@@ -167,6 +167,6 @@ export function getPermissionLogContext(
       command: result.command,
       target: result.target,
       toolInputPreview: getToolInputPreviewForLog(result, input, pathBearingTools),
-      origin: result.origin
+      origin: result.origin,
    };
 }

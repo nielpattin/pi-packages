@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock logging collaborator before importing the module under test.
 vi.mock("../src/logging.js", () => ({
-   safeJsonStringify: vi.fn((value: unknown) => JSON.stringify(value))
+   safeJsonStringify: vi.fn((value: unknown) => JSON.stringify(value)),
 }));
 
 import { safeJsonStringify } from "#src/logging";
@@ -23,7 +23,7 @@ import {
    TOOL_INPUT_LOG_PREVIEW_MAX_LENGTH,
    TOOL_INPUT_PREVIEW_MAX_LENGTH,
    TOOL_TEXT_SUMMARY_MAX_LENGTH,
-   truncateInlineText
+   truncateInlineText,
 } from "#src/tool-input-preview";
 import type { PermissionCheckResult } from "#src/types";
 
@@ -159,7 +159,7 @@ describe("formatEditInputForPrompt", () => {
    test("formats single replacement with line counts", () => {
       const result = formatEditInputForPrompt({
          path: "/foo.ts",
-         edits: [{ oldText: "line1\nline2", newText: "replaced" }]
+         edits: [{ oldText: "line1\nline2", newText: "replaced" }],
       });
       expect(result).toContain("for '/foo.ts'");
       expect(result).toContain("1 replacement");
@@ -173,8 +173,8 @@ describe("formatEditInputForPrompt", () => {
          edits: [
             { oldText: "a", newText: "b" },
             { oldText: "c", newText: "d" },
-            { oldText: "e", newText: "f" }
-         ]
+            { oldText: "e", newText: "f" },
+         ],
       });
       expect(result).toContain("3 replacements");
       expect(result).toContain("2 additional edits");
@@ -184,7 +184,7 @@ describe("formatEditInputForPrompt", () => {
       const result = formatEditInputForPrompt({
          path: "/bar.ts",
          oldText: "old",
-         newText: "new"
+         newText: "new",
       });
       expect(result).toContain("for '/bar.ts'");
       expect(result).toContain("1 replacement");
@@ -192,7 +192,7 @@ describe("formatEditInputForPrompt", () => {
 
    test("works without a path", () => {
       const result = formatEditInputForPrompt({
-         edits: [{ oldText: "x", newText: "y" }]
+         edits: [{ oldText: "x", newText: "y" }],
       });
       expect(result).not.toContain("for '");
       expect(result).toContain("1 replacement");
@@ -203,7 +203,7 @@ describe("formatWriteInputForPrompt", () => {
    test("includes path, line count, and character count", () => {
       const result = formatWriteInputForPrompt({
          path: "/out.ts",
-         content: "line1\nline2"
+         content: "line1\nline2",
       });
       expect(result).toContain("for '/out.ts'");
       expect(result).toContain("2 lines");
@@ -226,7 +226,7 @@ describe("formatReadInputForPrompt", () => {
       const result = formatReadInputForPrompt({
          path: "/x",
          offset: 10,
-         limit: 50
+         limit: 50,
       });
       expect(result).toContain("offset 10");
       expect(result).toContain("limit 50");
@@ -241,7 +241,7 @@ describe("formatSearchInputForPrompt", () => {
    test("includes pattern and path", () => {
       const result = formatSearchInputForPrompt("grep", {
          pattern: "TODO",
-         path: "/src"
+         path: "/src",
       });
       expect(result).toContain("pattern 'TODO'");
       expect(result).toContain("path '/src'");
@@ -299,7 +299,7 @@ describe("formatToolInputForPrompt", () => {
       mockedStringify.mockReturnValue(undefined);
       const result = formatToolInputForPrompt("edit", {
          path: "/foo.ts",
-         edits: []
+         edits: [],
       });
       expect(result).toContain("for '/foo.ts'");
    });
@@ -307,7 +307,7 @@ describe("formatToolInputForPrompt", () => {
    test("dispatches 'write' to formatWriteInputForPrompt", () => {
       const result = formatToolInputForPrompt("write", {
          path: "/out.ts",
-         content: "hi"
+         content: "hi",
       });
       expect(result).toContain("for '/out.ts'");
    });
@@ -361,7 +361,7 @@ describe("getToolInputPreviewForLog", () => {
          toolName: "bash",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       expect(getToolInputPreviewForLog(result, { command: "ls" }, pathBearingTools)).toBeUndefined();
    });
@@ -371,7 +371,7 @@ describe("getToolInputPreviewForLog", () => {
          toolName: "mcp",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       expect(getToolInputPreviewForLog(result, {}, pathBearingTools)).toBeUndefined();
    });
@@ -381,7 +381,7 @@ describe("getToolInputPreviewForLog", () => {
          toolName: "some-server:some-tool",
          state: "allow",
          source: "mcp",
-         origin: "builtin"
+         origin: "builtin",
       };
       expect(getToolInputPreviewForLog(result, {}, pathBearingTools)).toBeUndefined();
    });
@@ -391,7 +391,7 @@ describe("getToolInputPreviewForLog", () => {
          toolName: "read",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       const preview = getToolInputPreviewForLog(result, { path: "/src/foo.ts" }, pathBearingTools);
       expect(preview).toContain("/src/foo.ts");
@@ -403,7 +403,7 @@ describe("getToolInputPreviewForLog", () => {
          toolName: "task",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       const preview = getToolInputPreviewForLog(result, { n: 1 }, pathBearingTools);
       expect(preview).toContain('{"n":1}');
@@ -419,7 +419,7 @@ describe("getPermissionLogContext", () => {
          state: "allow",
          source: "tool",
          origin: "builtin",
-         command: "ls -la"
+         command: "ls -la",
       };
       const ctx = getPermissionLogContext(result, {}, pathBearingTools);
       expect(ctx.command).toBe("ls -la");
@@ -432,7 +432,7 @@ describe("getPermissionLogContext", () => {
          toolName: "read",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       const ctx = getPermissionLogContext(result, { path: "/foo.ts" }, pathBearingTools);
       expect(ctx.toolInputPreview).toContain("/foo.ts");
@@ -443,7 +443,7 @@ describe("getPermissionLogContext", () => {
          toolName: "read",
          state: "allow",
          source: "tool",
-         origin: "project"
+         origin: "project",
       };
       const ctx = getPermissionLogContext(result, {}, pathBearingTools);
       expect(ctx.origin).toBe("project");
@@ -454,7 +454,7 @@ describe("getPermissionLogContext", () => {
          toolName: "read",
          state: "allow",
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
       const ctx = getPermissionLogContext(result, {}, pathBearingTools);
       expect(ctx.origin).toBe("builtin");

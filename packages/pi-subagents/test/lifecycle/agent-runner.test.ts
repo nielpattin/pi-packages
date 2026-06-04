@@ -22,14 +22,14 @@ function createSession(finalText: string) {
       prompt: vi.fn(async () => {
          session.messages.push({
             role: "assistant",
-            content: [{ type: "text", text: finalText }]
+            content: [{ type: "text", text: finalText }],
          });
       }),
       abort: vi.fn(),
       steer: vi.fn(),
       getActiveToolNames: vi.fn(() => ["read"]),
       setActiveToolsByName: vi.fn(),
-      bindExtensions: vi.fn(async () => {})
+      bindExtensions: vi.fn(async () => {}),
    };
    return { session, listeners };
 }
@@ -50,7 +50,7 @@ describe("agent-runner final output capture", () => {
          "Explore",
          "Say LOCKED",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       expect(result.responseText).toBe("LOCKED");
@@ -65,7 +65,7 @@ describe("agent-runner final output capture", () => {
          "Explore",
          "Say BOUND",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       expect(session.bindExtensions).toHaveBeenCalledTimes(1);
@@ -85,23 +85,23 @@ describe("agent-runner final output capture", () => {
          "Explore",
          "Say CONFIGURED",
          { context: { cwd: "/tmp/worktree" } },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       expect(io.getAgentDir).toHaveBeenCalledTimes(1);
       expect(io.createResourceLoader).toHaveBeenCalledWith(
          expect.objectContaining({
             cwd: "/tmp/worktree",
-            agentDir: "/mock/agent-dir"
-         })
+            agentDir: "/mock/agent-dir",
+         }),
       );
       expect(io.createSettingsManager).toHaveBeenCalledWith("/tmp/worktree", "/mock/agent-dir");
       expect(io.createSessionManager).toHaveBeenCalledWith("/tmp/worktree", "/mock/session-dir/tasks");
       expect(io.createSession).toHaveBeenCalledWith(
          expect.objectContaining({
             cwd: "/tmp/worktree",
-            agentDir: "/mock/agent-dir"
-         })
+            agentDir: "/mock/agent-dir",
+         }),
       );
    });
 
@@ -114,7 +114,7 @@ describe("agent-runner final output capture", () => {
          "Explore",
          "Say ISOLATED",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       // noContextFiles skips AGENTS.md/CLAUDE.md at the loader source;
@@ -122,8 +122,8 @@ describe("agent-runner final output capture", () => {
       expect(io.createResourceLoader).toHaveBeenCalledWith(
          expect.objectContaining({
             noContextFiles: true,
-            appendSystemPromptOverride: expect.any(Function)
-         })
+            appendSystemPromptOverride: expect.any(Function),
+         }),
       );
       // The override returns an empty list so any loaded sources are discarded.
       const loaderOpts = io.createResourceLoader.mock.calls[0][0];
@@ -139,7 +139,7 @@ describe("agent-runner final output capture", () => {
          "Explore",
          "go",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       expect(result.sessionFile).toBe("/sessions/child.jsonl");
@@ -155,10 +155,10 @@ describe("agent-runner final output capture", () => {
          "go",
          {
             context: {
-               parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "parent-id-123" }
-            }
+               parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "parent-id-123" },
+            },
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       const sm = io.createSessionManager.mock.results[0].value;
@@ -206,9 +206,9 @@ describe("agent-runner RunOptions — defaultMaxTurns and graceTurns", () => {
          {
             context: {},
             defaultMaxTurns: 2,
-            graceTurns: 1
+            graceTurns: 1,
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       expect(session.steer).toHaveBeenCalledWith(expect.stringContaining("turn limit"));
@@ -235,9 +235,9 @@ describe("agent-runner RunOptions — defaultMaxTurns and graceTurns", () => {
          {
             context: {},
             defaultMaxTurns: 1,
-            graceTurns: 3
+            graceTurns: 3,
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       // Steered at turn 1, but not aborted (turn 3 < 1+3=4)
@@ -265,9 +265,9 @@ describe("agent-runner RunOptions — defaultMaxTurns and graceTurns", () => {
             context: {},
             maxTurns: 3, // explicit per-call limit
             defaultMaxTurns: 1, // should be overridden
-            graceTurns: 1
+            graceTurns: 1,
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
       );
 
       // Only 2 turns fired, maxTurns=3, so steer should NOT be called
@@ -288,9 +288,9 @@ describe("agent-runner child lifecycle events", () => {
          "Explore",
          "go",
          {
-            context: {}
+            context: {},
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
       );
 
       expect(lifecycle.sessionCreated).toHaveBeenCalledOnce();
@@ -309,9 +309,9 @@ describe("agent-runner child lifecycle events", () => {
          "Explore",
          "go",
          {
-            context: {}
+            context: {},
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
       );
 
       expect(lifecycle.spawning).toHaveBeenCalledOnce();
@@ -334,17 +334,17 @@ describe("agent-runner child lifecycle events", () => {
             context: {
                parentSession: {
                   parentSessionFile: "/sessions/parent.jsonl",
-                  parentSessionId: "parent-session-42"
-               }
-            }
+                  parentSessionId: "parent-session-42",
+               },
+            },
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
       );
 
       expect(lifecycle.sessionCreated).toHaveBeenCalledWith({
          sessionDir: "/custom/session/dir",
          agentName: "Explore",
-         parentSessionId: "parent-session-42"
+         parentSessionId: "parent-session-42",
       });
    });
 
@@ -359,9 +359,9 @@ describe("agent-runner child lifecycle events", () => {
          "Explore",
          "go",
          {
-            context: {}
+            context: {},
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
       );
 
       expect(lifecycle.disposed).toHaveBeenCalledOnce();
@@ -379,9 +379,9 @@ describe("agent-runner child lifecycle events", () => {
          "Explore",
          "go",
          {
-            context: {}
+            context: {},
          },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
+         createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
       );
 
       expect(lifecycle.completed).toHaveBeenCalledOnce();
@@ -389,7 +389,7 @@ describe("agent-runner child lifecycle events", () => {
          sessionDir: "/custom/session/dir",
          agentName: "Explore",
          aborted: false,
-         steered: false
+         steered: false,
       });
    });
 
@@ -405,10 +405,10 @@ describe("agent-runner child lifecycle events", () => {
             "Explore",
             "go",
             {
-               context: {}
+               context: {},
             },
-            createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle })
-         )
+            createRunnerDeps({ io, exec, registry: mockAgentLookup, lifecycle }),
+         ),
       ).rejects.toThrow("prompt failed");
 
       expect(lifecycle.disposed).toHaveBeenCalledOnce();

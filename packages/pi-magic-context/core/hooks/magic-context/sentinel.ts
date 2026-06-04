@@ -77,7 +77,7 @@ export function makeSentinel(originalPart: unknown): {
 } & Record<string, unknown> {
    const sentinel: { type: "text"; text: string } & Record<string, unknown> = {
       type: "text",
-      text: ""
+      text: "",
    };
    if (isRecord(originalPart)) {
       if (originalPart.cache_control !== undefined) {
@@ -101,11 +101,11 @@ export function makeSentinel(originalPart: unknown): {
  * so `isSentinel` recognizes both shapes (idempotency on replay).
  */
 export function makeWholeMessageSentinel(
-   providerID?: string
+   providerID?: string,
 ): { type: "text"; text: string } & Record<string, unknown> {
    return {
       type: "text",
-      text: modelAcceptsEmptyContent(providerID) ? "" : WHOLE_MESSAGE_PLACEHOLDER_TEXT
+      text: modelAcceptsEmptyContent(providerID) ? "" : WHOLE_MESSAGE_PLACEHOLDER_TEXT,
    };
 }
 
@@ -145,7 +145,7 @@ export function isSentinel(part: unknown): boolean {
 export function replaySentinelByMessageIds(
    messages: Array<{ info: { id?: string }; parts: unknown[] }>,
    ids: Set<string>,
-   providerID?: string
+   providerID?: string,
 ): { replayed: number; missingIds: string[] } {
    if (ids.size === 0) return { replayed: 0, missingIds: [] };
    const seen = new Set<string>();

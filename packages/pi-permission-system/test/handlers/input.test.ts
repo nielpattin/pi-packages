@@ -15,14 +15,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn()
+         input: vi.fn(),
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn()
+         addEntry: vi.fn(),
       },
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionContext;
 }
 
@@ -42,21 +42,21 @@ function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>
       canPrompt: vi.fn().mockReturnValue(true),
       prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
       createPermissionRequestId: vi.fn().mockReturnValue("req-id"),
-      ...overrides
+      ...overrides,
    } as unknown as PermissionSession;
 }
 
 function makeEvents() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined)
+      on: vi.fn().mockReturnValue(() => undefined),
    };
 }
 
 function makeToolRegistry(): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([]),
-      setActive: vi.fn()
+      setActive: vi.fn(),
    };
 }
 
@@ -134,8 +134,8 @@ describe("handleInput", () => {
    it("returns handled when skill is denied", async () => {
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue({ state: "deny" })
-         }
+            checkPermission: vi.fn().mockReturnValue({ state: "deny" }),
+         },
       });
       const result = await handler.handleInput(makeInputEvent("/skill:librarian"), makeCtx());
       expect(result).toEqual({ action: "handled" });
@@ -145,8 +145,8 @@ describe("handleInput", () => {
       const ctx = makeCtx({ hasUI: true });
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue({ state: "deny" })
-         }
+            checkPermission: vi.fn().mockReturnValue({ state: "deny" }),
+         },
       });
       await handler.handleInput(makeInputEvent("/skill:librarian"), ctx);
       expect(ctx.ui.notify).toHaveBeenCalledWith(expect.stringContaining("librarian"), "warning");
@@ -156,8 +156,8 @@ describe("handleInput", () => {
       const ctx = makeCtx({ hasUI: false });
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue({ state: "deny" })
-         }
+            checkPermission: vi.fn().mockReturnValue({ state: "deny" }),
+         },
       });
       await handler.handleInput(makeInputEvent("/skill:librarian"), ctx);
       expect(ctx.ui.notify).not.toHaveBeenCalled();
@@ -167,8 +167,8 @@ describe("handleInput", () => {
       const { handler } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue({ state: "ask" }),
-            canPrompt: vi.fn().mockReturnValue(false)
-         }
+            canPrompt: vi.fn().mockReturnValue(false),
+         },
       });
       const result = await handler.handleInput(makeInputEvent("/skill:librarian"), makeCtx());
       expect(result).toEqual({ action: "handled" });
@@ -178,8 +178,8 @@ describe("handleInput", () => {
       const { handler, session } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue({ state: "ask" }),
-            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
-         }
+            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
+         },
       });
       const result = await handler.handleInput(makeInputEvent("/skill:librarian"), makeCtx());
       expect(result).toEqual({ action: "continue" });
@@ -190,8 +190,8 @@ describe("handleInput", () => {
       const { handler } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue({ state: "ask" }),
-            prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" })
-         }
+            prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" }),
+         },
       });
       const result = await handler.handleInput(makeInputEvent("/skill:librarian"), makeCtx());
       expect(result).toEqual({ action: "handled" });
@@ -202,16 +202,16 @@ describe("handleInput", () => {
          session: {
             checkPermission: vi.fn().mockReturnValue({ state: "ask" }),
             resolveAgentName: vi.fn().mockReturnValue("code-agent"),
-            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
-         }
+            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
+         },
       });
       await handler.handleInput(makeInputEvent("/skill:librarian"), makeCtx());
       expect(session.prompt).toHaveBeenCalledWith(
          expect.anything(),
          expect.objectContaining({
             agentName: "code-agent",
-            skillName: "librarian"
-         })
+            skillName: "librarian",
+         }),
       );
    });
 });

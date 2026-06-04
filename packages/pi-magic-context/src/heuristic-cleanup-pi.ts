@@ -39,7 +39,7 @@ import {
    getMaxTagNumberBySession,
    replaceSourceContent,
    updateTagDropMode,
-   updateTagStatus
+   updateTagStatus,
 } from "#core/features/magic-context/storage";
 import type { TagEntry } from "#core/features/magic-context/types";
 import { applyCavemanCleanup, type CavemanCleanupConfig } from "#core/hooks/magic-context/caveman-cleanup";
@@ -64,7 +64,7 @@ const DEDUP_SAFE_TOOLS = new Set([
    "mcp_lsp_symbols",
    "mcp_lsp_find_references",
    "mcp_lsp_goto_definition",
-   "mcp_lsp_prepare_rename"
+   "mcp_lsp_prepare_rename",
 ]);
 
 export interface PiHeuristicCleanupConfig {
@@ -166,7 +166,7 @@ function buildPiToolFingerprints(messages: readonly unknown[]): Map<string, stri
 function collectStaleReduceCallIds(
    messages: readonly unknown[],
    messageIdToMaxTag: Map<string, number>,
-   toolAgeCutoff: number
+   toolAgeCutoff: number,
 ): Set<string> {
    const staleCallIds = new Set<string>();
    for (let i = 0; i < messages.length; i++) {
@@ -217,7 +217,7 @@ export function applyPiHeuristicCleanup(
    targets: Map<number, TagTarget>,
    piMessages: readonly unknown[],
    config: PiHeuristicCleanupConfig,
-   preloadedTags?: TagEntry[]
+   preloadedTags?: TagEntry[],
 ): PiHeuristicCleanupResult {
    // All work in this function short-circuits on `tag.status !== "active"`.
    // See Host `applyHeuristicCleanup` for the full P0 perf rationale.
@@ -259,7 +259,7 @@ export function applyPiHeuristicCleanup(
    const staleReduceCallIds = collectStaleReduceCallIds(
       piMessages,
       buildMessageIdToMaxTagFromTargets(targets),
-      toolAgeCutoff
+      toolAgeCutoff,
    );
    if (staleReduceCallIds.size > 0) {
       db.transaction(() => {
@@ -356,7 +356,7 @@ export function applyPiHeuristicCleanup(
    if (droppedTools > 0 || deduplicatedTools > 0 || droppedInjections > 0 || droppedStaleReduceCalls > 0) {
       sessionLog(
          sessionId,
-         `heuristic cleanup: dropped ${droppedTools} tool tags, stale ctx_reduce=${droppedStaleReduceCalls}, deduplicated ${deduplicatedTools} tool calls, dropped ${droppedInjections} system injections`
+         `heuristic cleanup: dropped ${droppedTools} tool tags, stale ctx_reduce=${droppedStaleReduceCalls}, deduplicated ${deduplicatedTools} tool calls, dropped ${droppedInjections} system injections`,
       );
    }
 
@@ -366,7 +366,7 @@ export function applyPiHeuristicCleanup(
       const cavemanResult = applyCavemanCleanup(sessionId, db, targets, tags, {
          enabled: true,
          minChars: config.caveman.minChars,
-         protectedTags: config.protectedTags
+         protectedTags: config.protectedTags,
       });
       compressedTextTags =
          cavemanResult.compressedToLite + cavemanResult.compressedToFull + cavemanResult.compressedToUltra;
@@ -377,7 +377,7 @@ export function applyPiHeuristicCleanup(
       deduplicatedTools,
       droppedInjections,
       droppedStaleReduceCalls,
-      compressedTextTags
+      compressedTextTags,
    };
 }
 

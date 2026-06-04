@@ -56,7 +56,7 @@ export async function sendIgnoredMessage(
    client: unknown,
    sessionId: string,
    text: string,
-   params: NotificationParams
+   params: NotificationParams,
 ): Promise<void> {
    // In TUI mode, show as toast via RPC instead of ignored message.
    const { isTuiConnected: checkTui } = await import("../../shared/rpc-notifications");
@@ -73,8 +73,8 @@ export async function sendIgnoredMessage(
                   title: extractToastTitle(text),
                   message: text.length > 200 ? `${text.slice(0, 200)}…` : text,
                   variant: inferToastVariant(text),
-                  duration: 5000
-               }
+                  duration: 5000,
+               },
             });
             return;
          }
@@ -89,7 +89,7 @@ export async function sendIgnoredMessage(
       params.providerId && params.modelId
          ? {
               providerID: params.providerId,
-              modelID: params.modelId
+              modelID: params.modelId,
            }
          : undefined;
 
@@ -110,10 +110,10 @@ export async function sendIgnoredMessage(
             {
                type: "text",
                text,
-               ignored: true
-            }
-         ]
-      }
+               ignored: true,
+            },
+         ],
+      },
    };
 
    try {
@@ -144,8 +144,8 @@ export async function sendUserPrompt(client: unknown, sessionId: string, text: s
    const input = {
       path: { id: sessionId },
       body: {
-         parts: [{ type: "text", text }]
-      }
+         parts: [{ type: "text", text }],
+      },
    };
 
    try {

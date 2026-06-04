@@ -48,7 +48,7 @@ export async function applyPermissionGate(params: PermissionGateParams): Promise
    if (state === "deny") {
       writeLog("permission_request.blocked", {
          ...logContext,
-         resolution: "policy_denied"
+         resolution: "policy_denied",
       });
       return { action: "block", reason: messages.denyReason };
    }
@@ -57,7 +57,7 @@ export async function applyPermissionGate(params: PermissionGateParams): Promise
       if (!canConfirm) {
          writeLog("permission_request.blocked", {
             ...logContext,
-            resolution: "confirmation_unavailable"
+            resolution: "confirmation_unavailable",
          });
          return { action: "block", reason: messages.unavailableReason };
       }

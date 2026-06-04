@@ -35,6 +35,6 @@ export function readCoreContextUsage(ctx: unknown): CoreContextUsage | null {
       contextPercent:
          typeof percent === "number" && Number.isFinite(percent) ? percent : (tokens / contextWindow) * 100,
       contextTokens: tokens,
-      contextWindow
+      contextWindow,
    };
 }

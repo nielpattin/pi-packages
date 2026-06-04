@@ -139,7 +139,7 @@ type PiAgentMessage = PiUserMessage | PiAssistantMessage | PiToolResultMessage;
  */
 export function createPiTranscript(
    source: unknown[],
-   sessionId: string | undefined
+   sessionId: string | undefined,
 ): Transcript & {
    /**
     * Pi-only escape hatch: returns the rebuilt message array suitable
@@ -192,7 +192,7 @@ export function createPiTranscript(
          // directly to source (splices, unshifts). Returning source
          // is therefore authoritative.
          return source;
-      }
+      },
    };
 }
 
@@ -206,7 +206,7 @@ export function createPiTranscript(
 function buildTranscriptView(
    working: PiAgentMessage[],
    sessionId: string | undefined,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptMessage[] {
    const result: TranscriptMessage[] = [];
 
@@ -271,7 +271,7 @@ function createUserTranscriptMessage(
    index: number,
    sessionId: string | undefined,
    foldedToolResults: { msg: PiToolResultMessage; index: number }[],
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptMessage {
    const userMsg = working[index] as PiUserMessage;
 
@@ -284,7 +284,7 @@ function createUserTranscriptMessage(
       info: {
          id: extractStableId(userMsg, index),
          role: "user",
-         sessionId
+         sessionId,
       },
       get parts(): TranscriptPart[] {
          const parts: TranscriptPart[] = [];
@@ -308,7 +308,7 @@ function createUserTranscriptMessage(
          }
 
          return parts;
-      }
+      },
    };
 }
 
@@ -321,13 +321,13 @@ function createSyntheticToolResultUserMessage(
    working: PiAgentMessage[],
    sessionId: string | undefined,
    toolResultRun: { msg: PiToolResultMessage; index: number }[],
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptMessage {
    return {
       info: {
          id: undefined,
          role: "user",
-         sessionId
+         sessionId,
       },
       get parts(): TranscriptPart[] {
          const parts: TranscriptPart[] = [];
@@ -338,7 +338,7 @@ function createSyntheticToolResultUserMessage(
             });
          }
          return parts;
-      }
+      },
    };
 }
 
@@ -346,18 +346,18 @@ function createAssistantTranscriptMessage(
    working: PiAgentMessage[],
    index: number,
    sessionId: string | undefined,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptMessage {
    const msg = working[index] as PiAssistantMessage;
    return {
       info: {
          id: extractStableId(msg, index),
          role: "assistant",
-         sessionId
+         sessionId,
       },
       get parts(): TranscriptPart[] {
          return msg.content.map((_, partIndex) => createPiAssistantPart(working, index, partIndex, markDirty));
-      }
+      },
    };
 }
 
@@ -365,20 +365,20 @@ function createOpaqueTranscriptMessage(
    working: PiAgentMessage[],
    index: number,
    sessionId: string | undefined,
-   _markDirty: (messageIndex: number) => void
+   _markDirty: (messageIndex: number) => void,
 ): TranscriptMessage {
    const msg = working[index];
    return {
       info: {
          id: extractStableId(msg, index),
          role: typeof (msg as { role?: string })?.role === "string" ? (msg as { role: string }).role : "unknown",
-         sessionId
+         sessionId,
       },
       // Unknown messages have no parts as far as the transform is
       // concerned. They pass through unmodified.
       get parts(): TranscriptPart[] {
          return [];
-      }
+      },
    };
 }
 
@@ -389,7 +389,7 @@ function createOpaqueTranscriptMessage(
 function createPiUserStringPart(
    working: PiAgentMessage[],
    messageIndex: number,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptPart {
    return {
       kind: "text",
@@ -419,7 +419,7 @@ function createPiUserStringPart(
          working[messageIndex] = { ...msg, content: sentinelText };
          markDirty(messageIndex);
          return true;
-      }
+      },
    };
 }
 
@@ -427,7 +427,7 @@ function createPiUserArrayPart(
    working: PiAgentMessage[],
    messageIndex: number,
    partIndex: number,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptPart {
    const msg = working[messageIndex] as PiUserMessage;
    const part = Array.isArray(msg.content) ? msg.content[partIndex] : undefined;
@@ -452,7 +452,7 @@ function createPiUserArrayPart(
          newContent[partIndex] = { ...p, text: newText };
          working[messageIndex] = {
             ...(working[messageIndex] as PiUserMessage),
-            content: newContent
+            content: newContent,
          };
          markDirty(messageIndex);
          return true;
@@ -470,11 +470,11 @@ function createPiUserArrayPart(
          newContent[partIndex] = { type: "text", text: sentinelText };
          working[messageIndex] = {
             ...(working[messageIndex] as PiUserMessage),
-            content: newContent
+            content: newContent,
          };
          markDirty(messageIndex);
          return true;
-      }
+      },
    };
 }
 
@@ -482,7 +482,7 @@ function createPiAssistantPart(
    working: PiAgentMessage[],
    messageIndex: number,
    partIndex: number,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptPart {
    const msg = working[messageIndex] as PiAssistantMessage;
    const part = msg.content[partIndex];
@@ -515,7 +515,7 @@ function createPiAssistantPart(
             newContent[partIndex] = { ...p, text: newText };
             working[messageIndex] = {
                ...(working[messageIndex] as PiAssistantMessage),
-               content: newContent
+               content: newContent,
             };
             markDirty(messageIndex);
             return true;
@@ -526,7 +526,7 @@ function createPiAssistantPart(
             newContent[partIndex] = { ...p, thinking: newText };
             working[messageIndex] = {
                ...(working[messageIndex] as PiAssistantMessage),
-               content: newContent
+               content: newContent,
             };
             markDirty(messageIndex);
             return true;
@@ -584,18 +584,18 @@ function createPiAssistantPart(
                type: "toolCall",
                id: existing.id,
                name: existing.name,
-               arguments: { __magic_context_dropped__: sentinelText }
+               arguments: { __magic_context_dropped__: sentinelText },
             };
          } else {
             newContent[partIndex] = { type: "text", text: sentinelText };
          }
          working[messageIndex] = {
             ...(working[messageIndex] as PiAssistantMessage),
-            content: newContent
+            content: newContent,
          };
          markDirty(messageIndex);
          return true;
-      }
+      },
    };
 }
 
@@ -603,7 +603,7 @@ function createPiToolResultPart(
    working: PiAgentMessage[],
    messageIndex: number,
    partIndex: number,
-   markDirty: (messageIndex: number) => void
+   markDirty: (messageIndex: number) => void,
 ): TranscriptPart {
    const msg = working[messageIndex] as PiToolResultMessage;
    const part = msg.content[partIndex];
@@ -628,7 +628,7 @@ function createPiToolResultPart(
          newContent[partIndex] = { ...p, text: newText };
          working[messageIndex] = {
             ...(working[messageIndex] as PiToolResultMessage),
-            content: newContent
+            content: newContent,
          };
          markDirty(messageIndex);
          return true;
@@ -639,7 +639,7 @@ function createPiToolResultPart(
       getToolMetadata(): { toolName: string; inputByteSize: number } {
          return {
             toolName: (working[messageIndex] as PiToolResultMessage).toolName,
-            inputByteSize: 0
+            inputByteSize: 0,
          };
       },
       replaceWithSentinel(sentinelText: string): boolean {
@@ -648,11 +648,11 @@ function createPiToolResultPart(
          newContent[partIndex] = { type: "text", text: sentinelText };
          working[messageIndex] = {
             ...(working[messageIndex] as PiToolResultMessage),
-            content: newContent
+            content: newContent,
          };
          markDirty(messageIndex);
          return true;
-      }
+      },
    };
 }
 

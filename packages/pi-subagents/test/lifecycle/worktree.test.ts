@@ -121,7 +121,7 @@ describe("worktree", () => {
          // Verify the branch exists in the main repo
          const branches = execFileSync("git", ["branch", "--list", result.branch!], {
             cwd: repoDir,
-            stdio: "pipe"
+            stdio: "pipe",
          })
             .toString()
             .trim();
@@ -130,7 +130,7 @@ describe("worktree", () => {
          // Verify the commit message
          const log = execFileSync("git", ["log", "--oneline", "-1", result.branch!], {
             cwd: repoDir,
-            stdio: "pipe"
+            stdio: "pipe",
          })
             .toString()
             .trim();
@@ -165,7 +165,7 @@ describe("worktree", () => {
          // Both branches should exist
          const branches = execFileSync("git", ["branch", "--list", "pi-agent-conflict-1*"], {
             cwd: repoDir,
-            stdio: "pipe"
+            stdio: "pipe",
          })
             .toString()
             .trim();
@@ -203,7 +203,7 @@ describe("worktree", () => {
 
          const log = execFileSync("git", ["log", "--oneline", "-1", result.branch!], {
             cwd: repoDir,
-            stdio: "pipe"
+            stdio: "pipe",
          })
             .toString()
             .trim();

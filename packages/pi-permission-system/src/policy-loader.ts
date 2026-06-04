@@ -186,7 +186,7 @@ export class FilePolicyLoader implements PolicyLoader {
       this.accumulateConfigIssues(issues);
 
       const value: ScopeConfig = {
-         permission: config.permission
+         permission: config.permission,
       };
 
       this.globalConfigCache = { stamp, value };
@@ -207,7 +207,7 @@ export class FilePolicyLoader implements PolicyLoader {
       this.accumulateConfigIssues(issues);
 
       const value: ScopeConfig = {
-         permission: config.permission
+         permission: config.permission,
       };
 
       this.projectGlobalConfigCache = { stamp, value };
@@ -217,7 +217,7 @@ export class FilePolicyLoader implements PolicyLoader {
    private loadScopeConfigFrom(
       dir: string | null,
       cache: Map<string, FileCacheEntry<ScopeConfig>>,
-      agentName?: string
+      agentName?: string,
    ): ScopeConfig {
       if (!dir || !agentName) {
          return {};
@@ -298,7 +298,7 @@ export class FilePolicyLoader implements PolicyLoader {
          agentsDir: this.agentsDir,
          agentsDirExists: existsSync(this.agentsDir),
          projectAgentsDir: this.projectAgentsDir,
-         projectAgentsDirExists: this.projectAgentsDir ? existsSync(this.projectAgentsDir) : false
+         projectAgentsDirExists: this.projectAgentsDir ? existsSync(this.projectAgentsDir) : false,
       };
    }
 }

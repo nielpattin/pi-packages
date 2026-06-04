@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { mockDiscoverGlobalNodeModulesRoot } = vi.hoisted(() => ({
-   mockDiscoverGlobalNodeModulesRoot: vi.fn<() => string | null>()
+   mockDiscoverGlobalNodeModulesRoot: vi.fn<() => string | null>(),
 }));
 
 vi.mock("../src/node-modules-discovery", () => ({
-   discoverGlobalNodeModulesRoot: mockDiscoverGlobalNodeModulesRoot
+   discoverGlobalNodeModulesRoot: mockDiscoverGlobalNodeModulesRoot,
 }));
 
 import { getGlobalLogsDir } from "#src/config-paths";

@@ -7,15 +7,15 @@ import {
    mergeSegmentsWithCustomItems,
    normalizeCompactExtensionStatus,
    normalizeExtensionStatusValue,
-   parseStationConfig
+   parseStationConfig,
 } from "../station-config.ts";
 
 test("parseStationConfig supports object config with custom items", () => {
    const config = parseStationConfig({
       customItems: [
          { id: "ci", position: "right", prefix: "CI", statusKey: "ci-status" },
-         { hideWhenMissing: false, id: "review", position: "secondary" }
-      ]
+         { hideWhenMissing: false, id: "review", position: "secondary" },
+      ],
    });
 
    assert.equal(config.customItems.length, 2);
@@ -28,7 +28,7 @@ test("parseStationConfig supports object config with custom items", () => {
    assert.deepEqual(config.shortcuts, {
       bashMode: "ctrl+b",
       stash: "alt+s",
-      stashHistory: "ctrl+alt+h"
+      stashHistory: "ctrl+alt+h",
    });
 });
 
@@ -45,14 +45,14 @@ test("parseStationConfig resolves shortcut overrides", () => {
       shortcuts: {
          bashMode: "ctrl+shift+b",
          stash: "ctrl+shift+s",
-         stashHistory: "ctrl+shift+h"
-      }
+         stashHistory: "ctrl+shift+h",
+      },
    });
 
    assert.deepEqual(config.shortcuts, {
       bashMode: "ctrl+shift+b",
       stash: "ctrl+shift+s",
-      stashHistory: "ctrl+shift+h"
+      stashHistory: "ctrl+shift+h",
    });
 });
 
@@ -62,7 +62,7 @@ test("mergeSegmentsWithCustomItems appends custom segment ids by position", () =
          leftSegments: ["path"],
          rightSegments: ["git"],
          secondarySegments: ["extension_statuses"],
-         separator: "station"
+         separator: "station",
       },
       [
          {
@@ -70,23 +70,23 @@ test("mergeSegmentsWithCustomItems appends custom segment ids by position", () =
             hideWhenMissing: true,
             id: "ci",
             position: "left",
-            statusKey: "ci"
+            statusKey: "ci",
          },
          {
             excludeFromExtensionStatuses: true,
             hideWhenMissing: true,
             id: "timer",
             position: "right",
-            statusKey: "timer"
+            statusKey: "timer",
          },
          {
             excludeFromExtensionStatuses: true,
             hideWhenMissing: true,
             id: "review",
             position: "secondary",
-            statusKey: "review"
-         }
-      ]
+            statusKey: "review",
+         },
+      ],
    );
 
    assert.deepEqual(merged.leftSegments, ["path", "custom:ci"]);
@@ -101,15 +101,15 @@ test("collectHiddenExtensionStatusKeys includes default custom status keys", () 
          hideWhenMissing: true,
          id: "ci",
          position: "right",
-         statusKey: "ci-status"
+         statusKey: "ci-status",
       },
       {
          excludeFromExtensionStatuses: false,
          hideWhenMissing: true,
          id: "review",
          position: "secondary",
-         statusKey: "review"
-      }
+         statusKey: "review",
+      },
    ]);
 
    assert.equal(hidden.has("ci-status"), true);
@@ -130,7 +130,7 @@ test("getNotificationExtensionStatuses skips promoted hidden status keys", () =>
    const statuses = new Map<string, string>([
       ["ci-status", "[ci] queued"],
       ["review", "[review] running"],
-      ["plain", "plain status"]
+      ["plain", "plain status"],
    ]);
    const hidden = new Set(["ci-status"]);
 

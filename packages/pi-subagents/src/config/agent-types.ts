@@ -111,7 +111,7 @@ export class AgentTypeRegistry implements AgentConfigLookup {
          extensions: true,
          skills: true,
          systemPrompt: "",
-         promptMode: "append"
+         promptMode: "append",
       };
    }
 

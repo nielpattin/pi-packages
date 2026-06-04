@@ -14,7 +14,7 @@ describe("synthesizeDefaults", () => {
          pattern: "*",
          action: "ask",
          layer: "default",
-         origin: "builtin"
+         origin: "builtin",
       });
    });
 
@@ -73,8 +73,8 @@ describe("synthesizeBaseline", () => {
             pattern: "*",
             action: "deny" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       expect(synthesizeBaseline(configRules)).toEqual([]);
    });
@@ -90,8 +90,8 @@ describe("synthesizeBaseline", () => {
             pattern: "exa:*",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const rules = synthesizeBaseline(configRules);
       expect(rules).toHaveLength(5);
@@ -104,8 +104,8 @@ describe("synthesizeBaseline", () => {
             pattern: "exa:*",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const rules = synthesizeBaseline(configRules);
       for (const rule of rules) {
@@ -123,8 +123,8 @@ describe("synthesizeBaseline", () => {
             pattern: "exa:*",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const rules = synthesizeBaseline(configRules);
       const patterns = rules.map((r) => r.pattern);
@@ -142,8 +142,8 @@ describe("synthesizeBaseline", () => {
             pattern: "git *",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       expect(synthesizeBaseline(configRules)).toEqual([]);
    });
@@ -155,8 +155,8 @@ describe("synthesizeBaseline", () => {
             pattern: "exa:*",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const rules = synthesizeBaseline(configRules);
       const result = evaluate("mcp", "mcp_status", rules);
@@ -177,16 +177,16 @@ describe("composeRuleset", () => {
             pattern: "exa:*",
             action: "allow",
             layer: "config",
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ]);
       const config = [
          {
             surface: "bash",
             pattern: "rm -rf *",
             action: "deny" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const composed = composeRuleset(defaults, baseline, config);
       expect(composed.length).toBe(defaults.length + baseline.length + config.length);
@@ -200,8 +200,8 @@ describe("composeRuleset", () => {
             pattern: "*",
             action: "deny" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const composed = composeRuleset(defaults, [], config);
       const result = evaluate("bash", "echo hello", composed);
@@ -217,8 +217,8 @@ describe("composeRuleset", () => {
             pattern: "*",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const composed = composeRuleset(defaults, [], config);
       const result = evaluate("read", "*", composed);
@@ -234,8 +234,8 @@ describe("composeRuleset", () => {
             pattern: "mcp_status",
             action: "allow" as const,
             layer: "baseline" as const,
-            origin: "baseline" as const
-         }
+            origin: "baseline" as const,
+         },
       ];
       const config = [
          {
@@ -243,8 +243,8 @@ describe("composeRuleset", () => {
             pattern: "mcp_status",
             action: "deny" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const composed = composeRuleset(defaults, baseline, config);
       const result = evaluate("mcp", "mcp_status", composed);
@@ -260,8 +260,8 @@ describe("composeRuleset", () => {
             pattern: "mcp_status",
             action: "allow" as const,
             layer: "baseline" as const,
-            origin: "baseline" as const
-         }
+            origin: "baseline" as const,
+         },
       ];
       const config = [
          {
@@ -269,8 +269,8 @@ describe("composeRuleset", () => {
             pattern: "exa_web_search",
             action: "allow" as const,
             layer: "config" as const,
-            origin: "global" as const
-         }
+            origin: "global" as const,
+         },
       ];
       const composed = composeRuleset(defaults, baseline, config);
       const result = evaluate("mcp", "exa_web_search", composed);

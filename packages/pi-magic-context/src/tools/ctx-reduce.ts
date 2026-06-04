@@ -21,7 +21,7 @@ import {
    getPendingOps,
    getTagsBySession,
    queuePendingOp,
-   updateSessionMeta
+   updateSessionMeta,
 } from "#core/features/magic-context/storage";
 import { getErrorMessage } from "#core/shared/error-message";
 import { CTX_REDUCE_DESCRIPTION } from "#core/tools/ctx-reduce/constants";
@@ -30,9 +30,9 @@ import { type Static, Type } from "typebox";
 const ParamsSchema = Type.Object({
    drop: Type.Optional(
       Type.String({
-         description: "Tag IDs to drop entirely. Ranges: '3-5', '1,2,9'"
-      })
-   )
+         description: "Tag IDs to drop entirely. Ranges: '3-5', '1,2,9'",
+      }),
+   ),
 });
 
 type CtxReduceParams = Static<typeof ParamsSchema>;
@@ -45,7 +45,7 @@ function err(text: string) {
    return {
       content: [{ type: "text" as const, text }],
       details: undefined,
-      isError: true
+      isError: true,
    };
 }
 
@@ -139,7 +139,7 @@ export function createCtxReduceTool(deps: CtxReduceToolDeps): ToolDefinition<typ
          const currentInputTokens =
             deps.getSessionTokens?.(sessionId) ?? getOrCreateSessionMeta(deps.db, sessionId).lastInputTokens;
          updateSessionMeta(deps.db, sessionId, {
-            lastNudgeTokens: currentInputTokens
+            lastNudgeTokens: currentInputTokens,
          });
 
          const immediateDropIds = dropIds.filter((id) => !protectedSet.has(id));
@@ -152,6 +152,6 @@ export function createCtxReduceTool(deps: CtxReduceToolDeps): ToolDefinition<typ
          if (immediateDropIds.length > 0) parts.push(`drop ${formatIds(immediateDropIds)}`);
          if (deferredDropIds.length > 0) parts.push(`deferred drop ${formatIds(deferredDropIds)}`);
          return ok(`Queued: ${parts.join(", ")}.${skippedNote}`);
-      }
+      },
    };
 }

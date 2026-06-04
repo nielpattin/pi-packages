@@ -43,7 +43,7 @@ export function computeExtensionPaths(agentDir: string): ExtensionPaths {
    const piInfrastructureDirs: string[] = [
       normalizedAgentDir,
       posix.join(normalizedAgentDir, "git"),
-      ...(globalNodeModulesRoot ? [globalNodeModulesRoot] : [])
+      ...(globalNodeModulesRoot ? [globalNodeModulesRoot] : []),
    ];
 
    return {
@@ -52,6 +52,6 @@ export function computeExtensionPaths(agentDir: string): ExtensionPaths {
       subagentSessionsDir,
       forwardingDir,
       globalLogsDir,
-      piInfrastructureDirs
+      piInfrastructureDirs,
    };
 }

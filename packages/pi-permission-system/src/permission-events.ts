@@ -164,7 +164,7 @@ export interface PermissionsPromptReplyData {
  */
 export function emitReadyEvent(events: PermissionEventBus): void {
    const payload: PermissionsReadyEvent = {
-      protocolVersion: PERMISSIONS_PROTOCOL_VERSION
+      protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
    };
    events.emit(PERMISSIONS_READY_CHANNEL, payload);
 }

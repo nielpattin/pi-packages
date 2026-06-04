@@ -81,7 +81,7 @@ function readSessionMetaStatus(db: ContextDatabase, sessionId: string): SessionM
    try {
       return db
          .prepare<[string], SessionMetaStatus>(
-            "SELECT compartment_in_progress, historian_failure_count, historian_last_failure_at FROM session_meta WHERE session_id = ?"
+            "SELECT compartment_in_progress, historian_failure_count, historian_last_failure_at FROM session_meta WHERE session_id = ?",
          )
          .get(sessionId);
    } catch {

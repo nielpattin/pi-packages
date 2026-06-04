@@ -14,7 +14,7 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: { path: "/outside/project/file.ts" },
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -28,14 +28,14 @@ describe("describeExternalDirectoryGate", () => {
 
    it("returns null when tool is not path-bearing", () => {
       const result = describeExternalDirectoryGate(makeTcc({ toolName: "bash", input: { command: "ls" } }), [
-         "/test/agent"
+         "/test/agent",
       ]);
       expect(result).toBeNull();
    });
 
    it("returns null when path is inside CWD", () => {
       const result = describeExternalDirectoryGate(makeTcc({ input: { path: "/test/project/src/index.ts" } }), [
-         "/test/agent"
+         "/test/agent",
       ]);
       expect(result).toBeNull();
    });
@@ -46,9 +46,9 @@ describe("describeExternalDirectoryGate", () => {
       const result = describeExternalDirectoryGate(
          makeTcc({
             toolName: "read",
-            input: { path: "/test/agent/git/some-package/SKILL.md" }
+            input: { path: "/test/agent/git/some-package/SKILL.md" },
          }),
-         ["/test/agent", "/test/agent/git"]
+         ["/test/agent", "/test/agent/git"],
       );
       expect(result).not.toBeNull();
       expect(isGateBypass(result)).toBe(true);
@@ -56,10 +56,10 @@ describe("describeExternalDirectoryGate", () => {
       expect(bypass.action).toBe("allow");
       expect(bypass.decision).toMatchObject({
          resolution: "infrastructure_auto_allowed",
-         result: "allow"
+         result: "allow",
       });
       expect(bypass.log).toMatchObject({
-         event: "permission_request.infrastructure_auto_allowed"
+         event: "permission_request.infrastructure_auto_allowed",
       });
    });
 
@@ -67,9 +67,9 @@ describe("describeExternalDirectoryGate", () => {
       const result = describeExternalDirectoryGate(
          makeTcc({
             toolName: "read",
-            input: { path: "/custom/infra/SKILL.md" }
+            input: { path: "/custom/infra/SKILL.md" },
          }),
-         ["/custom/infra"]
+         ["/custom/infra"],
       );
       expect(isGateBypass(result)).toBe(true);
    });
@@ -78,9 +78,9 @@ describe("describeExternalDirectoryGate", () => {
       const result = describeExternalDirectoryGate(
          makeTcc({
             toolName: "write",
-            input: { path: "/test/agent/git/some-file.ts", content: "x" }
+            input: { path: "/test/agent/git/some-file.ts", content: "x" },
          }),
-         ["/test/agent", "/test/agent/git"]
+         ["/test/agent", "/test/agent/git"],
       );
       // Should be a GateDescriptor (needs permission check), not a bypass
       expect(result).not.toBeNull();
@@ -98,7 +98,7 @@ describe("describeExternalDirectoryGate", () => {
 
    it("decision value is the external path", () => {
       const result = describeExternalDirectoryGate(makeTcc({ input: { path: "/outside/project/file.ts" } }), [
-         "/test/agent"
+         "/test/agent",
       ]) as GateDescriptor;
       expect(result.decision.value).toBe("/outside/project/file.ts");
       expect(result.decision.surface).toBe("external_directory");
@@ -106,14 +106,14 @@ describe("describeExternalDirectoryGate", () => {
 
    it("input contains normalized path for checkPermission", () => {
       const result = describeExternalDirectoryGate(makeTcc({ input: { path: "/outside/project/file.ts" } }), [
-         "/test/agent"
+         "/test/agent",
       ]) as GateDescriptor;
       expect(result.input).toHaveProperty("path");
    });
 
    it("sessionApproval uses deriveApprovalPattern", () => {
       const result = describeExternalDirectoryGate(makeTcc({ input: { path: "/outside/project/file.ts" } }), [
-         "/test/agent"
+         "/test/agent",
       ]) as GateDescriptor;
       expect(result.sessionApproval).toBeDefined();
       expect(result.sessionApproval).toHaveProperty("surface", "external_directory");
@@ -122,27 +122,27 @@ describe("describeExternalDirectoryGate", () => {
 
    it("denialContext contains the external path and cwd", () => {
       const result = describeExternalDirectoryGate(makeTcc({ input: { path: "/outside/project/file.ts" } }), [
-         "/test/agent"
+         "/test/agent",
       ]) as GateDescriptor;
       expect(result.denialContext).toMatchObject({
          kind: "external_directory",
          toolName: "read",
          pathValue: "/outside/project/file.ts",
-         cwd: "/test/project"
+         cwd: "/test/project",
       });
    });
 
    it("promptDetails includes path and tool_call source", () => {
       const result = describeExternalDirectoryGate(
          makeTcc({ toolName: "read", agentName: "agent-1", toolCallId: "tc-5" }),
-         ["/test/agent"]
+         ["/test/agent"],
       ) as GateDescriptor;
       expect(result.promptDetails).toMatchObject({
          source: "tool_call",
          agentName: "agent-1",
          toolCallId: "tc-5",
          toolName: "read",
-         path: "/outside/project/file.ts"
+         path: "/outside/project/file.ts",
       });
    });
 
@@ -150,7 +150,7 @@ describe("describeExternalDirectoryGate", () => {
       const result = describeExternalDirectoryGate(makeTcc(), ["/test/agent"]) as GateDescriptor;
       expect(result.logContext).toMatchObject({
          source: "tool_call",
-         path: "/outside/project/file.ts"
+         path: "/outside/project/file.ts",
       });
       expect(result.logContext.message).toBeDefined();
    });

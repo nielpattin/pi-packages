@@ -10,7 +10,7 @@ vi.mock("@earendil-works/pi-coding-agent", async (importOriginal) => {
    const original = await importOriginal<typeof import("@earendil-works/pi-coding-agent")>();
    return {
       ...original,
-      isToolCallEventType: vi.fn().mockReturnValue(false)
+      isToolCallEventType: vi.fn().mockReturnValue(false),
    };
 });
 
@@ -24,14 +24,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn()
+         input: vi.fn(),
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn()
+         addEntry: vi.fn(),
       },
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionContext;
 }
 
@@ -54,7 +54,7 @@ function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>
       commitPromptStateCacheKey: vi.fn(),
       setActiveSkillEntries: vi.fn(),
       getActiveSkillEntries: vi.fn().mockReturnValue([]),
-      ...overrides
+      ...overrides,
    } as unknown as PermissionSession;
 }
 
@@ -62,7 +62,7 @@ function makeToolRegistry(overrides: Partial<ToolRegistry> = {}): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([]),
       setActive: vi.fn(),
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -138,11 +138,11 @@ describe("AgentPrepHandler.handle", () => {
    it("filters denied tools from the current active tool list", async () => {
       const { handler, toolRegistry } = makeHandler({
          session: {
-            getToolPermission: vi.fn((toolName: string) => (toolName === "write" ? "deny" : "allow"))
+            getToolPermission: vi.fn((toolName: string) => (toolName === "write" ? "deny" : "allow")),
          },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "write" }, { name: "ls" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "write" }, { name: "ls" }]),
+         },
       });
       await handler.handle(makeEvent("You are an assistant.", ["read", "write"]), makeCtx());
       expect(toolRegistry.setActive).toHaveBeenCalledWith(["read"]);
@@ -160,9 +160,9 @@ describe("AgentPrepHandler.handle", () => {
                   { name: "write" },
                   { name: "grep" },
                   { name: "find" },
-                  { name: "ls" }
-               ])
-         }
+                  { name: "ls" },
+               ]),
+         },
       });
       await handler.handle(makeEvent("You are an assistant.", ["read", "bash", "edit", "write"]), makeCtx());
       expect(toolRegistry.setActive).toHaveBeenCalledWith(["read", "bash", "edit", "write"]);
@@ -171,8 +171,8 @@ describe("AgentPrepHandler.handle", () => {
    it("keeps an explicitly active built-in tool when policy allows it", async () => {
       const { handler, toolRegistry } = makeHandler({
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "grep" }, { name: "find" }, { name: "ls" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "grep" }, { name: "find" }, { name: "ls" }]),
+         },
       });
       await handler.handle(makeEvent("You are an assistant.", ["read", "grep"]), makeCtx());
       expect(toolRegistry.setActive).toHaveBeenCalledWith(["read", "grep"]);
@@ -181,8 +181,8 @@ describe("AgentPrepHandler.handle", () => {
    it("commits active-tools cache key after applying", async () => {
       const { handler, session } = makeHandler({
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       await handler.handle(makeEvent(), makeCtx());
       expect(session.commitActiveToolsCacheKey).toHaveBeenCalled();
@@ -192,8 +192,8 @@ describe("AgentPrepHandler.handle", () => {
       const { handler, session, toolRegistry } = makeHandler({
          session: { shouldUpdateActiveTools: vi.fn().mockReturnValue(false) },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       await handler.handle(makeEvent(), makeCtx());
       expect(toolRegistry.setActive).not.toHaveBeenCalled();
@@ -202,7 +202,7 @@ describe("AgentPrepHandler.handle", () => {
 
    it("returns empty object when prompt cache is unchanged", async () => {
       const { handler, session } = makeHandler({
-         session: { shouldUpdatePromptState: vi.fn().mockReturnValue(false) }
+         session: { shouldUpdatePromptState: vi.fn().mockReturnValue(false) },
       });
       const result = await handler.handle(makeEvent(), makeCtx());
       expect(result).toEqual({});

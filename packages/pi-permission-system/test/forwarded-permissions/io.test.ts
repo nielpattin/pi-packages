@@ -5,7 +5,7 @@ import {
    formatUnknownErrorMessage,
    isErrnoCode,
    logPermissionForwardingError,
-   logPermissionForwardingWarning
+   logPermissionForwardingWarning,
 } from "#src/forwarded-permissions/io";
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -13,7 +13,7 @@ import {
 function makeLogger(): ForwardedPermissionLogger {
    return {
       writeReviewLog: vi.fn(),
-      writeDebugLog: vi.fn()
+      writeDebugLog: vi.fn(),
    };
 }
 
@@ -63,7 +63,7 @@ describe("logPermissionForwardingWarning", () => {
       const logger = makeLogger();
       logPermissionForwardingWarning(logger, "something went wrong");
       expect(logger.writeReviewLog).toHaveBeenCalledWith("permission_forwarding.warning", {
-         message: "something went wrong"
+         message: "something went wrong",
       });
    });
 
@@ -71,7 +71,7 @@ describe("logPermissionForwardingWarning", () => {
       const logger = makeLogger();
       logPermissionForwardingWarning(logger, "something went wrong");
       expect(logger.writeDebugLog).toHaveBeenCalledWith("permission_forwarding.warning", {
-         message: "something went wrong"
+         message: "something went wrong",
       });
    });
 
@@ -80,7 +80,7 @@ describe("logPermissionForwardingWarning", () => {
       logPermissionForwardingWarning(logger, "bad thing", new Error("fs fail"));
       expect(logger.writeReviewLog).toHaveBeenCalledWith("permission_forwarding.warning", {
          message: "bad thing",
-         error: "fs fail"
+         error: "fs fail",
       });
    });
 
@@ -102,7 +102,7 @@ describe("logPermissionForwardingError", () => {
       const logger = makeLogger();
       logPermissionForwardingError(logger, "critical failure");
       expect(logger.writeReviewLog).toHaveBeenCalledWith("permission_forwarding.error", {
-         message: "critical failure"
+         message: "critical failure",
       });
    });
 
@@ -117,7 +117,7 @@ describe("logPermissionForwardingError", () => {
       logPermissionForwardingError(logger, "io error", new Error("ENOENT"));
       expect(logger.writeReviewLog).toHaveBeenCalledWith("permission_forwarding.error", {
          message: "io error",
-         error: "ENOENT"
+         error: "ENOENT",
       });
    });
 

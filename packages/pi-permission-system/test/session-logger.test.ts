@@ -9,7 +9,7 @@ function makeRuntime(overrides: Partial<ExtensionRuntime> = {}): ExtensionRuntim
       runtimeContext: null,
       writeDebugLog: vi.fn(),
       writeReviewLog: vi.fn(),
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionRuntime;
 }
 
@@ -24,7 +24,7 @@ describe("createSessionLogger", () => {
          logger.debug("test.event", { key: "value" });
 
          expect(runtime.writeDebugLog).toHaveBeenCalledWith("test.event", {
-            key: "value"
+            key: "value",
          });
       });
 
@@ -63,8 +63,8 @@ describe("createSessionLogger", () => {
          const notify = vi.fn();
          const runtime = makeRuntime({
             runtimeContext: {
-               ui: { notify, setStatus: vi.fn(), select: vi.fn(), input: vi.fn() }
-            } as unknown as ExtensionRuntime["runtimeContext"]
+               ui: { notify, setStatus: vi.fn(), select: vi.fn(), input: vi.fn() },
+            } as unknown as ExtensionRuntime["runtimeContext"],
          });
          const logger = createSessionLogger(runtime);
 
@@ -90,7 +90,7 @@ describe("createSessionLogger", () => {
          // Later runtimeContext is set
          const notify = vi.fn();
          runtime.runtimeContext = {
-            ui: { notify, setStatus: vi.fn(), select: vi.fn(), input: vi.fn() }
+            ui: { notify, setStatus: vi.fn(), select: vi.fn(), input: vi.fn() },
          } as unknown as ExtensionRuntime["runtimeContext"];
 
          logger.warn("late warning");

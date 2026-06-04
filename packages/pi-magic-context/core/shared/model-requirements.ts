@@ -25,10 +25,10 @@ const HISTORIAN_FALLBACK_CHAIN: FallbackEntry[] = [
    { providers: ["host-go"], model: "minimax-m2.7" },
    {
       providers: ["zai-coding-plan", "bailian-coding-plan", "host-go", "host"],
-      model: "glm-5"
+      model: "glm-5",
    },
    { providers: ["openai", "github-copilot", "host"], model: "gpt-5.4" },
-   { providers: ["google", "github-copilot", "host"], model: "gemini-3.1-pro" }
+   { providers: ["google", "github-copilot", "host"], model: "gemini-3.1-pro" },
 ];
 
 // Dreamer: runs overnight during idle time, can be slow.
@@ -38,10 +38,10 @@ const DREAMER_FALLBACK_CHAIN: FallbackEntry[] = [
    { providers: ["google", "github-copilot", "host"], model: "gemini-3-flash" },
    {
       providers: ["zai-coding-plan", "bailian-coding-plan", "host-go", "host"],
-      model: "glm-5"
+      model: "glm-5",
    },
    { providers: ["host-go"], model: "minimax-m2.7" },
-   { providers: ["github-copilot", "openai", "host"], model: "gpt-5.4-mini" }
+   { providers: ["github-copilot", "openai", "host"], model: "gpt-5.4-mini" },
 ];
 
 // Sidekick: speed is critical — fast inference providers first.
@@ -50,7 +50,7 @@ const SIDEKICK_FALLBACK_CHAIN: FallbackEntry[] = [
    { providers: ["cerebras"], model: "qwen-3-235b-a22b-instruct-2507" },
    { providers: ["google", "github-copilot", "host"], model: "gemini-3-flash" },
    { providers: ["openai", "github-copilot", "host"], model: "gpt-5.4-mini" },
-   { providers: ["host"], model: "gpt-5-nano" }
+   { providers: ["host"], model: "gpt-5-nano" },
 ];
 
 export const AGENT_MODEL_REQUIREMENTS: Record<string, AgentModelRequirement> = {
@@ -58,7 +58,7 @@ export const AGENT_MODEL_REQUIREMENTS: Record<string, AgentModelRequirement> = {
    // Editor reuses historian's fallback chain — same input profile (long single prompt).
    [HISTORIAN_EDITOR_AGENT]: { fallbackChain: HISTORIAN_FALLBACK_CHAIN },
    [DREAMER_AGENT]: { fallbackChain: DREAMER_FALLBACK_CHAIN },
-   [SIDEKICK_AGENT]: { fallbackChain: SIDEKICK_FALLBACK_CHAIN }
+   [SIDEKICK_AGENT]: { fallbackChain: SIDEKICK_FALLBACK_CHAIN },
 };
 
 /**

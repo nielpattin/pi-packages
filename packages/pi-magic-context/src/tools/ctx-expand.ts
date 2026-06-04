@@ -26,11 +26,11 @@ import { readPiSessionMessages } from "../read-session-pi";
 
 const ParamsSchema = Type.Object({
    start: Type.Number({
-      description: "Start message ordinal (from compartment start attribute)"
+      description: "Start message ordinal (from compartment start attribute)",
    }),
    end: Type.Number({
-      description: "End message ordinal (from compartment end attribute)"
-   })
+      description: "End message ordinal (from compartment end attribute)",
+   }),
 });
 
 type CtxExpandParams = Static<typeof ParamsSchema>;
@@ -43,7 +43,7 @@ function err(text: string) {
    return {
       content: [{ type: "text" as const, text }],
       details: undefined,
-      isError: true
+      isError: true,
    };
 }
 
@@ -78,7 +78,7 @@ export function createCtxExpandTool(_deps: CtxExpandToolDeps): ToolDefinition<ty
          // we don't leak the binding into the transform pipeline's
          // concurrent passes.
          const unregister = setRawMessageProvider(sessionId, {
-            readMessages: () => readPiSessionMessages(ctx)
+            readMessages: () => readPiSessionMessages(ctx),
          });
 
          try {
@@ -86,18 +86,18 @@ export function createCtxExpandTool(_deps: CtxExpandToolDeps): ToolDefinition<ty
                sessionId,
                CTX_EXPAND_TOKEN_BUDGET,
                params.start,
-               params.end + 1 // readSessionChunk uses exclusive end
+               params.end + 1, // readSessionChunk uses exclusive end
             );
 
             if (!chunk.text || chunk.messageCount === 0) {
                return ok(
-                  `No messages found in range ${params.start}-${params.end}. The range may be outside this session's history.`
+                  `No messages found in range ${params.start}-${params.end}. The range may be outside this session's history.`,
                );
             }
 
             const lines: string[] = [];
             lines.push(
-               `Messages ${chunk.startIndex}-${chunk.endIndex} (${chunk.messageCount} messages, ~${chunk.tokenEstimate} tokens):`
+               `Messages ${chunk.startIndex}-${chunk.endIndex} (${chunk.messageCount} messages, ~${chunk.tokenEstimate} tokens):`,
             );
             lines.push("");
             lines.push(chunk.text);
@@ -105,7 +105,7 @@ export function createCtxExpandTool(_deps: CtxExpandToolDeps): ToolDefinition<ty
             if (chunk.endIndex < params.end) {
                lines.push("");
                lines.push(
-                  `Truncated at message ${chunk.endIndex} (budget: ~${CTX_EXPAND_TOKEN_BUDGET} tokens). Call again with start=${chunk.endIndex + 1} end=${params.end} for more.`
+                  `Truncated at message ${chunk.endIndex} (budget: ~${CTX_EXPAND_TOKEN_BUDGET} tokens). Call again with start=${chunk.endIndex + 1} end=${params.end} for more.`,
                );
             }
 
@@ -113,6 +113,6 @@ export function createCtxExpandTool(_deps: CtxExpandToolDeps): ToolDefinition<ty
          } finally {
             unregister();
          }
-      }
+      },
    };
 }

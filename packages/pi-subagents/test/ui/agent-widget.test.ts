@@ -7,7 +7,7 @@ function makeAgent(overrides: { id?: string; status?: string; completedAt?: numb
       id: "agent-1",
       status: "completed",
       completedAt: 5000,
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -22,7 +22,7 @@ describe("assembleWidgetState", () => {
             runningCount: 0,
             queuedCount: 0,
             hasFinished: false,
-            hasActive: false
+            hasActive: false,
          });
       });
    });
@@ -40,7 +40,7 @@ describe("assembleWidgetState", () => {
          const agents = [
             makeAgent({ id: "a1", status: "running", completedAt: undefined }),
             makeAgent({ id: "a2", status: "running", completedAt: undefined }),
-            makeAgent({ id: "a3", status: "running", completedAt: undefined })
+            makeAgent({ id: "a3", status: "running", completedAt: undefined }),
          ];
          expect(assembleWidgetState(agents, alwaysShow).runningCount).toBe(3);
       });
@@ -58,7 +58,7 @@ describe("assembleWidgetState", () => {
       it("counts multiple queued agents", () => {
          const agents = [
             makeAgent({ id: "a1", status: "queued", completedAt: undefined }),
-            makeAgent({ id: "a2", status: "queued", completedAt: undefined })
+            makeAgent({ id: "a2", status: "queued", completedAt: undefined }),
          ];
          expect(assembleWidgetState(agents, alwaysShow).queuedCount).toBe(2);
       });
@@ -101,7 +101,7 @@ describe("assembleWidgetState", () => {
          const agents = [
             makeAgent({ id: "a1", status: "running", completedAt: undefined }),
             makeAgent({ id: "a2", status: "running", completedAt: undefined }),
-            makeAgent({ id: "a3", status: "queued", completedAt: undefined })
+            makeAgent({ id: "a3", status: "queued", completedAt: undefined }),
          ];
          const state = assembleWidgetState(agents, alwaysShow);
          expect(state.runningCount).toBe(2);
@@ -113,7 +113,7 @@ describe("assembleWidgetState", () => {
       it("reports both hasActive and hasFinished when present", () => {
          const agents = [
             makeAgent({ id: "a1", status: "running", completedAt: undefined }),
-            makeAgent({ id: "a2", status: "completed", completedAt: 5000 })
+            makeAgent({ id: "a2", status: "completed", completedAt: 5000 }),
          ];
          const state = assembleWidgetState(agents, alwaysShow);
          expect(state.hasActive).toBe(true);

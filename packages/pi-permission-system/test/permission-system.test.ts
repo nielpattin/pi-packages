@@ -6,7 +6,7 @@ import { expect, test } from "vitest";
 import {
    createActiveToolsCacheKey,
    createBeforeAgentStartPromptStateKey,
-   shouldApplyCachedAgentStartState
+   shouldApplyCachedAgentStartState,
 } from "#src/before-agent-start-cache";
 import { getGlobalConfigPath } from "#src/config-paths";
 import { DEFAULT_EXTENSION_CONFIG } from "#src/extension-config";
@@ -17,13 +17,13 @@ import {
    isForwardedPermissionRequestForSession,
    resolvePermissionForwardingTargetSessionId,
    SUBAGENT_ENV_HINT_KEYS,
-   SUBAGENT_PARENT_SESSION_ENV_KEY
+   SUBAGENT_PARENT_SESSION_ENV_KEY,
 } from "#src/permission-forwarding";
 import { PermissionManager } from "#src/permission-manager";
 import {
    findSkillPathMatch,
    parseAllSkillPromptSections,
-   resolveSkillPromptEntries
+   resolveSkillPromptEntries,
 } from "#src/skill-prompt-sanitizer";
 import { getPermissionSystemStatus } from "#src/status";
 import { sanitizeAvailableToolsSection } from "#src/system-prompt-sanitizer";
@@ -38,7 +38,7 @@ type CreateManagerOptions = {
 function createManager(
    config: ScopeConfig,
    agentFiles: Record<string, string> = {},
-   options: CreateManagerOptions = {}
+   options: CreateManagerOptions = {},
 ) {
    const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-test-"));
    const globalConfigPath = join(baseDir, "pi-permissions.jsonc");
@@ -54,7 +54,7 @@ function createManager(
    const manager = new PermissionManager({
       globalConfigPath,
       agentsDir,
-      mcpServerNames: options.mcpServerNames
+      mcpServerNames: options.mcpServerNames,
    });
 
    return {
@@ -62,13 +62,13 @@ function createManager(
       globalConfigPath,
       cleanup: (): void => {
          rmSync(baseDir, { recursive: true, force: true });
-      }
+      },
    };
 }
 
 type MockHandler = (
    event: Record<string, unknown>,
-   ctx: Record<string, unknown>
+   ctx: Record<string, unknown>,
 ) => Promise<Record<string, unknown> | undefined> | Record<string, unknown> | undefined;
 
 type ExtensionHarness = {
@@ -89,7 +89,7 @@ type ExtensionHarnessOptions = {
 const INHERITED_SUBAGENT_ENV_KEYS = [
    ...SUBAGENT_ENV_HINT_KEYS,
    // eslint-disable-next-line @typescript-eslint/no-deprecated -- test uses deprecated alias intentionally
-   SUBAGENT_PARENT_SESSION_ENV_KEY
+   SUBAGENT_PARENT_SESSION_ENV_KEY,
 ] as const;
 
 async function withIsolatedSubagentEnv<T>(operation: () => Promise<T>): Promise<T> {
@@ -117,7 +117,7 @@ async function withIsolatedSubagentEnv<T>(operation: () => Promise<T>): Promise<
 function createToolCallHarness(
    config: ScopeConfig,
    toolNames: readonly string[],
-   options: ExtensionHarnessOptions = {}
+   options: ExtensionHarnessOptions = {},
 ): ExtensionHarness {
    const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-runtime-"));
    const cwd = options.cwd ?? baseDir;
@@ -142,8 +142,8 @@ function createToolCallHarness(
          registerProvider: (): void => {},
          events: {
             emit: (): void => {},
-            on: (): (() => void) => () => undefined
-         }
+            on: (): (() => void) => () => undefined,
+         },
       } as never);
    } finally {
       if (originalAgentDir === undefined) {
@@ -161,14 +161,14 @@ function createToolCallHarness(
       cleanup: async (): Promise<void> => {
          await Promise.resolve(handlers.session_shutdown({}, createMockContext(cwd, prompts, options)));
          rmSync(baseDir, { recursive: true, force: true });
-      }
+      },
    };
 }
 
 function createMockContext(
    cwd: string,
    prompts: string[],
-   options: ExtensionHarnessOptions = {}
+   options: ExtensionHarnessOptions = {},
 ): Record<string, unknown> {
    return {
       cwd,
@@ -176,7 +176,7 @@ function createMockContext(
       sessionManager: {
          getEntries: (): unknown[] => [],
          getSessionId: (): string => "test-session",
-         getSessionDir: (): string => cwd
+         getSessionDir: (): string => cwd,
       },
       ui: {
          notify: (): void => {},
@@ -185,21 +185,21 @@ function createMockContext(
             prompts.push(title);
             return options.selectResponse ?? "Yes";
          },
-         input: async (): Promise<string | undefined> => options.inputResponse
-      }
+         input: async (): Promise<string | undefined> => options.inputResponse,
+      },
    };
 }
 
 async function runToolCall(
    harness: ExtensionHarness,
    event: Record<string, unknown>,
-   options: ExtensionHarnessOptions = {}
+   options: ExtensionHarnessOptions = {},
 ): Promise<Record<string, unknown>> {
    const handler = harness.handlers.tool_call;
    expect(handler).toBeTypeOf("function");
 
    const result = await withIsolatedSubagentEnv(async () =>
-      Promise.resolve(handler(event, createMockContext(harness.cwd, harness.prompts, options)))
+      Promise.resolve(handler(event, createMockContext(harness.cwd, harness.prompts, options))),
    );
    return result ?? {};
 }
@@ -209,20 +209,20 @@ test("Yolo mode only auto-approves ask-state permissions", () => {
    expect(
       shouldAutoApprovePermissionState("ask", {
          ...DEFAULT_EXTENSION_CONFIG,
-         yoloMode: true
-      })
+         yoloMode: true,
+      }),
    ).toBe(true);
    expect(
       shouldAutoApprovePermissionState("deny", {
          ...DEFAULT_EXTENSION_CONFIG,
-         yoloMode: true
-      })
+         yoloMode: true,
+      }),
    ).toBe(false);
    expect(
       shouldAutoApprovePermissionState("allow", {
          ...DEFAULT_EXTENSION_CONFIG,
-         yoloMode: true
-      })
+         yoloMode: true,
+      }),
    ).toBe(false);
 });
 
@@ -231,22 +231,22 @@ test("Yolo mode resolves ask permissions without UI or delegation forwarding", (
       canResolveAskPermissionRequest({
          config: DEFAULT_EXTENSION_CONFIG,
          hasUI: false,
-         isSubagent: false
-      })
+         isSubagent: false,
+      }),
    ).toBe(false);
    expect(
       canResolveAskPermissionRequest({
          config: { ...DEFAULT_EXTENSION_CONFIG, yoloMode: true },
          hasUI: false,
-         isSubagent: false
-      })
+         isSubagent: false,
+      }),
    ).toBe(true);
    expect(
       canResolveAskPermissionRequest({
          config: DEFAULT_EXTENSION_CONFIG,
          hasUI: false,
-         isSubagent: true
-      })
+         isSubagent: true,
+      }),
    ).toBe(true);
 });
 
@@ -265,7 +265,7 @@ test("System prompt sanitizer removes the Available tools section and surroundin
       "",
       "Guidelines:",
       "- Use mcp for MCP discovery first: search by capability, describe one exact tool name, then call it.",
-      "- Be concise in your responses"
+      "- Be concise in your responses",
    ].join("\n");
 
    const result = sanitizeAvailableToolsSection(prompt, ["read", "mcp"]);
@@ -284,7 +284,7 @@ test("System prompt sanitizer removes denied tool guidelines while keeping globa
       "- Use mcp for MCP discovery first: search by capability, describe one exact tool name, then call it.",
       "- Prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)",
       "- Be concise in your responses",
-      "- Show file paths clearly when working with files"
+      "- Show file paths clearly when working with files",
    ].join("\n");
 
    const result = sanitizeAvailableToolsSection(prompt, ["bash", "grep", "mcp"]);
@@ -302,7 +302,7 @@ test("System prompt sanitizer removes inactive built-in write guidance", () => {
       "Guidelines:",
       "- Use write only for new files or complete rewrites",
       "- When summarizing your actions, output plain text directly - do NOT use cat or bash to display what you did",
-      "- Be concise in your responses"
+      "- Be concise in your responses",
    ].join("\n");
 
    const result = sanitizeAvailableToolsSection(prompt, ["read"]);
@@ -321,7 +321,7 @@ test("Before-agent-start cache dedupes unchanged active-tool exposure and prompt
       cwd: "C:/workspace/project",
       permissionStamp: "permissions-v1",
       systemPrompt: "Available tools:\n- read\n- mcp",
-      allowedToolNames: allowedTools
+      allowedToolNames: allowedTools,
    });
 
    expect(shouldApplyCachedAgentStartState(null, activeToolsKey)).toBe(true);
@@ -332,7 +332,7 @@ test("Before-agent-start cache dedupes unchanged active-tool exposure and prompt
 
 test("Before-agent-start prompt cache invalidates on permission changes while runtime enforcement stays authoritative", () => {
    const { manager, globalConfigPath, cleanup } = createManager({
-      permission: { "*": "allow", write: "deny" }
+      permission: { "*": "allow", write: "deny" },
    });
 
    try {
@@ -342,7 +342,7 @@ test("Before-agent-start prompt cache invalidates on permission changes while ru
          cwd: "C:/workspace/project",
          permissionStamp: baselineStamp,
          systemPrompt: "Available tools:\n- read\n- write",
-         allowedToolNames: ["read"]
+         allowedToolNames: ["read"],
       });
 
       expect(shouldApplyCachedAgentStartState(baselineKey, baselineKey)).toBe(false);
@@ -368,7 +368,7 @@ test("Before-agent-start prompt cache invalidates on permission changes while ru
          cwd: "C:/workspace/project",
          permissionStamp: updatedStamp,
          systemPrompt: "Available tools:\n- read\n- write",
-         allowedToolNames: ["read", "write"]
+         allowedToolNames: ["read", "write"],
       });
 
       expect(shouldApplyCachedAgentStartState(baselineKey, invalidatedKey)).toBe(true);
@@ -391,15 +391,15 @@ test("Permission-system logger respects debug toggle and keeps review log enable
       ensureLogsDirectory: () => {
          mkdirSync(logsDir, { recursive: true });
          return undefined;
-      }
+      },
    });
 
    try {
       const initialDebugWarning = logger.debug("debug.disabled", {
-         sample: true
+         sample: true,
       });
       const reviewWarning = logger.review("permission_request.waiting", {
-         toolName: "write"
+         toolName: "write",
       });
 
       expect(initialDebugWarning).toBe(undefined);
@@ -419,7 +419,7 @@ test("Permission-system logger respects debug toggle and keeps review log enable
 
 test("PermissionManager canonical built-in permission checking", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "deny", read: "allow" }
+      permission: { "*": "deny", read: "allow" },
    });
 
    try {
@@ -442,8 +442,8 @@ test("multiline bash command resolves to allow via universal fallback", () => {
    const { manager, cleanup } = createManager({
       permission: {
          "*": "allow",
-         bash: { "rm -rf *": "deny", "sudo *": "ask" }
-      }
+         bash: { "rm -rf *": "deny", "sudo *": "ask" },
+      },
    });
 
    try {
@@ -461,8 +461,8 @@ test("Bash specific deny patterns override catch-all within the same config", ()
    const { manager, cleanup } = createManager({
       permission: {
          "*": "ask",
-         bash: { "*": "allow", "rm -rf *": "deny" }
-      }
+         bash: { "*": "allow", "rm -rf *": "deny" },
+      },
    });
 
    try {
@@ -484,13 +484,13 @@ test("MCP wildcard matching uses the registered mcp tool", () => {
    const { manager, cleanup } = createManager({
       permission: {
          "*": "ask",
-         mcp: { "*": "deny", "research_*": "ask", "research_query-*": "allow" }
-      }
+         mcp: { "*": "deny", "research_*": "ask", "research_query-*": "allow" },
+      },
    });
 
    try {
       const queryDocs = manager.checkPermission("mcp", {
-         tool: "research:query-docs"
+         tool: "research:query-docs",
       });
       expect(queryDocs.state).toBe("allow");
       expect(queryDocs.source).toBe("mcp");
@@ -498,7 +498,7 @@ test("MCP wildcard matching uses the registered mcp tool", () => {
       expect(queryDocs.target).toBe("research_query-docs");
 
       const resolve2 = manager.checkPermission("mcp", {
-         tool: "research:resolve-context"
+         tool: "research:resolve-context",
       });
       expect(resolve2.state).toBe("ask");
       expect(resolve2.matchedPattern).toBe("research_*");
@@ -518,8 +518,8 @@ test("Arbitrary extension tools use exact-name tool permissions instead of MCP f
       permission: {
          "*": "deny",
          third_party_tool: "allow",
-         mcp: { "*": "deny" }
-      }
+         mcp: { "*": "deny" },
+      },
    });
 
    try {
@@ -544,27 +544,27 @@ test("Skill permission matching", () => {
          skill: {
             "*": "ask",
             "web-*": "deny",
-            "requesting-code-review": "allow"
-         }
-      }
+            "requesting-code-review": "allow",
+         },
+      },
    });
 
    try {
       const allowed = manager.checkPermission("skill", {
-         name: "requesting-code-review"
+         name: "requesting-code-review",
       });
       expect(allowed.state).toBe("allow");
       expect(allowed.matchedPattern).toBe("requesting-code-review");
       expect(allowed.source).toBe("skill");
 
       const denied = manager.checkPermission("skill", {
-         name: "web-design-guidelines"
+         name: "web-design-guidelines",
       });
       expect(denied.state).toBe("deny");
       expect(denied.matchedPattern).toBe("web-*");
 
       const fallback = manager.checkPermission("skill", {
-         name: "unknown-skill"
+         name: "unknown-skill",
       });
       expect(fallback.state).toBe("ask");
       expect(fallback.matchedPattern).toBe("*");
@@ -578,18 +578,18 @@ test("MCP proxy tool infers server-prefixed aliases from configured server names
       {
          permission: {
             "*": "ask",
-            mcp: { "exa_*": "deny", exa_get_code_context_exa: "allow" }
-         }
+            mcp: { "exa_*": "deny", exa_get_code_context_exa: "allow" },
+         },
       },
       {},
       {
-         mcpServerNames: ["exa"]
-      }
+         mcpServerNames: ["exa"],
+      },
    );
 
    try {
       const result = manager.checkPermission("mcp", {
-         tool: "get_code_context_exa"
+         tool: "get_code_context_exa",
       });
       expect(result.state).toBe("allow");
       expect(result.source).toBe("mcp");
@@ -609,7 +609,7 @@ test("MCP server names in settings.json are not used — only mcp.json is consul
    mkdirSync(agentsDir, { recursive: true });
 
    const config: ScopeConfig = {
-      permission: { "*": "ask", mcp: { "legacy-server_*": "allow" } }
+      permission: { "*": "ask", mcp: { "legacy-server_*": "allow" } },
    };
 
    writeFileSync(globalConfigPath, `${JSON.stringify(config, null, 2)}\n`, "utf8");
@@ -619,12 +619,12 @@ test("MCP server names in settings.json are not used — only mcp.json is consul
    const manager = new PermissionManager({
       globalConfigPath,
       agentsDir,
-      globalMcpConfigPath: mcpConfigPath
+      globalMcpConfigPath: mcpConfigPath,
    });
 
    try {
       const result = manager.checkPermission("mcp", {
-         tool: "some_tool_legacy-server"
+         tool: "some_tool_legacy-server",
       });
       expect(result.state).toBe("ask");
    } finally {
@@ -637,19 +637,19 @@ test("MCP describe mode normalizes qualified tool names without duplicating serv
       {
          permission: {
             "*": "ask",
-            mcp: { "exa_*": "deny", exa_web_search_exa: "allow" }
-         }
+            mcp: { "exa_*": "deny", exa_web_search_exa: "allow" },
+         },
       },
       {},
       {
-         mcpServerNames: ["exa"]
-      }
+         mcpServerNames: ["exa"],
+      },
    );
 
    try {
       const result = manager.checkPermission("mcp", {
          describe: "exa:web_search_exa",
-         server: "exa"
+         server: "exa",
       });
       expect(result.state).toBe("allow");
       expect(result.source).toBe("mcp");
@@ -662,7 +662,7 @@ test("MCP describe mode normalizes qualified tool names without duplicating serv
 
 test("Canonical tools map directly without legacy aliases", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "ask", find: "allow", ls: "deny" }
+      permission: { "*": "ask", find: "allow", ls: "deny" },
    });
 
    try {
@@ -681,7 +681,7 @@ test("Canonical tools map directly without legacy aliases", () => {
 test("mcp catch-all acts as fallback for unmatched MCP targets", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
       {
          reviewer: `---
@@ -689,8 +689,8 @@ name: reviewer
 permission:
   mcp: allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -706,7 +706,7 @@ permission:
 test("specific MCP rules override mcp catch-all", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
       {
          reviewer: `---
@@ -716,11 +716,11 @@ permission:
     "*": allow
     exa_web_search_exa: deny
 ---
-`
+`,
       },
       {
-         mcpServerNames: ["exa"]
-      }
+         mcpServerNames: ["exa"],
+      },
    );
 
    try {
@@ -737,7 +737,7 @@ permission:
 test("specific MCP rules still win when mcp catch-all is deny", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
       {
          reviewer: `---
@@ -747,11 +747,11 @@ permission:
     "*": deny
     exa_web_search_exa: allow
 ---
-`
+`,
       },
       {
-         mcpServerNames: ["exa"]
-      }
+         mcpServerNames: ["exa"],
+      },
    );
 
    try {
@@ -773,7 +773,7 @@ permission:
 test("mcp catch-all in agent frontmatter overrides global default", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "deny" }
+         permission: { "*": "deny" },
       },
       {
          reviewer: `---
@@ -781,8 +781,8 @@ name: reviewer
 permission:
   mcp: allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -801,7 +801,7 @@ permission:
 test("Agent frontmatter canonical tools resolve correctly", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "deny" }
+         permission: { "*": "deny" },
       },
       {
          reviewer: `---
@@ -810,8 +810,8 @@ permission:
   find: allow
   ls: deny
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -830,7 +830,7 @@ permission:
 test("All surface names work in agent frontmatter flat permission format", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "deny" }
+         permission: { "*": "deny" },
       },
       {
          reviewer: `---
@@ -840,8 +840,8 @@ permission:
   task: allow
   mcp: allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -864,7 +864,7 @@ permission:
 
 test("task uses exact-name tool permissions like any registered extension tool", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "deny", task: "allow" }
+      permission: { "*": "deny", task: "allow" },
    });
 
    try {
@@ -903,7 +903,7 @@ test("Tool registry blocks unregistered tools and handles aliases", () => {
 test("getToolPermission returns tool-level policy for canonical and extension tools", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
       {
          reviewer: `---
@@ -913,8 +913,8 @@ permission:
   read: deny
   task: allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -931,7 +931,7 @@ permission:
       expect(defaultBashPermission).toBe("ask");
 
       const { manager: manager2, cleanup: cleanup2 } = createManager({
-         permission: { "*": "deny", bash: "allow" }
+         permission: { "*": "deny", bash: "allow" },
       });
 
       try {
@@ -947,7 +947,7 @@ permission:
 
 test("getToolPermission supports arbitrary extension tool names", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "deny", third_party_tool: "allow" }
+      permission: { "*": "deny", third_party_tool: "allow" },
    });
 
    try {
@@ -966,7 +966,7 @@ test("Yolo mode bypasses delegated ask routing when no parent forwarding target 
       hasUI: false,
       isSubagent: true,
       currentSessionId: "child-session",
-      env: {}
+      env: {},
    });
 
    expect(targetSessionId).toBe(null);
@@ -974,14 +974,14 @@ test("Yolo mode bypasses delegated ask routing when no parent forwarding target 
       canResolveAskPermissionRequest({
          config: { ...DEFAULT_EXTENSION_CONFIG, yoloMode: true },
          hasUI: false,
-         isSubagent: true
-      })
+         isSubagent: true,
+      }),
    ).toBe(true);
    expect(
       shouldAutoApprovePermissionState("ask", {
          ...DEFAULT_EXTENSION_CONFIG,
-         yoloMode: true
-      })
+         yoloMode: true,
+      }),
    ).toBe(true);
 });
 
@@ -991,8 +991,8 @@ test("Permission forwarding resolves the parent interactive session from subagen
       isSubagent: true,
       currentSessionId: "child-session",
       env: {
-         PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session"
-      }
+         PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session",
+      },
    });
 
    expect(targetSessionId).toBe("parent-session");
@@ -1003,7 +1003,7 @@ test("Permission forwarding does not guess a target session when subagent runtim
       hasUI: false,
       isSubagent: true,
       currentSessionId: "child-session",
-      env: {}
+      env: {},
    });
 
    expect(targetSessionId).toBe(null);
@@ -1028,7 +1028,7 @@ test("Permission forwarding rejects unresolved sentinel session ids", () => {
    const targetSessionId = resolvePermissionForwardingTargetSessionId({
       hasUI: true,
       isSubagent: false,
-      currentSessionId: "unknown"
+      currentSessionId: "unknown",
    });
 
    expect(targetSessionId).toBe(null);
@@ -1046,7 +1046,7 @@ type CreateManagerWithProjectOptions = CreateManagerOptions & {
 function createManagerWithProject(
    config: ScopeConfig,
    agentFiles: Record<string, string> = {},
-   options: CreateManagerWithProjectOptions = {}
+   options: CreateManagerWithProjectOptions = {},
 ) {
    const baseDir = mkdtempSync(join(tmpdir(), "pi-permission-system-proj-test-"));
    const globalConfigPath = join(baseDir, "pi-permissions.jsonc");
@@ -1076,14 +1076,14 @@ function createManagerWithProject(
       agentsDir,
       projectGlobalConfigPath,
       projectAgentsDir,
-      mcpServerNames: options.mcpServerNames
+      mcpServerNames: options.mcpServerNames,
    });
 
    return {
       manager,
       cleanup: (): void => {
          rmSync(baseDir, { recursive: true, force: true });
-      }
+      },
    };
 }
 
@@ -1092,26 +1092,26 @@ test("Project-level config overrides base bash patterns", () => {
       {
          permission: {
             "*": "allow",
-            bash: { "*": "ask", "rm -rf *": "deny" }
-         }
+            bash: { "*": "ask", "rm -rf *": "deny" },
+         },
       },
       {},
       {
          projectConfig: {
-            permission: { bash: { "rm -rf build": "allow" } }
-         }
-      }
+            permission: { bash: { "rm -rf build": "allow" } },
+         },
+      },
    );
 
    try {
       const allowed = manager.checkPermission("bash", {
-         command: "rm -rf build"
+         command: "rm -rf build",
       });
       expect(allowed.state).toBe("allow");
       expect(allowed.matchedPattern).toBe("rm -rf build");
 
       const denied = manager.checkPermission("bash", {
-         command: "rm -rf node_modules"
+         command: "rm -rf node_modules",
       });
       expect(denied.state).toBe("deny");
       expect(denied.matchedPattern).toBe("rm -rf *");
@@ -1123,7 +1123,7 @@ test("Project-level config overrides base bash patterns", () => {
 test("System-agent config overrides project-level bash patterns", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "allow", bash: "ask" }
+         permission: { "*": "allow", bash: "ask" },
       },
       {
          reviewer: `---
@@ -1132,13 +1132,13 @@ permission:
   bash:
     "git log *": allow
 ---
-`
+`,
       },
       {
          projectConfig: {
-            permission: { bash: { "git *": "deny" } }
-         }
-      }
+            permission: { bash: { "git *": "deny" } },
+         },
+      },
    );
 
    try {
@@ -1157,7 +1157,7 @@ permission:
 test("Project-agent config overrides system-agent tool rules", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
       {
          reviewer: `---
@@ -1165,7 +1165,7 @@ name: reviewer
 permission:
   read: deny
 ---
-`
+`,
       },
       {
          projectAgentFiles: {
@@ -1174,9 +1174,9 @@ name: reviewer
 permission:
   read: allow
 ---
-`
-         }
-      }
+`,
+         },
+      },
    );
 
    try {
@@ -1191,7 +1191,7 @@ permission:
 test("Full precedence chain base < project < system-agent < project-agent for universal default", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "deny" }
+         permission: { "*": "deny" },
       },
       {
          reviewer: `---
@@ -1199,11 +1199,11 @@ name: reviewer
 permission:
   "*": ask
 ---
-`
+`,
       },
       {
          projectConfig: {
-            permission: { "*": "allow" }
+            permission: { "*": "allow" },
          },
          projectAgentFiles: {
             reviewer: `---
@@ -1211,9 +1211,9 @@ name: reviewer
 permission:
   "*": deny
 ---
-`
-         }
-      }
+`,
+         },
+      },
    );
 
    try {
@@ -1232,7 +1232,7 @@ permission:
 test("Project-agent applies even without a matching system-agent file", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "allow" }
+         permission: { "*": "allow" },
       },
       {},
       {
@@ -1242,9 +1242,9 @@ name: reviewer
 permission:
   read: deny
 ---
-`
-         }
-      }
+`,
+         },
+      },
    );
 
    try {
@@ -1272,7 +1272,7 @@ test("PermissionManager reads config from PI_CODING_AGENT_DIR when set", () => {
    mkdirSync(dirname(newConfigPath), { recursive: true });
 
    const config: ScopeConfig = {
-      permission: { "*": "deny", read: "allow" }
+      permission: { "*": "deny", read: "allow" },
    };
    writeFileSync(newConfigPath, JSON.stringify(config), "utf8");
 
@@ -1317,7 +1317,7 @@ test("parseAllSkillPromptSections finds every available_skills block", () => {
       "    <location>/path/to/two</location>",
       "  </skill>",
       "</available_skills>",
-      "Footer"
+      "Footer",
    ].join("\n");
 
    const sections = parseAllSkillPromptSections(prompt);
@@ -1331,8 +1331,8 @@ test("REGRESSION: resolveSkillPromptEntries sanitizes every available_skills blo
    const { manager, cleanup } = createManager({
       permission: {
          "*": "ask",
-         skill: { "denied-skill": "deny" }
-      }
+         skill: { "denied-skill": "deny" },
+      },
    });
 
    try {
@@ -1358,7 +1358,7 @@ test("REGRESSION: resolveSkillPromptEntries sanitizes every available_skills blo
          "    <location>/skills/blocked/two.ts</location>",
          "  </skill>",
          "</available_skills>",
-         "System prompt end"
+         "System prompt end",
       ].join("\n");
 
       const result = resolveSkillPromptEntries(prompt, manager, null, "/cwd");
@@ -1376,8 +1376,8 @@ test("REGRESSION: resolveSkillPromptEntries keeps only visible skills available 
    const { manager, cleanup } = createManager({
       permission: {
          "*": "ask",
-         skill: { "blocked-skill": "deny" }
-      }
+         skill: { "blocked-skill": "deny" },
+      },
    });
 
    try {
@@ -1398,7 +1398,7 @@ test("REGRESSION: resolveSkillPromptEntries keeps only visible skills available 
          "    <location>@./skills/visible/entry.ts</location>",
          "  </skill>",
          "</available_skills>",
-         "System prompt end"
+         "System prompt end",
       ].join("\n");
 
       const result = resolveSkillPromptEntries(prompt, manager, null, "/cwd");
@@ -1406,11 +1406,11 @@ test("REGRESSION: resolveSkillPromptEntries keeps only visible skills available 
       const blockedPath = "/cwd/skills/blocked/file.ts";
       const matchedVisibleSkill = findSkillPathMatch(
          process.platform === "win32" ? visiblePath.toLowerCase() : visiblePath,
-         result.entries
+         result.entries,
       );
       const matchedBlockedSkill = findSkillPathMatch(
          process.platform === "win32" ? blockedPath.toLowerCase() : blockedPath,
-         result.entries
+         result.entries,
       );
 
       expect(matchedVisibleSkill?.name).toBe("visible-skill");
@@ -1440,7 +1440,7 @@ test("external_directory permission falls back to universal default when not exp
 
 test("external_directory permission respects explicit deny", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "deny" }
+      permission: { "*": "allow", external_directory: "deny" },
    });
 
    try {
@@ -1455,7 +1455,7 @@ test("external_directory permission respects explicit deny", () => {
 
 test("external_directory permission can be explicitly allowed", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "allow" }
+      permission: { "*": "allow", external_directory: "allow" },
    });
 
    try {
@@ -1471,7 +1471,7 @@ test("external_directory permission can be explicitly allowed", () => {
 test("external_directory permission respects per-agent override", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
       {
          trusted: `---
@@ -1479,8 +1479,8 @@ name: trusted
 permission:
   external_directory: allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -1501,7 +1501,7 @@ test("external_directory permission is not affected by unrelated surface keys", 
    // Flat format: unknown surface keys are just rules for that surface.
    // external_directory resolves from its own rule, not from unrelated keys.
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "allow" }
+      permission: { "*": "allow", external_directory: "allow" },
    });
 
    try {
@@ -1517,7 +1517,7 @@ test("external_directory permission is not affected by unrelated surface keys", 
 test("skill pattern map in agent frontmatter overrides global skill policy", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "deny", skill: "deny" }
+         permission: { "*": "deny", skill: "deny" },
       },
       {
          reviewer: `---
@@ -1527,8 +1527,8 @@ permission:
     "*": ask
     "pi-*": allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -1555,7 +1555,7 @@ permission:
 test("external_directory pattern map in agent frontmatter overrides global policy", () => {
    const { manager, cleanup } = createManager(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
       {
          trusted: `---
@@ -1565,8 +1565,8 @@ permission:
     "*": deny
     "~/Downloads/*": allow
 ---
-`
-      }
+`,
+      },
    );
 
    try {
@@ -1574,7 +1574,7 @@ permission:
       const allowed = manager.checkPermission(
          "external_directory",
          { path: `${homedir()}/Downloads/file.txt` },
-         "trusted"
+         "trusted",
       );
       expect(allowed.state).toBe("allow");
       expect(allowed.matchedPattern).toBe("~/Downloads/*");
@@ -1584,7 +1584,7 @@ permission:
       const denied = manager.checkPermission(
          "external_directory",
          { path: `${homedir()}/Documents/secret.txt` },
-         "trusted"
+         "trusted",
       );
       expect(denied.state).toBe("deny");
       expect(denied.matchedPattern).toBe("*");
@@ -1601,7 +1601,7 @@ permission:
 test("project-agent frontmatter skill rules override global-agent frontmatter skill rules", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "deny" }
+         permission: { "*": "deny" },
       },
       {
          analyst: `---
@@ -1610,7 +1610,7 @@ permission:
   skill:
     "*": ask
 ---
-`
+`,
       },
       {
          projectAgentFiles: {
@@ -1621,9 +1621,9 @@ permission:
     "pi-*": allow
     "*": deny
 ---
-`
-         }
-      }
+`,
+         },
+      },
    );
 
    try {
@@ -1644,7 +1644,7 @@ permission:
 test("project-agent frontmatter external_directory rules override global-agent frontmatter rules", () => {
    const { manager, cleanup } = createManagerWithProject(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
       {
          analyst: `---
@@ -1652,7 +1652,7 @@ name: analyst
 permission:
   external_directory: ask
 ---
-`
+`,
       },
       {
          projectAgentFiles: {
@@ -1661,9 +1661,9 @@ name: analyst
 permission:
   external_directory: allow
 ---
-`
-         }
-      }
+`,
+         },
+      },
    );
 
    try {
@@ -1688,17 +1688,17 @@ test("tool_call blocks path-bearing tools outside cwd when external_directory is
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
       ["read"],
-      { cwd }
+      { cwd },
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "read",
          toolCallId: "external-deny",
-         input: { path: siblingPath }
+         input: { path: siblingPath },
       });
 
       expect(result.block).toBe(true);
@@ -1716,16 +1716,16 @@ test("tool_call blocks path-bearing tools outside cwd when external_directory is
 test("tool_call allows path-bearing tools inside cwd without external_directory prompt", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
-      ["read"]
+      ["read"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "read",
          toolCallId: "internal-allow",
-         input: { path: join(harness.cwd, "src", "index.ts") }
+         input: { path: join(harness.cwd, "src", "index.ts") },
       });
 
       expect(result).toEqual({});
@@ -1738,9 +1738,9 @@ test("tool_call allows path-bearing tools inside cwd without external_directory 
 test("tool_call blocks external_directory ask when no confirmation channel is available", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
-      ["write"]
+      ["write"],
    );
 
    try {
@@ -1749,8 +1749,8 @@ test("tool_call blocks external_directory ask when no confirmation channel is av
          toolCallId: "external-ask-no-ui",
          input: {
             path: join(harness.cwd, "..", "outside.txt"),
-            content: "blocked"
-         }
+            content: "blocked",
+         },
       });
 
       expect(result.block).toBe(true);
@@ -1763,9 +1763,9 @@ test("tool_call blocks external_directory ask when no confirmation channel is av
 test("tool_call prompts for external_directory and then falls through to normal tool policy", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
-      ["grep"]
+      ["grep"],
    );
 
    try {
@@ -1775,9 +1775,9 @@ test("tool_call prompts for external_directory and then falls through to normal 
          {
             toolName: "grep",
             toolCallId: "external-ask-approved",
-            input: { pattern: "needle", path: externalPath }
+            input: { pattern: "needle", path: externalPath },
          },
-         { hasUI: true, selectResponse: "Yes" }
+         { hasUI: true, selectResponse: "Yes" },
       );
 
       expect(result).toEqual({});
@@ -1793,16 +1793,16 @@ test("tool_call prompts for external_directory and then falls through to normal 
 test("tool_call skips external_directory checks for optional path tools without a path", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
-      ["find"]
+      ["find"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "find",
          toolCallId: "find-default-cwd",
-         input: { pattern: "*.ts" }
+         input: { pattern: "*.ts" },
       });
 
       expect(result).toEqual({});
@@ -1817,16 +1817,16 @@ test("tool_call skips external_directory checks for optional path tools without 
 test("tool_call blocks bash command with external path when external_directory is denied", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
-      ["bash"]
+      ["bash"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "bash",
          toolCallId: "bash-external-deny",
-         input: { command: "cat /etc/hosts" }
+         input: { command: "cat /etc/hosts" },
       });
 
       expect(result.block).toBe(true);
@@ -1843,16 +1843,16 @@ test("tool_call blocks bash command with external path when external_directory i
 test("tool_call allows bash command with only internal paths when external_directory is denied", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "deny" }
+         permission: { "*": "allow", external_directory: "deny" },
       },
-      ["bash"]
+      ["bash"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "bash",
          toolCallId: "bash-internal-allow",
-         input: { command: "cat src/index.ts" }
+         input: { command: "cat src/index.ts" },
       });
 
       expect(result).toEqual({});
@@ -1864,16 +1864,16 @@ test("tool_call allows bash command with only internal paths when external_direc
 test("tool_call prompts for bash command with external path when external_directory is ask", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
-      ["bash"]
+      ["bash"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "bash",
          toolCallId: "bash-external-ask-no-ui",
-         input: { command: "cat /etc/hosts" }
+         input: { command: "cat /etc/hosts" },
       });
 
       // No UI available in default harness, so it should block
@@ -1887,16 +1887,16 @@ test("tool_call prompts for bash command with external path when external_direct
 test("tool_call allows bash command with external path when external_directory is allow", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "allow" }
+         permission: { "*": "allow", external_directory: "allow" },
       },
-      ["bash"]
+      ["bash"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "bash",
          toolCallId: "bash-external-allow",
-         input: { command: "cat /etc/hosts" }
+         input: { command: "cat /etc/hosts" },
       });
 
       // Should pass through to normal bash permission (which is also allow)
@@ -1912,17 +1912,17 @@ test("tool_call applies bash pattern permissions after external_directory allow"
          permission: {
             "*": "allow",
             external_directory: "allow",
-            bash: { "*": "allow", "cat *": "deny" }
-         }
+            bash: { "*": "allow", "cat *": "deny" },
+         },
       },
-      ["bash"]
+      ["bash"],
    );
 
    try {
       const result = await runToolCall(harness, {
          toolName: "bash",
          toolCallId: "bash-pattern-deny-after-ext-allow",
-         input: { command: "cat /etc/hosts" }
+         input: { command: "cat /etc/hosts" },
       });
 
       // external_directory allows, but bash pattern denies
@@ -1936,9 +1936,9 @@ test("tool_call applies bash pattern permissions after external_directory allow"
 test("generic ask prompts include serialized tool input for informed approval", async () => {
    const harness = createToolCallHarness(
       {
-         permission: { "*": "ask" }
+         permission: { "*": "ask" },
       },
-      ["weather_lookup"]
+      ["weather_lookup"],
    );
 
    try {
@@ -1947,9 +1947,9 @@ test("generic ask prompts include serialized tool input for informed approval", 
          {
             toolName: "weather_lookup",
             toolCallId: "generic-tool-input",
-            input: { city: "Chicago", units: "metric" }
+            input: { city: "Chicago", units: "metric" },
          },
-         { hasUI: true, selectResponse: "No" }
+         { hasUI: true, selectResponse: "No" },
       );
 
       expect(result.block).toBe(true);
@@ -1979,7 +1979,7 @@ test("getResolvedPolicyPaths returns correct paths and existence when files exis
          globalConfigPath,
          agentsDir,
          projectGlobalConfigPath: projectConfigPath,
-         projectAgentsDir
+         projectAgentsDir,
       });
 
       const result = pm.getResolvedPolicyPaths();
@@ -2005,7 +2005,7 @@ test("getResolvedPolicyPaths returns false for missing files and null for absent
 
       const pm = new PermissionManager({
          globalConfigPath,
-         agentsDir
+         agentsDir,
       });
 
       const result = pm.getResolvedPolicyPaths();
@@ -2027,7 +2027,7 @@ test("getResolvedPolicyPaths returns false for missing files and null for absent
 
 test("PermissionManager.getConfigIssues returns empty array for clean config", () => {
    const config: ScopeConfig = {
-      permission: { "*": "ask", external_directory: "ask" }
+      permission: { "*": "ask", external_directory: "ask" },
    };
    const { manager, cleanup } = createManager(config);
    try {
@@ -2061,10 +2061,10 @@ test("session approval: first prompt with 'Yes, for this session' skips subseque
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
       ["read", "grep"],
-      { cwd }
+      { cwd },
    );
 
    try {
@@ -2074,9 +2074,9 @@ test("session approval: first prompt with 'Yes, for this session' skips subseque
          {
             toolName: "read",
             toolCallId: "ext-session-1",
-            input: { path: join(siblingDir, "src", "foo.ts") }
+            input: { path: join(siblingDir, "src", "foo.ts") },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(result1).toEqual({});
       expect(harness.prompts.length).toBe(1);
@@ -2087,9 +2087,9 @@ test("session approval: first prompt with 'Yes, for this session' skips subseque
          {
             toolName: "read",
             toolCallId: "ext-session-2",
-            input: { path: join(siblingDir, "src", "bar.ts") }
+            input: { path: join(siblingDir, "src", "bar.ts") },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(result2).toEqual({});
       // No new prompt — still just the original one
@@ -2101,9 +2101,9 @@ test("session approval: first prompt with 'Yes, for this session' skips subseque
          {
             toolName: "grep",
             toolCallId: "ext-session-3",
-            input: { pattern: "needle", path: join(siblingDir, "src", "baz.ts") }
+            input: { pattern: "needle", path: join(siblingDir, "src", "baz.ts") },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(result3).toEqual({});
       expect(harness.prompts.length).toBe(1);
@@ -2124,10 +2124,10 @@ test("session approval: different directory prefix still prompts", async () => {
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
       ["read"],
-      { cwd }
+      { cwd },
    );
 
    try {
@@ -2137,9 +2137,9 @@ test("session approval: different directory prefix still prompts", async () => {
          {
             toolName: "read",
             toolCallId: "ext-diff-1",
-            input: { path: join(siblingA, "src", "foo.ts") }
+            input: { path: join(siblingA, "src", "foo.ts") },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(harness.prompts.length).toBe(1);
 
@@ -2149,9 +2149,9 @@ test("session approval: different directory prefix still prompts", async () => {
          {
             toolName: "read",
             toolCallId: "ext-diff-2",
-            input: { path: join(siblingB, "src", "bar.ts") }
+            input: { path: join(siblingB, "src", "bar.ts") },
          },
-         { hasUI: true, selectResponse: "Yes" }
+         { hasUI: true, selectResponse: "Yes" },
       );
       expect(harness.prompts.length).toBe(2);
    } finally {
@@ -2169,10 +2169,10 @@ test("session approval: session_shutdown clears session approvals", async () => 
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
       ["read"],
-      { cwd }
+      { cwd },
    );
 
    try {
@@ -2182,16 +2182,16 @@ test("session approval: session_shutdown clears session approvals", async () => 
          {
             toolName: "read",
             toolCallId: "ext-shutdown-1",
-            input: { path: join(siblingDir, "src", "foo.ts") }
+            input: { path: join(siblingDir, "src", "foo.ts") },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(harness.prompts.length).toBe(1);
 
       // Trigger session_shutdown (clears cache)
       const shutdownCtx = createMockContext(cwd, harness.prompts, {
          hasUI: true,
-         selectResponse: "Yes"
+         selectResponse: "Yes",
       });
       await Promise.resolve(harness.handlers.session_shutdown({}, shutdownCtx));
 
@@ -2201,9 +2201,9 @@ test("session approval: session_shutdown clears session approvals", async () => 
          {
             toolName: "read",
             toolCallId: "ext-shutdown-2",
-            input: { path: join(siblingDir, "src", "foo.ts") }
+            input: { path: join(siblingDir, "src", "foo.ts") },
          },
-         { hasUI: true, selectResponse: "Yes" }
+         { hasUI: true, selectResponse: "Yes" },
       );
       expect(result).toEqual({});
       expect(harness.prompts.length).toBe(2);
@@ -2220,10 +2220,10 @@ test("session approval: bash external directory with 'Yes, for this session' ski
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
       ["bash"],
-      { cwd }
+      { cwd },
    );
 
    try {
@@ -2234,9 +2234,9 @@ test("session approval: bash external directory with 'Yes, for this session' ski
          {
             toolName: "bash",
             toolCallId: "bash-session-1",
-            input: { command: `ls ${externalPath}/foo.ts` }
+            input: { command: `ls ${externalPath}/foo.ts` },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(result1).toEqual({});
       expect(harness.prompts.length).toBe(1);
@@ -2247,9 +2247,9 @@ test("session approval: bash external directory with 'Yes, for this session' ski
          {
             toolName: "bash",
             toolCallId: "bash-session-2",
-            input: { command: `cat ${externalPath}/bar.ts` }
+            input: { command: `cat ${externalPath}/bar.ts` },
          },
-         { hasUI: true, selectResponse: "Yes, for this session" }
+         { hasUI: true, selectResponse: "Yes, for this session" },
       );
       expect(result2).toEqual({});
       expect(harness.prompts.length).toBe(1);
@@ -2268,10 +2268,10 @@ test("session approval: regular 'Yes' does not create session approval", async (
 
    const harness = createToolCallHarness(
       {
-         permission: { "*": "allow", external_directory: "ask" }
+         permission: { "*": "allow", external_directory: "ask" },
       },
       ["read"],
-      { cwd }
+      { cwd },
    );
 
    try {
@@ -2281,9 +2281,9 @@ test("session approval: regular 'Yes' does not create session approval", async (
          {
             toolName: "read",
             toolCallId: "ext-once-1",
-            input: { path: join(siblingDir, "src", "foo.ts") }
+            input: { path: join(siblingDir, "src", "foo.ts") },
          },
-         { hasUI: true, selectResponse: "Yes" }
+         { hasUI: true, selectResponse: "Yes" },
       );
       expect(harness.prompts.length).toBe(1);
 
@@ -2293,9 +2293,9 @@ test("session approval: regular 'Yes' does not create session approval", async (
          {
             toolName: "read",
             toolCallId: "ext-once-2",
-            input: { path: join(siblingDir, "src", "bar.ts") }
+            input: { path: join(siblingDir, "src", "bar.ts") },
          },
-         { hasUI: true, selectResponse: "Yes" }
+         { hasUI: true, selectResponse: "Yes" },
       );
       expect(harness.prompts.length).toBe(2);
    } finally {
@@ -2310,7 +2310,7 @@ test("session approval: regular 'Yes' does not create session approval", async (
 
 test("checkPermission returns source 'session' when session rules cover the external_directory path", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow" }
+      permission: { "*": "allow" },
    });
 
    try {
@@ -2320,15 +2320,15 @@ test("checkPermission returns source 'session' when session rules cover the exte
             pattern: "/other/project/*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission(
          "external_directory",
          { path: "/other/project/src/foo.ts" },
          undefined,
-         sessionRules
+         sessionRules,
       );
       expect(result.state).toBe("allow");
       expect(result.source).toBe("session");
@@ -2340,7 +2340,7 @@ test("checkPermission returns source 'session' when session rules cover the exte
 
 test("checkPermission falls back to config policy when session rules do not cover the path", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "deny" }
+      permission: { "*": "allow", external_directory: "deny" },
    });
 
    try {
@@ -2350,8 +2350,8 @@ test("checkPermission falls back to config policy when session rules do not cove
             pattern: "/other/project/*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       // Path NOT under /other/project/ — session rules don't match.
@@ -2359,7 +2359,7 @@ test("checkPermission falls back to config policy when session rules do not cove
          "external_directory",
          { path: "/completely/different/path.ts" },
          undefined,
-         sessionRules
+         sessionRules,
       );
       expect(result.state).toBe("deny");
       expect(result.source).toBe("special");
@@ -2370,20 +2370,20 @@ test("checkPermission falls back to config policy when session rules do not cove
 
 test("checkPermission with empty session rules is identical to call without sessionRules arg", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "deny" }
+      permission: { "*": "allow", external_directory: "deny" },
    });
 
    try {
       const withEmpty = manager.checkPermission("external_directory", { path: "/other/project/foo.ts" }, undefined, []);
       const withoutArg = manager.checkPermission("external_directory", {
-         path: "/other/project/foo.ts"
+         path: "/other/project/foo.ts",
       });
       const expected: PermissionCheckResult = {
          toolName: "external_directory",
          state: "deny",
          matchedPattern: "*",
          source: "special",
-         origin: "global"
+         origin: "global",
       };
       expect(withEmpty).toEqual(expected);
       expect(withoutArg).toEqual(expected);
@@ -2395,7 +2395,7 @@ test("checkPermission with empty session rules is identical to call without sess
 test("session rules for one surface do not affect checks on other surfaces", () => {
    const { manager, cleanup } = createManager({
       // Empty permission: universal default is "ask" from DEFAULT_UNIVERSAL_FALLBACK.
-      permission: {}
+      permission: {},
    });
 
    try {
@@ -2405,8 +2405,8 @@ test("session rules for one surface do not affect checks on other surfaces", () 
             pattern: "/other/project/*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       // Bash check — session rules should not affect bash decisions.
@@ -2425,7 +2425,7 @@ test("session rules for one surface do not affect checks on other surfaces", () 
 
 test("session rules override config deny for external_directory", () => {
    const { manager, cleanup } = createManager({
-      permission: { "*": "allow", external_directory: "deny" }
+      permission: { "*": "allow", external_directory: "deny" },
    });
 
    try {
@@ -2435,8 +2435,8 @@ test("session rules override config deny for external_directory", () => {
             pattern: "/other/project/*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       // Session approval overrides config deny for the covered path.
@@ -2444,7 +2444,7 @@ test("session rules override config deny for external_directory", () => {
          "external_directory",
          { path: "/other/project/src/foo.ts" },
          undefined,
-         sessionRules
+         sessionRules,
       );
       expect(result.state).toBe("allow");
       expect(result.source).toBe("session");
@@ -2465,8 +2465,8 @@ test("checkPermission returns source 'session' for bash when session rules match
             pattern: "git *",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("bash", { command: "git status --short" }, undefined, sessionRules);
@@ -2488,8 +2488,8 @@ test("checkPermission returns source 'session' for bash when session rule is exa
             pattern: "ls",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("bash", { command: "ls" }, undefined, sessionRules);
@@ -2510,8 +2510,8 @@ test("checkPermission falls back to config for bash when session rules do not ma
             pattern: "git *",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("bash", { command: "npm run build" }, undefined, sessionRules);
@@ -2532,8 +2532,8 @@ test("checkPermission returns source 'session' for mcp when session rules match 
             pattern: "exa:*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("mcp", { tool: "exa:search" }, undefined, sessionRules);
@@ -2554,8 +2554,8 @@ test("checkPermission returns source 'session' for skill when session rules matc
             pattern: "librarian",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("skill", { name: "librarian" }, undefined, sessionRules);
@@ -2577,8 +2577,8 @@ test("checkPermission returns source 'session' for tool surface when session rul
             pattern: "*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("read", {}, undefined, sessionRules);
@@ -2599,8 +2599,8 @@ test("bash session rules do not bleed into mcp checks", () => {
             pattern: "git *",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
 
       const result = manager.checkPermission("mcp", { tool: "exa:search" }, undefined, sessionRules);

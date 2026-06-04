@@ -38,8 +38,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(false),
             hasUI: true,
-            isSubagent: false
-         })
+            isSubagent: false,
+         }),
       ).toBe(true);
    });
 
@@ -48,8 +48,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(false),
             hasUI: false,
-            isSubagent: true
-         })
+            isSubagent: true,
+         }),
       ).toBe(true);
    });
 
@@ -58,8 +58,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(true),
             hasUI: false,
-            isSubagent: false
-         })
+            isSubagent: false,
+         }),
       ).toBe(true);
    });
 
@@ -68,8 +68,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(false),
             hasUI: false,
-            isSubagent: false
-         })
+            isSubagent: false,
+         }),
       ).toBe(false);
    });
 
@@ -78,8 +78,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(undefined),
             hasUI: false,
-            isSubagent: false
-         })
+            isSubagent: false,
+         }),
       ).toBe(false);
    });
 
@@ -88,8 +88,8 @@ describe("canResolveAskPermissionRequest", () => {
          canResolveAskPermissionRequest({
             config: makeConfig(true),
             hasUI: true,
-            isSubagent: true
-         })
+            isSubagent: true,
+         }),
       ).toBe(true);
    });
 });

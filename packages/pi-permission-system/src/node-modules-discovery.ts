@@ -49,7 +49,7 @@ function discoverGlobalNodeModulesViaSubprocess(): string | null {
       const result = spawnSync("npm", ["root", "-g"], {
          encoding: "utf-8",
          timeout: 5000,
-         stdio: ["ignore", "pipe", "ignore"]
+         stdio: ["ignore", "pipe", "ignore"],
       });
       const root = result.stdout.trim();
       if (result.status === 0 && root && existsSync(root)) {

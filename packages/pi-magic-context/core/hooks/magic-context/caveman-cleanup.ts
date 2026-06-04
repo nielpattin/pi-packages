@@ -50,7 +50,7 @@ const DEPTH_ULTRA = 3;
 const DEPTH_TO_LEVEL: Record<number, CavemanLevel> = {
    [DEPTH_LITE]: "lite",
    [DEPTH_FULL]: "full",
-   [DEPTH_ULTRA]: "ultra"
+   [DEPTH_ULTRA]: "ultra",
 };
 
 export interface CavemanCleanupConfig {
@@ -89,12 +89,12 @@ export function applyCavemanCleanup(
    db: ContextDatabase,
    targets: Map<number, TagTarget>,
    tags: TagEntry[],
-   config: CavemanCleanupConfig & { protectedTags: number }
+   config: CavemanCleanupConfig & { protectedTags: number },
 ): CavemanCleanupResult {
    const result: CavemanCleanupResult = {
       compressedToLite: 0,
       compressedToFull: 0,
-      compressedToUltra: 0
+      compressedToUltra: 0,
    };
 
    if (!config.enabled) return result;
@@ -112,7 +112,7 @@ export function applyCavemanCleanup(
             tag.type === "message" &&
             tag.status === "active" &&
             tag.tagNumber <= protectedCutoff &&
-            tag.byteSize >= config.minChars
+            tag.byteSize >= config.minChars,
       )
       // Sort by tag_number ascending — oldest first. This matches the
       // insertion order the tagger uses and is the stable age ordering.
@@ -137,7 +137,7 @@ export function applyCavemanCleanup(
    const originalByTag = getSourceContents(
       db,
       sessionId,
-      tagsNeedingCompression.map((t) => t.tagNumber)
+      tagsNeedingCompression.map((t) => t.tagNumber),
    );
 
    // Build a position lookup once — the previous implementation called
@@ -185,7 +185,7 @@ export function applyCavemanCleanup(
    if (total > 0) {
       sessionLog(
          sessionId,
-         `caveman cleanup: compressed ${total} text tags (lite=${result.compressedToLite}, full=${result.compressedToFull}, ultra=${result.compressedToUltra})`
+         `caveman cleanup: compressed ${total} text tags (lite=${result.compressedToLite}, full=${result.compressedToFull}, ultra=${result.compressedToUltra})`,
       );
    }
 
@@ -216,12 +216,12 @@ export function replayCavemanCompression(
    sessionId: string,
    db: ContextDatabase,
    targets: Map<number, TagTarget>,
-   tags: TagEntry[]
+   tags: TagEntry[],
 ): number {
    // Pre-filter to only tags that need replay so we avoid loading source
    // contents for everything in the session.
    const compressedTags = tags.filter(
-      (tag) => tag.type === "message" && tag.status === "active" && tag.cavemanDepth > 0 && targets.has(tag.tagNumber)
+      (tag) => tag.type === "message" && tag.status === "active" && tag.cavemanDepth > 0 && targets.has(tag.tagNumber),
    );
 
    if (compressedTags.length === 0) return 0;
@@ -229,7 +229,7 @@ export function replayCavemanCompression(
    const originalByTag = getSourceContents(
       db,
       sessionId,
-      compressedTags.map((t) => t.tagNumber)
+      compressedTags.map((t) => t.tagNumber),
    );
 
    let replayed = 0;

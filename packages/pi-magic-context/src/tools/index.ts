@@ -54,8 +54,8 @@ export function registerMagicContextTools(pi: ExtensionAPI, opts: RegisterToolsO
          ensureProjectRegistered: opts.ensureProjectRegistered,
          memoryEnabled: opts.memoryEnabled,
          embeddingEnabled: opts.embeddingEnabled,
-         gitCommitsEnabled: opts.gitCommitsEnabled
-      })
+         gitCommitsEnabled: opts.gitCommitsEnabled,
+      }),
    );
 
    pi.registerTool(
@@ -64,15 +64,15 @@ export function registerMagicContextTools(pi: ExtensionAPI, opts: RegisterToolsO
          ensureProjectRegistered: opts.ensureProjectRegistered,
          memoryEnabled: opts.memoryEnabled,
          embeddingEnabled: opts.embeddingEnabled,
-         allowDreamerActions: opts.allowDreamerActions ?? false
-      })
+         allowDreamerActions: opts.allowDreamerActions ?? false,
+      }),
    );
 
    pi.registerTool(
       createCtxNoteTool({
          db: opts.db,
-         dreamerEnabled: opts.dreamerEnabled ?? false
-      })
+         dreamerEnabled: opts.dreamerEnabled ?? false,
+      }),
    );
 
    pi.registerTool(createCtxExpandTool({ db: opts.db }));
@@ -95,8 +95,8 @@ export function registerMagicContextTools(pi: ExtensionAPI, opts: RegisterToolsO
       pi.registerTool(
          createCtxReduceTool({
             db: opts.db,
-            protectedTags: opts.protectedTags ?? 20
-         })
+            protectedTags: opts.protectedTags ?? 20,
+         }),
       );
    }
 }

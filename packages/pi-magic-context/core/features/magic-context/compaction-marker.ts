@@ -28,7 +28,7 @@ export function closeCompactionMarkerDb(): void {}
 
 export function findBoundaryUserMessage(
    _sessionId: string,
-   _endOrdinal: number
+   _endOrdinal: number,
 ): { id: string; timeCreated: number } | null {
    return null;
 }
@@ -45,7 +45,7 @@ export interface InjectCompactionMarkerArgs {
 }
 
 export function injectCompactionMarker(
-   _args: InjectCompactionMarkerArgs
+   _args: InjectCompactionMarkerArgs,
 ): Omit<CompactionMarkerState, "boundaryOrdinal"> | null {
    return null;
 }

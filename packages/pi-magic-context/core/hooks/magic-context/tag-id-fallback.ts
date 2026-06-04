@@ -23,7 +23,7 @@ export interface ExistingTagResolver {
       messageId: string,
       type: TaggableContentType,
       currentContentId: string,
-      ordinal: number
+      ordinal: number,
    ) => number | undefined;
 }
 
@@ -34,7 +34,7 @@ function parseScopedContentId(contentId: string): ParsedContentId | null {
    return {
       messageId: match[1],
       type: match[2] === "file" ? "file" : "message",
-      partIndex: Number.parseInt(match[3], 10)
+      partIndex: Number.parseInt(match[3], 10),
    };
 }
 
@@ -90,6 +90,6 @@ export function createExistingTagResolver(sessionId: string, tagger: Tagger, db:
          tagger.bindTag(sessionId, currentContentId, fallback.tagNumber);
          usedTagNumbers.add(fallback.tagNumber);
          return fallback.tagNumber;
-      }
+      },
    };
 }

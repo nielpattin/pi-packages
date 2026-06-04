@@ -18,8 +18,8 @@ export function synthesizeDefaults(universalDefault: PermissionState, origin: Ru
          pattern: "*",
          action: universalDefault,
          layer: "default",
-         origin
-      }
+         origin,
+      },
    ];
 }
 
@@ -56,8 +56,8 @@ export function synthesizeBaseline(configRules: Ruleset): Ruleset {
          pattern: target,
          action: "allow",
          layer: "baseline",
-         origin: "baseline"
-      })
+         origin: "baseline",
+      }),
    );
 }
 

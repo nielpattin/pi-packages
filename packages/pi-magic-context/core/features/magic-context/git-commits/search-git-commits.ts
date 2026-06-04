@@ -34,7 +34,7 @@ function rowToCommit(row: CommitRow): StoredGitCommit {
       message: row.message,
       author: row.author,
       committedAtMs: row.committed_at,
-      indexedAtMs: row.indexed_at
+      indexedAtMs: row.indexed_at,
    };
 }
 
@@ -48,7 +48,7 @@ function getFtsStatement(db: Database): PreparedStatement {
              FROM git_commits_fts
              INNER JOIN git_commits c ON c.sha = git_commits_fts.sha
              WHERE c.project_path = ? AND git_commits_fts MATCH ?
-             ORDER BY bm25(git_commits_fts) LIMIT ?`
+             ORDER BY bm25(git_commits_fts) LIMIT ?`,
       );
       ftsStatements.set(db, stmt);
    }
@@ -62,7 +62,7 @@ function getLikeFallbackStatement(db: Database): PreparedStatement {
          `SELECT sha, project_path, short_sha, message, author, committed_at, indexed_at
              FROM git_commits
              WHERE project_path = ? AND lower(message) LIKE '%' || lower(?) || '%'
-             ORDER BY committed_at DESC LIMIT ?`
+             ORDER BY committed_at DESC LIMIT ?`,
       );
       ftsPlainStatements.set(db, stmt);
    }
@@ -74,7 +74,7 @@ function getBySHAStatement(db: Database): PreparedStatement {
    if (!stmt) {
       stmt = db.prepare(
          `SELECT sha, project_path, short_sha, message, author, committed_at, indexed_at
-             FROM git_commits WHERE sha = ?`
+             FROM git_commits WHERE sha = ?`,
       );
       getBySHAStatements.set(db, stmt);
    }
@@ -114,7 +114,7 @@ export function searchGitCommitsSync(
    db: Database,
    projectPath: string,
    query: string,
-   options: SearchGitCommitsOptions
+   options: SearchGitCommitsOptions,
 ): GitCommitSearchHit[] {
    const trimmed = query.trim();
    if (trimmed.length === 0 || options.limit <= 0) return [];
@@ -134,7 +134,7 @@ export function searchGitCommitsSync(
          }
       } catch (error) {
          log(
-            `[git-commits] FTS query failed for "${trimmed}": ${error instanceof Error ? error.message : String(error)}`
+            `[git-commits] FTS query failed for "${trimmed}": ${error instanceof Error ? error.message : String(error)}`,
          );
       }
    }

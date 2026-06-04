@@ -105,7 +105,7 @@ export interface SessionContext {
 export type ShellExec = (
    command: string,
    args: string[],
-   options?: { cwd?: string; timeout?: number }
+   options?: { cwd?: string; timeout?: number },
 ) => Promise<{ stdout: string; stderr: string; code: number }>;
 
 /** Parent session identity — grouped fields that travel together from the tool boundary. */

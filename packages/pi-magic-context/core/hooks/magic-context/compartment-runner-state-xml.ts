@@ -11,14 +11,14 @@ export function buildExistingStateXml(
       content: string;
    }>,
    facts: Array<{ category: string; content: string }>,
-   memoryBlock?: string
+   memoryBlock?: string,
 ): string {
    const lines: string[] = [];
 
    // Project memories are read-only reference for deduplication — historian must not modify them
    if (memoryBlock) {
       lines.push(
-         "<!-- Project memories below are READ-ONLY reference. Do NOT emit them in output. Drop any session fact already covered by a project memory. -->"
+         "<!-- Project memories below are READ-ONLY reference. Do NOT emit them in output. Drop any session fact already covered by a project memory. -->",
       );
       lines.push(memoryBlock);
       lines.push("");
@@ -40,7 +40,7 @@ export function buildExistingStateXml(
 
    if (factsByCategory.size > 0) {
       lines.push(
-         "<!-- Rewrite all facts below into canonical present-tense operational form. Do not copy wording verbatim. Drop stale or task-local facts. Drop facts already covered by project memories above. -->"
+         "<!-- Rewrite all facts below into canonical present-tense operational form. Do not copy wording verbatim. Drop stale or task-local facts. Drop facts already covered by project memories above. -->",
       );
       lines.push("");
    }
@@ -64,7 +64,7 @@ export function mergePriorCompartments(
       title: string;
       content: string;
    }>,
-   newCompartments: CandidateCompartment[]
+   newCompartments: CandidateCompartment[],
 ): CandidateCompartment[] {
    return [
       ...priorCompartments.map((c, i) => ({
@@ -74,8 +74,8 @@ export function mergePriorCompartments(
          startMessageId: c.startMessageId,
          endMessageId: c.endMessageId,
          title: c.title,
-         content: c.content
+         content: c.content,
       })),
-      ...newCompartments
+      ...newCompartments,
    ];
 }

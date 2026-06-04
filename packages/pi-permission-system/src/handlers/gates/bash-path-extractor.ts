@@ -132,66 +132,66 @@ const PATTERN_FIRST_COMMANDS: ReadonlyMap<string, PatternCommandConfig> = new Ma
       "sed",
       {
          argConsumingFlags: new Set(["-e", "-i"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "awk",
       {
          argConsumingFlags: new Set(["-e", "-F", "-v"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "gawk",
       {
          argConsumingFlags: new Set(["-e", "-F", "-v"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "nawk",
       {
          argConsumingFlags: new Set(["-e", "-F", "-v"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "grep",
       {
          argConsumingFlags: new Set(["-e", "-A", "-B", "-C", "-m"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "egrep",
       {
          argConsumingFlags: new Set(["-e", "-A", "-B", "-C", "-m"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "fgrep",
       {
          argConsumingFlags: new Set(["-e", "-A", "-B", "-C", "-m"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "rg",
       {
          argConsumingFlags: new Set(["-e", "-A", "-B", "-C", "-m", "-g", "-t", "-T", "-j", "-M", "-r", "-E"]),
-         fileConsumingFlags: new Set(["-f"])
-      }
+         fileConsumingFlags: new Set(["-f"]),
+      },
    ],
    [
       "sd",
       {
          argConsumingFlags: new Set(["-n", "-f"]),
          fileConsumingFlags: new Set([]),
-         patternPositionals: 2
-      }
-   ]
+         patternPositionals: 2,
+      },
+   ],
 ]);
 
 /** Node types that represent argument values in the AST. */

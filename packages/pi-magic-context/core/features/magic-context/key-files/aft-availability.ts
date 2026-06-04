@@ -77,7 +77,7 @@ export function getAftAvailability(): AftAvailability {
       available: overrideAvailability ?? detected,
       host,
       pi,
-      checkedPaths
+      checkedPaths,
    };
 }
 

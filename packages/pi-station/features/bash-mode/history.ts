@@ -81,7 +81,7 @@ export function appendProjectHistory(cwd: string, command: string, entryCwd: str
    const existing = readProjectHistory(cwd);
    const next: PersistedHistoryEntry[] = [
       { command: normalizedCommand, cwd: entryCwd, timestamp: Date.now() },
-      ...existing.filter((entry) => entry.command !== normalizedCommand)
+      ...existing.filter((entry) => entry.command !== normalizedCommand),
    ].slice(0, 500);
 
    const filePath = projectHistoryPath(cwd);

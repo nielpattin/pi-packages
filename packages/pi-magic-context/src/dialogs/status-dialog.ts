@@ -5,7 +5,7 @@ import {
    type TUI,
    truncateToWidth,
    visibleWidth,
-   wrapTextWithAnsi
+   wrapTextWithAnsi,
 } from "@earendil-works/pi-tui";
 import { getCompartments, getSessionFacts } from "#core/features/magic-context/compartment-storage";
 import { getMemoryCount } from "#core/features/magic-context/memory/storage-memory";
@@ -28,7 +28,7 @@ const COLORS = {
    memories: "#34d399",
    conversation: "#f87171",
    toolCalls: "#fb923c",
-   toolDefs: "#f472b6"
+   toolDefs: "#f472b6",
 };
 
 /** Refresh cadence while dialog is open. */
@@ -100,7 +100,7 @@ interface StatusDialogDetail {
 export async function showStatusDialog(
    pi: ExtensionAPI,
    ctx: ExtensionCommandContext,
-   deps: StatusDialogDeps
+   deps: StatusDialogDeps,
 ): Promise<void> {
    const sessionId = resolveSessionId(ctx);
    if (!sessionId) throw new Error("No active Pi session is available.");
@@ -111,7 +111,7 @@ export async function showStatusDialog(
       (tui, theme, _keybindings, done) => {
          profileStatusDialog(
             sessionId,
-            `status-dialog: factory invoked after ${(performance.now() - showStart).toFixed(0)}ms`
+            `status-dialog: factory invoked after ${(performance.now() - showStart).toFixed(0)}ms`,
          );
          return new StatusDialogComponent({
             pi,
@@ -120,17 +120,17 @@ export async function showStatusDialog(
             sessionId,
             theme,
             tui,
-            done
+            done,
          });
       },
       {
          overlay: true,
-         overlayOptions: { anchor: "center", width: "88%", minWidth: 78, margin: 1 }
-      }
+         overlayOptions: { anchor: "center", width: "88%", minWidth: 78, margin: 1 },
+      },
    );
    profileStatusDialog(
       sessionId,
-      `status-dialog: ctx.ui.custom resolved after ${(performance.now() - showStart).toFixed(0)}ms`
+      `status-dialog: ctx.ui.custom resolved after ${(performance.now() - showStart).toFixed(0)}ms`,
    );
 }
 
@@ -166,14 +166,14 @@ class StatusDialogComponent implements Component {
       this.detail = buildCachedPiStatusDetail(props.ctx, props.deps, props.sessionId);
       profileStatusDialog(
          props.sessionId,
-         `status-dialog: component constructor cached detail ready after ${(performance.now() - constructorStart).toFixed(0)}ms`
+         `status-dialog: component constructor cached detail ready after ${(performance.now() - constructorStart).toFixed(0)}ms`,
       );
       this.refreshTimer = setInterval(() => {
          this.refreshDetail("interval");
       }, REFRESH_INTERVAL_MS);
       profileStatusDialog(
          props.sessionId,
-         `status-dialog: component constructor done after ${(performance.now() - constructorStart).toFixed(0)}ms`
+         `status-dialog: component constructor done after ${(performance.now() - constructorStart).toFixed(0)}ms`,
       );
    }
 
@@ -192,7 +192,7 @@ class StatusDialogComponent implements Component {
       this.props.done(undefined);
       profileStatusDialog(
          this.props.sessionId,
-         `status-dialog: close completed after ${(performance.now() - closeStart).toFixed(0)}ms`
+         `status-dialog: close completed after ${(performance.now() - closeStart).toFixed(0)}ms`,
       );
    }
 
@@ -208,7 +208,7 @@ class StatusDialogComponent implements Component {
       this.scheduleInitialRefresh();
       profileStatusDialog(
          this.props.sessionId,
-         `status-dialog: render(${width}) completed after ${(performance.now() - renderStart).toFixed(0)}ms (${lines.length} lines)`
+         `status-dialog: render(${width}) completed after ${(performance.now() - renderStart).toFixed(0)}ms (${lines.length} lines)`,
       );
       return lines;
    }
@@ -234,7 +234,7 @@ class StatusDialogComponent implements Component {
          this.props.tui.requestRender();
          profileStatusDialog(
             this.props.sessionId,
-            `status-dialog: ${reason} refresh completed after ${(performance.now() - refreshStart).toFixed(0)}ms`
+            `status-dialog: ${reason} refresh completed after ${(performance.now() - refreshStart).toFixed(0)}ms`,
          );
       } catch {
          // best effort; keep previous detail
@@ -259,7 +259,7 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
 
    // Header
    lines.push(
-      `${theme.fg("accent", theme.bold("⚡ Magic Context Status"))}   ${theme.fg("muted", `v${packageJson.version}`)}`
+      `${theme.fg("accent", theme.bold("⚡ Magic Context Status"))}   ${theme.fg("muted", `v${packageJson.version}`)}`,
    );
    lines.push("");
 
@@ -267,7 +267,7 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
    lines.push(
       `Context  ${theme.fg(pctColor, theme.bold(`${s.usagePercentage.toFixed(1)}%`))} · ${fmt(s.inputTokens)} / ${
          s.contextLimit > 0 ? fmt(s.contextLimit) : "?"
-      } tokens`
+      } tokens`,
    );
 
    // Segmented bar (fills the full inner content width)
@@ -286,38 +286,38 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
    lines.push(
       `Counts: ${s.compartmentCount} compartments · ${s.factCount} facts · ${s.memoryCount} memories (${s.memoryBlockCount} injected) · ${
          s.sessionNoteCount + s.readySmartNoteCount
-      } notes`
+      } notes`,
    );
    lines.push(
       `Historian: ${s.historianRunning ? theme.fg("warning", "running") : theme.fg("accent", "idle")}${
          s.historianFailureCount > 0
             ? ` · ${theme.fg("error", `last failure ${s.historianLastFailureAt ? relTime(s.historianLastFailureAt) : "unknown"}`)}`
             : ""
-      }`
+      }`,
    );
    lines.push(`Pending drops: ${s.pendingOpsCount}`);
    lines.push(
       `Cache TTL: ${s.cacheTtl} · last response ${
          s.lastResponseTime > 0 ? `${Math.round((Date.now() - s.lastResponseTime) / 1000)}s ago` : "never"
-      } · ${s.cacheExpired ? theme.fg("warning", "expired") : `${Math.round(s.cacheRemainingMs / 1000)}s remaining`}`
+      } · ${s.cacheExpired ? theme.fg("warning", "expired") : `${Math.round(s.cacheRemainingMs / 1000)}s remaining`}`,
    );
    lines.push("");
 
    // Tags
    lines.push(theme.fg("muted", "Tags"));
    lines.push(
-      `Active ${s.activeTags} (~${formatBytes(s.activeBytes)}) · Dropped ${s.droppedTags} · Total ${s.totalTags}`
+      `Active ${s.activeTags} (~${formatBytes(s.activeBytes)}) · Dropped ${s.droppedTags} · Total ${s.totalTags}`,
    );
 
    // Rolling nudges / context
    lines.push(theme.fg("muted", "Rolling Nudges / Context"));
    lines.push(
-      `Execute threshold ${formatThresholdPercent(s.executeThreshold)}% · Anchor ${fmt(s.lastNudgeTokens)} tok · Interval ${fmt(s.nudgeInterval)} tok · Next ${fmt(s.nextNudgeAfter)} tok`
+      `Execute threshold ${formatThresholdPercent(s.executeThreshold)}% · Anchor ${fmt(s.lastNudgeTokens)} tok · Interval ${fmt(s.nudgeInterval)} tok · Next ${fmt(s.nextNudgeAfter)} tok`,
    );
    lines.push(
       `Protected tags ${s.protectedTagCount} · Subagent ${s.isSubagent ? "yes" : "no"} · History block ~${fmt(s.historyBlockTokens)} tok${
          s.compressionBudget ? ` · Budget ~${fmt(s.compressionBudget)} tok (${s.compressionUsage} used)` : ""
-      }`
+      }`,
    );
 
    if (s.lastTransformError) lines.push(theme.fg("error", `⚠ ${s.lastTransformError}`));
@@ -361,7 +361,7 @@ function drawBorder(inner: string[], width: number, theme: Theme): string[] {
 function buildCachedPiStatusDetail(
    ctx: ExtensionCommandContext,
    deps: StatusDialogDeps,
-   sessionId: string
+   sessionId: string,
 ): StatusDialogDetail {
    const usage = ctx.getContextUsage?.();
    const meta = getOrCreateSessionMeta(deps.db, sessionId);
@@ -378,7 +378,7 @@ function buildCachedPiStatusDetail(
    const threshold = resolveExecuteThresholdDetail(deps.executeThresholdPercentage ?? 65, modelKey, 65, {
       tokensConfig: deps.executeThresholdTokens,
       contextLimit: contextLimit || undefined,
-      sessionId
+      sessionId,
    });
    const cacheTtl = meta.cacheTtl || "5m";
    const cacheTtlMs = parseTtlString(cacheTtl);
@@ -435,7 +435,7 @@ function buildCachedPiStatusDetail(
       memoryTokens: 0,
       conversationTokens,
       toolCallTokens: meta.toolCallTokens,
-      toolDefinitionTokens: 0
+      toolDefinitionTokens: 0,
    };
 }
 
@@ -443,7 +443,7 @@ export function buildPiStatusDetail(
    pi: ExtensionAPI,
    ctx: ExtensionCommandContext,
    deps: StatusDialogDeps,
-   sessionId: string
+   sessionId: string,
 ): StatusDialogDetail {
    const perfStart = performance.now();
    const usage = ctx.getContextUsage?.();
@@ -461,7 +461,7 @@ export function buildPiStatusDetail(
    const compartments = getCompartments(deps.db, sessionId);
    for (const c of compartments) {
       compartmentTokens += estimateTokens(
-         `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`
+         `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`,
       );
    }
    let factTokens = 0;
@@ -486,7 +486,7 @@ export function buildPiStatusDetail(
       }
       profileStatusDialog(
          sessionId,
-         `status-dialog: getSystemPrompt took ${(performance.now() - perfSysPromptStart).toFixed(0)}ms (${typeof sysPrompt === "string" ? sysPrompt.length : 0} chars, ${systemPromptTokens} tokens)`
+         `status-dialog: getSystemPrompt took ${(performance.now() - perfSysPromptStart).toFixed(0)}ms (${typeof sysPrompt === "string" ? sysPrompt.length : 0} chars, ${systemPromptTokens} tokens)`,
       );
    } catch {
       // best effort; fall back to stored
@@ -524,12 +524,12 @@ export function buildPiStatusDetail(
       const tools = pi.getAllTools?.() ?? [];
       for (const tool of tools) {
          toolDefinitionTokens += estimateTokens(
-            `${tool.name ?? ""}\n${tool.description ?? ""}\n${safeStringify(tool.parameters)}`
+            `${tool.name ?? ""}\n${tool.description ?? ""}\n${safeStringify(tool.parameters)}`,
          );
       }
       profileStatusDialog(
          sessionId,
-         `status-dialog: getAllTools took ${(performance.now() - perfToolsStart).toFixed(0)}ms (${tools.length} tools, ${toolDefinitionTokens} tokens)`
+         `status-dialog: getAllTools took ${(performance.now() - perfToolsStart).toFixed(0)}ms (${tools.length} tools, ${toolDefinitionTokens} tokens)`,
       );
    } catch {
       // best effort
@@ -543,14 +543,14 @@ export function buildPiStatusDetail(
          factTokens -
          memoryTokens -
          toolCallTokens -
-         toolDefinitionTokens
+         toolDefinitionTokens,
    );
 
    const modelKey = ctx.model ? `${ctx.model.provider}/${ctx.model.id}` : undefined;
    const threshold = resolveExecuteThresholdDetail(deps.executeThresholdPercentage ?? 65, modelKey, 65, {
       tokensConfig: deps.executeThresholdTokens,
       contextLimit: contextLimit || undefined,
-      sessionId
+      sessionId,
    });
    const cacheTtl = meta.cacheTtl || "5m";
    const cacheTtlMs = parseTtlString(cacheTtl);
@@ -566,7 +566,7 @@ export function buildPiStatusDetail(
 
    profileStatusDialog(
       sessionId,
-      `status-dialog: buildPiStatusDetail total ${(performance.now() - perfStart).toFixed(0)}ms`
+      `status-dialog: buildPiStatusDetail total ${(performance.now() - perfStart).toFixed(0)}ms`,
    );
 
    return {
@@ -583,18 +583,18 @@ export function buildPiStatusDetail(
             getNotes(deps.db, {
                sessionId,
                type: "session",
-               status: "active"
+               status: "active",
             }).length,
-         0
+         0,
       ),
       readySmartNoteCount: safeRead(
          () =>
             getNotes(deps.db, {
                projectPath: deps.projectIdentity,
                type: "smart",
-               status: "ready"
+               status: "ready",
             }).length,
-         0
+         0,
       ),
       pendingOpsCount: pendingOps,
       historianRunning: meta.compartmentInProgress,
@@ -630,7 +630,7 @@ export function buildPiStatusDetail(
       memoryTokens,
       conversationTokens,
       toolCallTokens,
-      toolDefinitionTokens
+      toolDefinitionTokens,
    };
 }
 
@@ -659,46 +659,46 @@ function breakdownSegments(s: StatusDialogDetail): Array<{
       segs.push({
          label: "System",
          tokens: s.systemPromptTokens,
-         color: COLORS.system
+         color: COLORS.system,
       });
    if (s.compartmentTokens > 0)
       segs.push({
          label: "Compartments",
          tokens: s.compartmentTokens,
          color: COLORS.compartments,
-         detail: `(${s.compartmentCount})`
+         detail: `(${s.compartmentCount})`,
       });
    if (s.factTokens > 0)
       segs.push({
          label: "Facts",
          tokens: s.factTokens,
          color: COLORS.facts,
-         detail: `(${s.factCount})`
+         detail: `(${s.factCount})`,
       });
    if (s.memoryTokens > 0)
       segs.push({
          label: "Memories",
          tokens: s.memoryTokens,
          color: COLORS.memories,
-         detail: `(${s.memoryBlockCount})`
+         detail: `(${s.memoryBlockCount})`,
       });
    if (s.conversationTokens > 0)
       segs.push({
          label: "Conversation",
          tokens: s.conversationTokens,
-         color: COLORS.conversation
+         color: COLORS.conversation,
       });
    if (s.toolCallTokens > 0)
       segs.push({
          label: "Tool Calls",
          tokens: s.toolCallTokens,
-         color: COLORS.toolCalls
+         color: COLORS.toolCalls,
       });
    if (s.toolDefinitionTokens > 0)
       segs.push({
          label: "Tool Defs",
          tokens: s.toolDefinitionTokens,
-         color: COLORS.toolDefs
+         color: COLORS.toolDefs,
       });
    return segs;
 }
@@ -739,7 +739,7 @@ function readSessionMetaRow(db: ContextDatabase, sessionId: string) {
             historian_last_error: string | null;
          }
       >(
-         "SELECT memory_block_cache, memory_block_count, historian_failure_count, historian_last_failure_at, historian_last_error FROM session_meta WHERE session_id = ?"
+         "SELECT memory_block_cache, memory_block_count, historian_failure_count, historian_last_failure_at, historian_last_error FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 }

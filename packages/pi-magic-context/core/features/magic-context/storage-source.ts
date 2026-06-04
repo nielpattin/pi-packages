@@ -14,7 +14,7 @@ function isSourceContentRow(row: unknown): row is SourceContentRow {
 
 export function saveSourceContent(db: Database, sessionId: string, tagId: number, content: string): void {
    db.prepare(
-      "INSERT OR IGNORE INTO source_contents (tag_id, session_id, content, created_at, harness) VALUES (?, ?, ?, ?, ?)"
+      "INSERT OR IGNORE INTO source_contents (tag_id, session_id, content, created_at, harness) VALUES (?, ?, ?, ?, ?)",
    ).run(tagId, sessionId, content, Date.now(), getHarness());
 }
 
@@ -23,7 +23,7 @@ export function replaceSourceContent(db: Database, sessionId: string, tagId: num
       `INSERT INTO source_contents (tag_id, session_id, content, created_at, harness)
      VALUES (?, ?, ?, ?, ?)
      ON CONFLICT(session_id, tag_id)
-     DO UPDATE SET content = excluded.content, created_at = excluded.created_at`
+     DO UPDATE SET content = excluded.content, created_at = excluded.created_at`,
    ).run(tagId, sessionId, content, Date.now(), getHarness());
 }
 

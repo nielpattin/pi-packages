@@ -12,9 +12,9 @@ function makeParams(overrides: Partial<PermissionGateParams> = {}): PermissionGa
       messages: {
          denyReason: "Denied by policy.",
          unavailableReason: "No interactive UI available.",
-         userDeniedReason: (d) => (d.denialReason ? `User denied. Reason: ${d.denialReason}.` : "User denied.")
+         userDeniedReason: (d) => (d.denialReason ? `User denied. Reason: ${d.denialReason}.` : "User denied."),
       },
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -25,21 +25,21 @@ describe("applyPermissionGate", () => {
          const result = await applyPermissionGate(params);
          expect(result).toEqual({
             action: "block",
-            reason: "Denied by policy."
+            reason: "Denied by policy.",
          });
       });
 
       it("calls writeLog with policy_denied resolution", async () => {
          const params = makeParams({
             state: "deny",
-            logContext: { source: "tool_call", toolName: "bash" }
+            logContext: { source: "tool_call", toolName: "bash" },
          });
          await applyPermissionGate(params);
          expect(params.writeLog).toHaveBeenCalledOnce();
          expect(params.writeLog).toHaveBeenCalledWith("permission_request.blocked", {
             source: "tool_call",
             toolName: "bash",
-            resolution: "policy_denied"
+            resolution: "policy_denied",
          });
       });
 
@@ -56,7 +56,7 @@ describe("applyPermissionGate", () => {
          const result = await applyPermissionGate(params);
          expect(result).toEqual({
             action: "block",
-            reason: "No interactive UI available."
+            reason: "No interactive UI available.",
          });
       });
 
@@ -64,14 +64,14 @@ describe("applyPermissionGate", () => {
          const params = makeParams({
             state: "ask",
             canConfirm: false,
-            logContext: { source: "skill_read", skillName: "foo" }
+            logContext: { source: "skill_read", skillName: "foo" },
          });
          await applyPermissionGate(params);
          expect(params.writeLog).toHaveBeenCalledOnce();
          expect(params.writeLog).toHaveBeenCalledWith("permission_request.blocked", {
             source: "skill_read",
             skillName: "foo",
-            resolution: "confirmation_unavailable"
+            resolution: "confirmation_unavailable",
          });
       });
 
@@ -86,13 +86,13 @@ describe("applyPermissionGate", () => {
       it("returns block with user-denied reason when user rejects", async () => {
          const decision: PermissionPromptDecision = {
             approved: false,
-            state: "denied"
+            state: "denied",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({ action: "block", reason: "User denied." });
@@ -102,31 +102,31 @@ describe("applyPermissionGate", () => {
          const decision: PermissionPromptDecision = {
             approved: false,
             state: "denied_with_reason",
-            denialReason: "not now"
+            denialReason: "not now",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({
             action: "block",
-            reason: "User denied. Reason: not now."
+            reason: "User denied. Reason: not now.",
          });
       });
 
       it("does not call writeLog when user rejects (logged by promptPermission)", async () => {
          const decision: PermissionPromptDecision = {
             approved: false,
-            state: "denied"
+            state: "denied",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          await applyPermissionGate(params);
          expect(params.writeLog).not.toHaveBeenCalled();
@@ -137,13 +137,13 @@ describe("applyPermissionGate", () => {
       it("returns allow when user approves", async () => {
          const decision: PermissionPromptDecision = {
             approved: true,
-            state: "approved"
+            state: "approved",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({ action: "allow" });
@@ -152,13 +152,13 @@ describe("applyPermissionGate", () => {
       it("does not call writeLog when user approves", async () => {
          const decision: PermissionPromptDecision = {
             approved: true,
-            state: "approved"
+            state: "approved",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          await applyPermissionGate(params);
          expect(params.writeLog).not.toHaveBeenCalled();
@@ -169,33 +169,33 @@ describe("applyPermissionGate", () => {
       it("attaches sessionApproval to result when decision is approved_for_session and param provided", async () => {
          const decision: PermissionPromptDecision = {
             approved: true,
-            state: "approved_for_session"
+            state: "approved_for_session",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
             promptForApproval,
-            sessionApproval: { surface: "bash", pattern: "git *" }
+            sessionApproval: { surface: "bash", pattern: "git *" },
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({
             action: "allow",
-            sessionApproval: { surface: "bash", pattern: "git *" }
+            sessionApproval: { surface: "bash", pattern: "git *" },
          });
       });
 
       it("does not attach sessionApproval when decision is approved (once)", async () => {
          const decision: PermissionPromptDecision = {
             approved: true,
-            state: "approved"
+            state: "approved",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
             promptForApproval,
-            sessionApproval: { surface: "bash", pattern: "git *" }
+            sessionApproval: { surface: "bash", pattern: "git *" },
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({ action: "allow" });
@@ -204,13 +204,13 @@ describe("applyPermissionGate", () => {
       it("does not attach sessionApproval when no sessionApproval param", async () => {
          const decision: PermissionPromptDecision = {
             approved: true,
-            state: "approved_for_session"
+            state: "approved_for_session",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
-            promptForApproval
+            promptForApproval,
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({ action: "allow" });
@@ -219,14 +219,14 @@ describe("applyPermissionGate", () => {
       it("does not attach sessionApproval when user denies", async () => {
          const decision: PermissionPromptDecision = {
             approved: false,
-            state: "denied"
+            state: "denied",
          };
          const promptForApproval = vi.fn().mockResolvedValue(decision);
          const params = makeParams({
             state: "ask",
             canConfirm: true,
             promptForApproval,
-            sessionApproval: { surface: "bash", pattern: "git *" }
+            sessionApproval: { surface: "bash", pattern: "git *" },
          });
          const result = await applyPermissionGate(params);
          expect(result).toEqual({ action: "block", reason: "User denied." });

@@ -3,7 +3,7 @@
  */
 
 import type { Model } from "@earendil-works/pi-ai";
-import type { AgentSession, AgentSessionEvent, SettingsManager } from "@earendil-works/pi-coding-agent";
+import { type AgentSession, type AgentSessionEvent, type SettingsManager } from "@earendil-works/pi-coding-agent";
 import type { AgentConfigLookup } from "#src/config/agent-types";
 import type { ChildLifecyclePublisher } from "#src/lifecycle/child-lifecycle";
 import type { ParentSnapshot } from "#src/lifecycle/parent-snapshot";
@@ -254,7 +254,7 @@ export async function runAgent(
    type: SubagentType,
    prompt: string,
    options: RunOptions,
-   deps: RunnerDeps
+   deps: RunnerDeps,
 ): Promise<RunResult> {
    const parentSessionId = options.context.parentSession?.parentSessionId;
    deps.lifecycle.spawning({ agentName: type, parentSessionId });
@@ -270,17 +270,17 @@ export async function runAgent(
          cwd: snapshot.cwd,
          parentSystemPrompt: snapshot.systemPrompt,
          parentModel: snapshot.model,
-         modelRegistry: snapshot.modelRegistry
+         modelRegistry: snapshot.modelRegistry,
       },
       {
          cwd: options.context.cwd,
          isolated: options.isolated,
          model: options.model,
-         thinkingLevel: options.thinkingLevel
+         thinkingLevel: options.thinkingLevel,
       },
       env,
       deps.registry,
-      deps.io.assemblerIO
+      deps.io.assemblerIO,
    );
 
    const agentDir = deps.io.getAgentDir();
@@ -300,7 +300,7 @@ export async function runAgent(
       noThemes: true,
       noContextFiles: true,
       systemPromptOverride: () => cfg.systemPrompt,
-      appendSystemPromptOverride: () => []
+      appendSystemPromptOverride: () => [],
    });
    await loader.reload();
 
@@ -320,7 +320,7 @@ export async function runAgent(
       model: cfg.model,
       tools: cfg.toolNames,
       resourceLoader: loader,
-      thinkingLevel: cfg.thinkingLevel
+      thinkingLevel: cfg.thinkingLevel,
    });
 
    // Publish session-created before bindExtensions() so observers (e.g. the
@@ -361,7 +361,7 @@ export async function runAgent(
             if (!softLimitReached && turnCount >= maxTurns) {
                softLimitReached = true;
                void session.steer(
-                  "You have reached your turn limit. Wrap up immediately - provide your final answer now."
+                  "You have reached your turn limit. Wrap up immediately - provide your final answer now.",
                );
             } else if (softLimitReached && turnCount >= maxTurns + (options.graceTurns ?? 5)) {
                aborted = true;
@@ -396,7 +396,7 @@ export async function runAgent(
       session,
       aborted,
       steered: softLimitReached,
-      sessionFile: sessionManager.getSessionFile()
+      sessionFile: sessionManager.getSessionFile(),
    };
 }
 
@@ -434,7 +434,7 @@ export function getAgentConversation(session: AgentSession): string {
          if (toolNames.length > 0) parts.push(`[Tool Calls]:\n${toolNames.map((n) => `  Tool: ${n}`).join("\n")}`);
       } else if (msg.role === "toolResult") {
          const text = extractText(msg.content);
-         const truncated = text.length > 200 ? `${text.slice(0, 200)}...` : text;
+         const truncated = text.length > 200 ? text.slice(0, 200) + "..." : text;
          parts.push(`[Tool Result (${msg.toolName})]: ${truncated}`);
       }
    }

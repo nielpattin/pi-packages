@@ -29,7 +29,7 @@ export function parseQualifiedMcpToolName(value: string): { server: string; tool
 function addDerivedMcpServerTargets(
    toolName: string,
    configuredServerNames: readonly string[],
-   pushTarget: (value: string | null) => void
+   pushTarget: (value: string | null) => void,
 ): void {
    const trimmedToolName = toolName.trim();
    if (!trimmedToolName) {
@@ -60,7 +60,7 @@ function pushMcpToolPermissionTargets(
    rawReference: string,
    serverHint: string | null,
    configuredServerNames: readonly string[],
-   pushTarget: (value: string | null) => void
+   pushTarget: (value: string | null) => void,
 ): void {
    const qualified = parseQualifiedMcpToolName(rawReference);
    const resolvedServer = serverHint ?? qualified?.server ?? null;

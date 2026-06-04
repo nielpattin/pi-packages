@@ -21,7 +21,7 @@ export type RequestPermissionDecisionFromUi = (
    ui: PermissionDecisionUi,
    title: string,
    message: string,
-   options?: RequestPermissionOptions
+   options?: RequestPermissionOptions,
 ) => Promise<PermissionPromptDecision>;
 
 export interface AudiblePermissionDecisionRequesterDeps {
@@ -34,7 +34,7 @@ export interface AudiblePermissionDecisionRequesterDeps {
 function defaultPermissionSoundSettings(agentDir: string): PermissionSoundSettings {
    return {
       sound: join(agentDir, "assets", "permission-request.mp3"),
-      volume: 100
+      volume: 100,
    };
 }
 
@@ -83,7 +83,7 @@ export function loadPermissionSoundSettings(agentDir: string): PermissionSoundSe
       const config = section as RawPermissionSoundSettings;
       return {
          sound: resolveSoundPath(config.sound, dirname(settingsPath)) ?? defaults.sound,
-         volume: typeof config.volume === "number" ? normalizeVolume(config.volume) : defaults.volume
+         volume: typeof config.volume === "number" ? normalizeVolume(config.volume) : defaults.volume,
       };
    } catch {
       return defaults;
@@ -91,7 +91,7 @@ export function loadPermissionSoundSettings(agentDir: string): PermissionSoundSe
 }
 
 export function playPermissionSound(
-   deps: Pick<AudiblePermissionDecisionRequesterDeps, "agentDir" | "exec" | "warn">
+   deps: Pick<AudiblePermissionDecisionRequesterDeps, "agentDir" | "exec" | "warn">,
 ): void {
    if (!deps.exec) return;
 
@@ -107,7 +107,7 @@ export function playPermissionSound(
 }
 
 export function createAudiblePermissionDecisionRequester(
-   deps: AudiblePermissionDecisionRequesterDeps
+   deps: AudiblePermissionDecisionRequesterDeps,
 ): RequestPermissionDecisionFromUi {
    return async (ui, title, message, options) => {
       playPermissionSound(deps);

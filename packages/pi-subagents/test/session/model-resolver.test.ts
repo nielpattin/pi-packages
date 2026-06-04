@@ -7,7 +7,7 @@ const MODELS = [
    { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" },
    { id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", provider: "anthropic" },
    { id: "gpt-4o", name: "GPT-4o", provider: "openai" },
-   { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "google" }
+   { id: "gemini-2.5-pro", name: "Gemini 2.5 Pro", provider: "google" },
 ];
 
 function makeRegistry(models = MODELS, available?: typeof MODELS): ModelRegistry {
@@ -18,7 +18,7 @@ function makeRegistry(models = MODELS, available?: typeof MODELS): ModelRegistry
       getAll() {
          return models;
       },
-      getAvailable: available ? () => available : undefined
+      getAvailable: available ? () => available : undefined,
    };
 }
 
@@ -172,7 +172,7 @@ describe("resolveModel", () => {
       const SIMILAR_MODELS = [
          { id: "claude-sonnet-4-6", name: "Claude Sonnet 4.6", provider: "anthropic" },
          { id: "claude-sonnet-4-5-20241022", name: "Claude Sonnet 4.5", provider: "anthropic" },
-         { id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", provider: "anthropic" }
+         { id: "claude-haiku-4-5-20251001", name: "Claude Haiku 4.5", provider: "anthropic" },
       ];
 
       it("'sonnet' prefers tighter id match (shorter id)", () => {

@@ -129,7 +129,7 @@ export function tagTranscript(
    transcript: Transcript,
    tagger: Tagger,
    db: ContextDatabase,
-   options: TagTranscriptOptions = {}
+   options: TagTranscriptOptions = {},
 ): TagTranscriptResult {
    const skipPrefixInjection = options.skipPrefixInjection === true;
    const targets = new Map<number, TagTarget>();
@@ -181,7 +181,7 @@ export function tagTranscript(
                tagger,
                db,
                targets,
-               skipPrefixInjection
+               skipPrefixInjection,
             });
             textOrdinal += 1;
             continue;
@@ -206,7 +206,7 @@ export function tagTranscript(
                   tagger,
                   db,
                   targets,
-                  skipPrefixInjection
+                  skipPrefixInjection,
                });
                continue;
             }
@@ -220,7 +220,7 @@ export function tagTranscript(
                existing.occurrences.push({
                   message,
                   part,
-                  kind: part.kind
+                  kind: part.kind,
                });
                const newByteSize = byteSize(text);
                if (newByteSize > existing.maxByteSize) {
@@ -257,7 +257,7 @@ export function tagTranscript(
                   db,
                   0,
                   meta.toolName ?? null,
-                  meta.inputByteSize
+                  meta.inputByteSize,
                );
                const aggregate = {
                   callId,
@@ -266,12 +266,12 @@ export function tagTranscript(
                      {
                         message,
                         part,
-                        kind: part.kind
-                     }
+                        kind: part.kind,
+                     },
                   ],
                   maxByteSize: byteSize(text),
                   toolName: meta.toolName ?? null,
-                  inputByteSize: part.kind === "tool_use" ? meta.inputByteSize : 0
+                  inputByteSize: part.kind === "tool_use" ? meta.inputByteSize : 0,
                };
                toolAggregates.set(callId, aggregate);
                // Inject §N§ prefix into this occurrence's visible text
@@ -369,7 +369,7 @@ function tagToolPart(args: TagToolPartArgs): void {
       args.db,
       0,
       meta.toolName ?? null,
-      meta.inputByteSize
+      meta.inputByteSize,
    );
 
    // For tool parts, the visible payload is the tool result text. We
@@ -452,8 +452,8 @@ function buildAggregateTarget(tagId: number, occurrences: ToolOccurrence[]): Tag
       },
       message: {
          info: { id: messageId, role },
-         parts: []
-      }
+         parts: [],
+      },
    };
 }
 
@@ -482,8 +482,8 @@ function buildTextTarget(part: TranscriptPart, message: { info: { id?: string; r
       // sufficient.
       message: {
          info: { id: message.info.id, role: message.info.role },
-         parts: []
-      }
+         parts: [],
+      },
    };
 }
 
@@ -524,7 +524,7 @@ function buildToolTarget(part: TranscriptPart, message: { info: { id?: string; r
       },
       message: {
          info: { id: message.info.id, role: message.info.role },
-         parts: []
-      }
+         parts: [],
+      },
    };
 }

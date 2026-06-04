@@ -6,7 +6,7 @@ import type { ChangedFile } from "./types.js";
 describe(buildSimplifyPrompt, () => {
    const files: readonly ChangedFile[] = [
       { path: "src/foo.ts", status: "modified" },
-      { path: "src/bar.ts", status: "added" }
+      { path: "src/bar.ts", status: "added" },
    ];
 
    it("lists all file paths in the prompt", () => {

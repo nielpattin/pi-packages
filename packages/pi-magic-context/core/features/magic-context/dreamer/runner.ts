@@ -122,15 +122,15 @@ async function getActiveProjectSessionIds(args: {
    sessionDirectory: string | undefined;
 }): Promise<string[]> {
    const listResponse = await args.client.session.list({
-      query: { directory: args.sessionDirectory ?? args.projectIdentity }
+      query: { directory: args.sessionDirectory ?? args.projectIdentity },
    });
    const sessions = shared.normalizeSDKResponse(listResponse, [] as SessionListEntry[], {
-      preferResponseOnMissingData: true
+      preferResponseOnMissingData: true,
    });
    const projectSessionIds = new Set(
       sessions
          .map((session) => (typeof session?.id === "string" ? session.id : null))
-         .filter((sessionId): sessionId is string => Boolean(sessionId))
+         .filter((sessionId): sessionId is string => Boolean(sessionId)),
    );
 
    if (projectSessionIds.size === 0) {
@@ -180,7 +180,7 @@ async function _identifyKeyFiles(args: {
       db: args.db,
       client: args.client,
       projectIdentity: args.projectIdentity,
-      sessionDirectory: args.sessionDirectory
+      sessionDirectory: args.sessionDirectory,
    });
    if (sessionIds.length === 0) {
       log(`[key-files] no active sessions found for ${args.projectIdentity}`);
@@ -210,7 +210,7 @@ async function _identifyKeyFiles(args: {
          isLeaseLost: args.isLeaseLost,
          deadline: args.deadline,
          sessionId,
-         config: args.config
+         config: args.config,
       });
    }
 }
@@ -246,12 +246,12 @@ export async function runDream(args: {
       holderId,
       smartNotesSurfaced: 0,
       smartNotesPending: 0,
-      tasks: []
+      tasks: [],
    };
    const memoryCountsBefore = getMemoryCountsByStatus(args.db, args.projectIdentity);
 
    log(
-      `[dreamer] starting dream run: ${args.tasks.length} tasks, timeout=${args.taskTimeoutMinutes}m, maxRuntime=${args.maxRuntimeMinutes}m, project=${args.projectIdentity}`
+      `[dreamer] starting dream run: ${args.tasks.length} tasks, timeout=${args.taskTimeoutMinutes}m, maxRuntime=${args.maxRuntimeMinutes}m, project=${args.projectIdentity}`,
    );
 
    if (!acquireLease(args.db, holderId)) {
@@ -261,7 +261,7 @@ export async function runDream(args: {
          name: "lease",
          durationMs: 0,
          result: null,
-         error: `Dream lease is already held by ${currentHolder}`
+         error: `Dream lease is already held by ${currentHolder}`,
       });
       result.finishedAt = Date.now();
       return result;
@@ -275,10 +275,10 @@ export async function runDream(args: {
       try {
          const sessionDir = args.sessionDirectory ?? args.projectIdentity;
          const listResponse = await args.client.session.list({
-            query: { directory: sessionDir }
+            query: { directory: sessionDir },
          });
          const sessions = shared.normalizeSDKResponse(listResponse, [] as { id?: string }[], {
-            preferResponseOnMissingData: true
+            preferResponseOnMissingData: true,
          });
          // Intentional: any existing session works — we just need parentID so child sessions don't appear in the UI
          parentSessionId = sessions?.find((s) => typeof s?.id === "string")?.id;
@@ -320,7 +320,7 @@ export async function runDream(args: {
          name: "lease-lost",
          durationMs: 0,
          result: "",
-         error: lostLeaseReason ?? `Dream lease lost during ${phase}; aborted remaining work`
+         error: lostLeaseReason ?? `Dream lease lost during ${phase}; aborted remaining work`,
       });
    };
 
@@ -370,7 +370,7 @@ export async function runDream(args: {
                startedAt: invocationStartedAt,
                status: params.status,
                messages: params.messages,
-               error: params.error
+               error: params.error,
             });
          };
          // AbortController lets us cancel the in-flight LLM prompt immediately when lease is lost
@@ -397,7 +397,7 @@ export async function runDream(args: {
                taskName === "maintain-docs"
                   ? {
                        architecture: existsSync(join(docsDir, "ARCHITECTURE.md")),
-                       structure: existsSync(join(docsDir, "STRUCTURE.md"))
+                       structure: existsSync(join(docsDir, "STRUCTURE.md")),
                     }
                   : undefined;
 
@@ -406,7 +406,7 @@ export async function runDream(args: {
                taskName === "archive-stale"
                   ? getActiveUserMemories(args.db).map((um) => ({
                        id: um.id,
-                       content: um.content
+                       content: um.content,
                     }))
                   : undefined;
 
@@ -414,19 +414,19 @@ export async function runDream(args: {
                projectPath: args.projectIdentity,
                lastDreamAt,
                existingDocs,
-               userMemories
+               userMemories,
             });
 
             const createResponse = await args.client.session.create({
                body: {
                   ...(parentSessionId ? { parentID: parentSessionId } : {}),
-                  title: `magic-context-dream-${taskName}`
+                  title: `magic-context-dream-${taskName}`,
                },
-               query: { directory: args.sessionDirectory ?? args.projectIdentity }
+               query: { directory: args.sessionDirectory ?? args.projectIdentity },
             });
 
             const createdSession = shared.normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-               preferResponseOnMissingData: true
+               preferResponseOnMissingData: true,
             });
             agentSessionId = typeof createdSession?.id === "string" ? createdSession.id : null;
             if (!agentSessionId) {
@@ -446,15 +446,15 @@ export async function runDream(args: {
                      system: DREAMER_SYSTEM_PROMPT,
                      // synthetic: true hides the dreamer task prompt from the TUI
                      // subagent pane while still delivering it to the model. See issue #50.
-                     parts: [{ type: "text", text: taskPrompt, synthetic: true }]
-                  }
+                     parts: [{ type: "text", text: taskPrompt, synthetic: true }],
+                  },
                },
                {
                   timeoutMs: args.taskTimeoutMinutes * 60 * 1000,
                   signal: taskAbortController.signal,
                   fallbackModels: args.fallbackModels,
-                  callContext: `dreamer:${taskName}`
-               }
+                  callContext: `dreamer:${taskName}`,
+               },
             );
             if (lostLease) {
                throw new Error(lostLeaseReason ?? `Dream lease lost during ${taskName}`);
@@ -462,10 +462,10 @@ export async function runDream(args: {
 
             const messagesResponse = await args.client.session.messages({
                path: { id: agentSessionId },
-               query: { directory: args.sessionDirectory ?? args.projectIdentity, limit: 50 }
+               query: { directory: args.sessionDirectory ?? args.projectIdentity, limit: 50 },
             });
             const messages = shared.normalizeSDKResponse(messagesResponse, [] as unknown[], {
-               preferResponseOnMissingData: true
+               preferResponseOnMissingData: true,
             });
             recordInvocation({ status: "completed", messages });
             const taskResult = extractLatestAssistantText(messages);
@@ -475,12 +475,12 @@ export async function runDream(args: {
 
             const durationMs = Date.now() - taskStartedAt;
             log(
-               `[dreamer] task ${taskName}: completed in ${(durationMs / 1000).toFixed(1)}s (result: ${String(taskResult).length} chars)`
+               `[dreamer] task ${taskName}: completed in ${(durationMs / 1000).toFixed(1)}s (result: ${String(taskResult).length} chars)`,
             );
             result.tasks.push({
                name: taskName,
                durationMs,
-               result: taskResult
+               result: taskResult,
             });
             lastErrorSignature = null;
             consecutiveSameErrorFailures = 0;
@@ -490,13 +490,13 @@ export async function runDream(args: {
             const errorDescription = describeError(error);
             logWithStackHead(
                `[dreamer] task ${taskName}: failed after ${(durationMs / 1000).toFixed(1)}s — ${errorDescription.brief}`,
-               errorDescription.stackHead
+               errorDescription.stackHead,
             );
             result.tasks.push({
                name: taskName,
                durationMs,
                result: null,
-               error: errorDescription.brief
+               error: errorDescription.brief,
             });
 
             if (lostLease) {
@@ -517,13 +517,13 @@ export async function runDream(args: {
                if (consecutiveSameErrorFailures >= CIRCUIT_BREAKER_THRESHOLD) {
                   circuitBreakerTripped = true;
                   log(
-                     `[dreamer] circuit breaker: ${consecutiveSameErrorFailures} consecutive ${signature} failures — aborting remaining tasks`
+                     `[dreamer] circuit breaker: ${consecutiveSameErrorFailures} consecutive ${signature} failures — aborting remaining tasks`,
                   );
                   result.tasks.push({
                      name: "circuit-breaker",
                      durationMs: 0,
                      result: "",
-                     error: `Aborted remaining tasks: ${consecutiveSameErrorFailures} consecutive ${signature} failures. Configure dreamer model/fallback_models in magic-context.jsonc.`
+                     error: `Aborted remaining tasks: ${consecutiveSameErrorFailures} consecutive ${signature} failures. Configure dreamer model/fallback_models in magic-context.jsonc.`,
                   });
                }
             }
@@ -532,7 +532,7 @@ export async function runDream(args: {
             if (agentSessionId) {
                await args.client.session
                   .delete({
-                     path: { id: agentSessionId }
+                     path: { id: agentSessionId },
                   })
                   .catch((error: unknown) => {
                      log("[dreamer] failed to delete child session:", error);
@@ -559,7 +559,7 @@ export async function runDream(args: {
             name: "post-task-phases",
             durationMs: 0,
             result: "",
-            error: "Skipped post-task phases after circuit breaker tripped; configure dreamer model/fallback_models in magic-context.jsonc."
+            error: "Skipped post-task phases after circuit breaker tripped; configure dreamer model/fallback_models in magic-context.jsonc.",
          });
       }
       // ── User memory review phase ──
@@ -578,7 +578,7 @@ export async function runDream(args: {
                holderId,
                deadline,
                promotionThreshold: args.experimentalUserMemories.promotionThreshold,
-               fallbackModels: args.fallbackModels
+               fallbackModels: args.fallbackModels,
             });
             if (!verifyLeaseStillHeld("after user-memory review")) {
                throw new Error(lostLeaseReason ?? "Dream lease lost after user-memory review");
@@ -590,19 +590,19 @@ export async function runDream(args: {
             result.tasks.push({
                name: "user memories",
                durationMs: Date.now() - umStart,
-               result: umOutput
+               result: umOutput,
             });
          } catch (error) {
             const errorDescription = describeError(error);
             logWithStackHead(
                `[dreamer] user-memory review failed: ${errorDescription.brief}`,
-               errorDescription.stackHead
+               errorDescription.stackHead,
             );
             result.tasks.push({
                name: "user memories",
                durationMs: Date.now() - umStart,
                result: "",
-               error: errorDescription.brief
+               error: errorDescription.brief,
             });
          }
          if (lostLease) recordLeaseLostTask("user-memory review");
@@ -626,7 +626,7 @@ export async function runDream(args: {
                result,
                fallbackModels: args.fallbackModels,
                onLeaseLost: markLeaseLost,
-               isLeaseLost: () => lostLease
+               isLeaseLost: () => lostLease,
             });
             if (!verifyLeaseStillHeld("after smart-note evaluation")) {
                throw new Error(lostLeaseReason ?? "Dream lease lost after smart-note evaluation");
@@ -635,7 +635,7 @@ export async function runDream(args: {
             const errorDescription = describeError(error);
             logWithStackHead(
                `[dreamer] smart note evaluation failed: ${errorDescription.brief}`,
-               errorDescription.stackHead
+               errorDescription.stackHead,
             );
          }
          if (lostLease) recordLeaseLostTask("smart-note evaluation");
@@ -653,19 +653,19 @@ export async function runDream(args: {
             result.tasks.push({
                name: "key files",
                durationMs: Date.now() - kfStart,
-               result: "completed"
+               result: "completed",
             });
          } catch (error) {
             const errorDescription = describeError(error);
             logWithStackHead(
                `[key-files] identification phase failed: ${errorDescription.brief}`,
-               errorDescription.stackHead
+               errorDescription.stackHead,
             );
             result.tasks.push({
                name: "key files",
                durationMs: Date.now() - kfStart,
                result: "",
-               error: errorDescription.brief
+               error: errorDescription.brief,
             });
          }
          if (lostLease) recordLeaseLostTask("key-file identification");
@@ -682,7 +682,7 @@ export async function runDream(args: {
       written: countNewIds(memoryCountsBefore.ids, memoryCountsAfter.ids),
       deleted: countNewIds(memoryCountsAfter.ids, memoryCountsBefore.ids),
       archived: Math.max(0, countNewIds(memoryCountsBefore.archivedIds, memoryCountsAfter.archivedIds) - merged),
-      merged
+      merged,
    };
    const persistedMemoryChanges = Object.values(memoryChanges).some((value) => value > 0) ? memoryChanges : null;
    insertDreamRun(args.db, {
@@ -694,13 +694,13 @@ export async function runDream(args: {
          name: task.name,
          durationMs: task.durationMs,
          resultChars: typeof task.result === "string" ? task.result.length : 0,
-         ...(task.error ? { error: task.error } : {})
+         ...(task.error ? { error: task.error } : {}),
       })),
       tasksSucceeded: result.tasks.filter((task) => !task.error).length,
       tasksFailed: result.tasks.filter((task) => Boolean(task.error)).length,
       smartNotesSurfaced: result.smartNotesSurfaced,
       smartNotesPending: result.smartNotesPending,
-      memoryChanges: persistedMemoryChanges
+      memoryChanges: persistedMemoryChanges,
    });
    // Only update dream timestamps when at least one task succeeded — failed runs
    // should not block re-scheduling for the project.
@@ -716,7 +716,7 @@ export async function runDream(args: {
       "user memories",
       "key files",
       "post-task-phases",
-      "circuit-breaker"
+      "circuit-breaker",
    ]);
    const hasSuccessfulTask = result.tasks.some((t) => !t.error && !POST_TASK_NAMES.has(t.name));
    if (hasSuccessfulTask && !lostLease) {
@@ -809,7 +809,7 @@ Only include notes whose conditions you could definitively evaluate against exte
          startedAt,
          status: params.status,
          messages: params.messages,
-         error: params.error
+         error: params.error,
       });
    };
    const abortController = new AbortController();
@@ -830,12 +830,12 @@ Only include notes whose conditions you could definitively evaluate against exte
       const createResponse = await args.client.session.create({
          body: {
             ...(args.parentSessionId ? { parentID: args.parentSessionId } : {}),
-            title: "magic-context-dream-smart-notes"
+            title: "magic-context-dream-smart-notes",
          },
-         query: { directory: args.sessionDirectory ?? args.projectIdentity }
+         query: { directory: args.sessionDirectory ?? args.projectIdentity },
       });
       const created = shared.normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       agentSessionId = typeof created?.id === "string" ? created.id : null;
       if (!agentSessionId) {
@@ -857,23 +857,23 @@ Only include notes whose conditions you could definitively evaluate against exte
                system: DREAMER_SYSTEM_PROMPT,
                // synthetic: true hides the dreamer evaluation prompt from the TUI
                // subagent pane while still delivering it to the model. See issue #50.
-               parts: [{ type: "text", text: evaluationPrompt, synthetic: true }]
-            }
+               parts: [{ type: "text", text: evaluationPrompt, synthetic: true }],
+            },
          },
          {
             timeoutMs: Math.min(remainingMs, 5 * 60 * 1000),
             signal: abortController.signal,
             fallbackModels: args.fallbackModels,
-            callContext: "dreamer:smart-notes"
-         }
+            callContext: "dreamer:smart-notes",
+         },
       );
 
       const messagesResponse = await args.client.session.messages({
          path: { id: agentSessionId },
-         query: { directory: args.sessionDirectory ?? args.projectIdentity, limit: 50 }
+         query: { directory: args.sessionDirectory ?? args.projectIdentity, limit: 50 },
       });
       const messages = shared.normalizeSDKResponse(messagesResponse, [] as unknown[], {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       recordInvocation({ status: "completed", messages });
       const output = extractLatestAssistantText(messages);
@@ -923,12 +923,12 @@ Only include notes whose conditions you could definitively evaluate against exte
       args.result.smartNotesSurfaced = surfaced;
       args.result.smartNotesPending = pending;
       log(
-         `[dreamer] smart notes: evaluated ${pendingNotes.length} notes in ${(durationMs / 1000).toFixed(1)}s — ${surfaced} surfaced, ${pending} still pending`
+         `[dreamer] smart notes: evaluated ${pendingNotes.length} notes in ${(durationMs / 1000).toFixed(1)}s — ${surfaced} surfaced, ${pending} still pending`,
       );
       args.result.tasks.push({
          name: "smart-notes",
          durationMs,
-         result: `${surfaced} surfaced, ${pending} still pending`
+         result: `${surfaced} surfaced, ${pending} still pending`,
       });
    } catch (error) {
       const durationMs = Date.now() - taskStartedAt;
@@ -937,20 +937,20 @@ Only include notes whose conditions you could definitively evaluate against exte
       args.result.smartNotesPending = pendingNotes.length;
       logWithStackHead(
          `[dreamer] smart notes: failed after ${(durationMs / 1000).toFixed(1)}s — ${errorDescription.brief}`,
-         errorDescription.stackHead
+         errorDescription.stackHead,
       );
       args.result.tasks.push({
          name: "smart-notes",
          durationMs,
          result: null,
-         error: errorDescription.brief
+         error: errorDescription.brief,
       });
    } finally {
       clearInterval(leaseInterval);
       if (agentSessionId) {
          await args.client.session
             .delete({
-               path: { id: agentSessionId }
+               path: { id: agentSessionId },
             })
             .catch(() => {});
       }
@@ -1012,7 +1012,7 @@ export async function processDreamQueue(args: {
          sessionDirectory: projectDirectory,
          experimentalUserMemories: args.experimentalUserMemories,
          experimentalPinKeyFiles: args.experimentalPinKeyFiles,
-         fallbackModels: args.fallbackModels
+         fallbackModels: args.fallbackModels,
       });
    } catch (error) {
       log(`[dreamer] runDream threw for ${entry.projectIdentity}: ${getErrorMessage(error)}`);
@@ -1028,12 +1028,12 @@ export async function processDreamQueue(args: {
       const retryCount = getEntryRetryCount(args.db, entry.id);
       if (retryCount >= MAX_LEASE_RETRIES) {
          log(
-            `[dreamer] lease acquisition failed ${retryCount + 1} times for ${entry.projectIdentity} — removing queue entry`
+            `[dreamer] lease acquisition failed ${retryCount + 1} times for ${entry.projectIdentity} — removing queue entry`,
          );
          removeDreamEntry(args.db, entry.id);
       } else {
          log(
-            `[dreamer] lease acquisition failed for ${entry.projectIdentity} (attempt ${retryCount + 1}/${MAX_LEASE_RETRIES}) — keeping for retry`
+            `[dreamer] lease acquisition failed for ${entry.projectIdentity} (attempt ${retryCount + 1}/${MAX_LEASE_RETRIES}) — keeping for retry`,
          );
          resetDreamEntry(args.db, entry.id);
       }

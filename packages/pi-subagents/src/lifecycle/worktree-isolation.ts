@@ -18,7 +18,7 @@ export class WorktreeIsolation {
 
    constructor(
       private readonly worktrees: WorktreeManager,
-      private readonly agentId: string
+      private readonly agentId: string,
    ) {}
 
    /** Absolute worktree path — undefined before setup(). */
@@ -40,7 +40,7 @@ export class WorktreeIsolation {
       if (!wt) {
          throw new Error(
             'Cannot run with isolation: "worktree" — not a git repo, no commits yet, or `git worktree add` failed. ' +
-               "Initialize git and commit at least once, or omit `isolation`."
+               "Initialize git and commit at least once, or omit `isolation`.",
          );
       }
       this._info = wt;

@@ -25,8 +25,8 @@ export const DEFAULT_AGENTS: Map<string, AgentConfig> = new Map([
          skills: true,
          systemPrompt: "",
          promptMode: "append",
-         isDefault: true
-      }
+         isDefault: true,
+      },
    ],
    [
       "explore",
@@ -96,8 +96,8 @@ Use this structure unless the user asks for a different format:
 
 ## Recommended next checks`,
          promptMode: "replace",
-         isDefault: true
-      }
+         isDefault: true,
+      },
    ],
    [
       "plan",
@@ -151,8 +151,8 @@ You are STRICTLY PROHIBITED from:
 List 3-5 files most critical for implementing this plan:
 - /absolute/path/to/file.ts - [Brief reason]`,
          promptMode: "replace",
-         isDefault: true
-      }
+         isDefault: true,
+      },
    ],
    [
       "omni",
@@ -185,7 +185,7 @@ When describing:
 Be thorough. Your output is consumed by another AI that cannot see images.
 Do NOT suggest changes. Only describe.`,
          promptMode: "replace",
-         isDefault: true
-      }
-   ]
+         isDefault: true,
+      },
+   ],
 ]);

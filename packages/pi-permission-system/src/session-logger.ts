@@ -24,6 +24,6 @@ export function createSessionLogger(runtime: ExtensionRuntime): SessionLogger {
    return {
       debug: (event, details) => runtime.writeDebugLog(event, details),
       review: (event, details) => runtime.writeReviewLog(event, details),
-      warn: (message) => runtime.runtimeContext?.ui.notify(message, "warning")
+      warn: (message) => runtime.runtimeContext?.ui.notify(message, "warning"),
    };
 }

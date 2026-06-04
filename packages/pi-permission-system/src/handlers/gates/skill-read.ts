@@ -15,7 +15,7 @@ import type { ToolCallContext } from "./types";
  */
 export function describeSkillReadGate(
    tcc: ToolCallContext,
-   getActiveSkillEntries: () => SkillPromptEntry[]
+   getActiveSkillEntries: () => SkillPromptEntry[],
 ): GateDescriptor | null {
    const activeSkillEntries = getActiveSkillEntries();
 
@@ -49,7 +49,7 @@ export function describeSkillReadGate(
          kind: "skill_read",
          skillName: matchedSkill.name,
          readPath: path,
-         agentName: tcc.agentName ?? undefined
+         agentName: tcc.agentName ?? undefined,
       },
       promptDetails: {
          source: "skill_read",
@@ -58,21 +58,21 @@ export function describeSkillReadGate(
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
          skillName: matchedSkill.name,
-         path
+         path,
       },
       logContext: {
          source: "skill_read",
          skillName: matchedSkill.name,
          agentName: tcc.agentName,
          path,
-         message: skillReadMessage
+         message: skillReadMessage,
       },
       decision: {
          surface: "skill",
-         value: matchedSkill.name
+         value: matchedSkill.name,
       },
       preResolved: {
-         state: matchedSkill.state
-      }
+         state: matchedSkill.state,
+      },
    };
 }

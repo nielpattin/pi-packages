@@ -51,7 +51,7 @@ function getInsertStatement(db: Database): PreparedStatement {
                  author = excluded.author,
                  committed_at = excluded.committed_at,
                  indexed_at = excluded.indexed_at
-             WHERE git_commits.message != excluded.message`
+             WHERE git_commits.message != excluded.message`,
       );
       insertStatements.set(db, stmt);
    }
@@ -95,7 +95,7 @@ function getEvictStatement(db: Database): PreparedStatement {
                  WHERE project_path = ?
                  ORDER BY committed_at ASC
                  LIMIT ?
-             )`
+             )`,
       );
       evictStatements.set(db, stmt);
    }
@@ -111,7 +111,7 @@ export function upsertCommit(db: Database, projectPath: string, commit: GitCommi
       commit.message,
       commit.author,
       commit.committedAtMs,
-      Date.now()
+      Date.now(),
    );
 }
 
@@ -120,7 +120,7 @@ export function upsertCommit(db: Database, projectPath: string, commit: GitCommi
 export function upsertCommits(
    db: Database,
    projectPath: string,
-   commits: GitCommit[]
+   commits: GitCommit[],
 ): { inserted: number; updated: number } {
    if (commits.length === 0) return { inserted: 0, updated: 0 };
 
@@ -143,7 +143,7 @@ export function upsertCommits(
             commit.message,
             commit.author,
             commit.committedAtMs,
-            now
+            now,
          );
          // changes > 0 means row was inserted or updated (not skipped by WHERE clause)
          if (result.changes > 0) {
@@ -198,7 +198,7 @@ export function enforceProjectCap(db: Database, projectPath: string, maxCommits:
    const evicted = evictOldestCommits(db, projectPath, excess);
    if (evicted > 0) {
       log(
-         `[git-commits] evicted ${evicted} oldest commits for project ${projectPath} (cap=${maxCommits}, was=${count})`
+         `[git-commits] evicted ${evicted} oldest commits for project ${projectPath} (cap=${maxCommits}, was=${count})`,
       );
    }
    return evicted;
@@ -219,6 +219,6 @@ function rowToStoredCommit(row: GitCommitRow): StoredGitCommit {
       message: row.message,
       author: row.author,
       committedAtMs: row.committed_at,
-      indexedAtMs: row.indexed_at
+      indexedAtMs: row.indexed_at,
    };
 }

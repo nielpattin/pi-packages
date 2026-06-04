@@ -14,7 +14,7 @@ const testRegistry = new AgentTypeRegistry(() => new Map());
 function mockTui(rows = 40, columns = 80) {
    return {
       terminal: { rows, columns },
-      requestRender: vi.fn()
+      requestRender: vi.fn(),
    } as unknown as TUI;
 }
 
@@ -23,14 +23,14 @@ function mockSession(messages: unknown[] = []) {
       messages,
       subscribe: vi.fn(() => vi.fn()),
       dispose: vi.fn(),
-      getSessionStats: () => ({ tokens: { input: 0, output: 0, cacheWrite: 0 } })
+      getSessionStats: () => ({ tokens: { input: 0, output: 0, cacheWrite: 0 } }),
    } as unknown as AgentSession;
 }
 
 function ansiTheme() {
    return {
       fg: (_color: string, text: string) => `\x1b[38;5;240m${text}\x1b[0m`,
-      bold: (text: string) => `\x1b[1m${text}\x1b[22m`
+      bold: (text: string) => `\x1b[1m${text}\x1b[22m`,
    };
 }
 
@@ -60,7 +60,7 @@ function createTestViewer(options: TestViewerOptions = {}): ConversationViewer {
       theme: ansiTheme(),
       done: vi.fn(),
       registry: testRegistry,
-      wrapText
+      wrapText,
    });
 }
 
@@ -86,7 +86,7 @@ describe("ConversationViewer", () => {
       it("no line exceeds width with plain text messages", () => {
          assertRenderFitsWidths([
             { role: "user", content: "Hello, how are you?" },
-            { role: "assistant", content: [{ type: "text", text: "I am fine, thank you for asking." }] }
+            { role: "assistant", content: [{ type: "text", text: "I am fine, thank you for asking." }] },
          ]);
       });
 
@@ -95,7 +95,7 @@ describe("ConversationViewer", () => {
          assertRenderFitsWidths([
             { role: "user", content: longLine },
             { role: "assistant", content: [{ type: "text", text: longLine }] },
-            { role: "toolResult", toolUseId: "t1", content: [{ type: "text", text: longLine }] }
+            { role: "toolResult", toolUseId: "t1", content: [{ type: "text", text: longLine }] },
          ]);
       });
 
@@ -125,8 +125,8 @@ describe("ConversationViewer", () => {
                exitCode: 0,
                cancelled: false,
                truncated: false,
-               timestamp: Date.now()
-            }
+               timestamp: Date.now(),
+            },
          ]);
       });
 
@@ -134,20 +134,20 @@ describe("ConversationViewer", () => {
          const activity = {
             activeTools: new Map([
                ["read", "file.ts"],
-               ["grep", "pattern"]
+               ["grep", "pattern"],
             ]),
             toolUses: 5,
             tokens: "10k",
             responseText: "R".repeat(400),
-            session: { getSessionStats: () => ({ tokens: { total: 50000 } }) }
+            session: { getSessionStats: () => ({ tokens: { total: 50000 } }) },
          };
          assertRenderFitsWidths(
             [
                { role: "user", content: "do the thing" },
-               { role: "assistant", content: [{ type: "text", text: "working on it" }] }
+               { role: "assistant", content: [{ type: "text", text: "working on it" }] },
             ],
             [40, 80, 120, 216],
-            { activity: activity as unknown as AgentActivityTracker }
+            { activity: activity as unknown as AgentActivityTracker },
          );
       });
 
@@ -157,9 +157,9 @@ describe("ConversationViewer", () => {
                role: "assistant",
                content: [
                   { type: "text", text: "Let me check that." },
-                  { type: "toolCall", toolUseId: "t1", name: "very_long_tool_name_" + "x".repeat(200), input: {} }
-               ]
-            }
+                  { type: "toolCall", toolUseId: "t1", name: "very_long_tool_name_" + "x".repeat(200), input: {} },
+               ],
+            },
          ]);
       });
 
@@ -167,9 +167,9 @@ describe("ConversationViewer", () => {
          assertRenderFitsWidths(
             [
                { role: "user", content: "Hello world, this is a normal sentence." },
-               { role: "assistant", content: [{ type: "text", text: "Sure, here's the answer." }] }
+               { role: "assistant", content: [{ type: "text", text: "Sure, here's the answer." }] },
             ],
-            [8, 10, 15, 20]
+            [8, 10, 15, 20],
          );
       });
 
@@ -195,7 +195,7 @@ describe("ConversationViewer", () => {
          const viewer = createTestViewer({
             width: w,
             messages: [{ role: "toolResult", toolUseId: "t1", content: [{ type: "text", text: "output" }] }],
-            wrapText: () => ["X".repeat(w + 50)]
+            wrapText: () => ["X".repeat(w + 50)],
          });
          assertAllLinesFit(callBuildContentLines(viewer, w), w);
       });
@@ -205,7 +205,7 @@ describe("ConversationViewer", () => {
          const viewer = createTestViewer({
             width: w,
             messages: [{ role: "user", content: "hello" }],
-            wrapText: () => ["Y".repeat(w + 100)]
+            wrapText: () => ["Y".repeat(w + 100)],
          });
          assertAllLinesFit(callBuildContentLines(viewer, w), w);
       });
@@ -215,7 +215,7 @@ describe("ConversationViewer", () => {
          const viewer = createTestViewer({
             width: w,
             messages: [{ role: "assistant", content: [{ type: "text", text: "response" }] }],
-            wrapText: () => ["Z".repeat(w + 100)]
+            wrapText: () => ["Z".repeat(w + 100)],
          });
          assertAllLinesFit(callBuildContentLines(viewer, w), w);
       });
@@ -232,10 +232,10 @@ describe("ConversationViewer", () => {
                   exitCode: 0,
                   cancelled: false,
                   truncated: false,
-                  timestamp: Date.now()
-               }
+                  timestamp: Date.now(),
+               },
             ],
-            wrapText: () => ["B".repeat(w + 100)]
+            wrapText: () => ["B".repeat(w + 100)],
          });
          assertAllLinesFit(callBuildContentLines(viewer, w), w);
       });
@@ -245,7 +245,7 @@ describe("ConversationViewer", () => {
          const viewer = createTestViewer({
             width: w,
             messages: [{ role: "toolResult", toolUseId: "t1", content: [{ type: "text", text: "output" }] }],
-            wrapText: () => [`\x1b[1m\x1b[31m${"W".repeat(w + 30)}\x1b[0m`]
+            wrapText: () => [`\x1b[1m\x1b[31m${"W".repeat(w + 30)}\x1b[0m`],
          });
          assertAllLinesFit(callBuildContentLines(viewer, w), w);
       });

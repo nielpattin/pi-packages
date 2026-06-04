@@ -61,7 +61,7 @@ export function normalizeTodoStateJson(todos: unknown): string | null {
       normalized.push({
          content: todo.content,
          status: todo.status,
-         priority: todo.priority ?? "medium"
+         priority: todo.priority ?? "medium",
       });
    }
 
@@ -134,9 +134,9 @@ export function buildSyntheticTodoPart(stateJson: string): SyntheticTodoPart | n
          output,
          title: `${activeCount} todos`,
          metadata: { todos, truncated: false },
-         time: { start: ts, end: ts }
+         time: { start: ts, end: ts },
       },
-      syntheticTodoMarker: true
+      syntheticTodoMarker: true,
    };
 }
 
@@ -194,7 +194,7 @@ function parseTodoState(stateJson: string): TodoItem[] | null {
          result.push({
             content: item.content,
             status: item.status,
-            priority: item.priority ?? "medium"
+            priority: item.priority ?? "medium",
          });
       }
       return result;

@@ -25,7 +25,7 @@ export interface AgentObserverOptions {
 export function subscribeAgentObserver(
    session: SubscribableSession,
    record: Agent,
-   options?: AgentObserverOptions
+   options?: AgentObserverOptions,
 ): () => void {
    return session.subscribe((event) => {
       if (event.type === "tool_execution_end") {
@@ -37,7 +37,7 @@ export function subscribeAgentObserver(
          record.addUsage({
             input: u.input,
             output: u.output,
-            cacheWrite: u.cacheWrite
+            cacheWrite: u.cacheWrite,
          });
       }
 
@@ -45,7 +45,7 @@ export function subscribeAgentObserver(
          record.incrementCompactions();
          options?.onCompact?.(record, {
             reason: event.reason,
-            tokensBefore: event.result.tokensBefore
+            tokensBefore: event.result.tokensBefore,
          });
       }
    });

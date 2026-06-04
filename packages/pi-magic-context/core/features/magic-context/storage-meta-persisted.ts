@@ -102,7 +102,7 @@ const AUTO_SEARCH_NO_HINT_REASONS = new Set<string>([
    "empty",
    "error",
    "stacked",
-   "too-short"
+   "too-short",
 ]);
 
 function isPersistedUsageRow(row: unknown): row is PersistedUsageRow {
@@ -204,7 +204,7 @@ function getDefaultPersistedNoteNudge(): PersistedNoteNudge {
       triggerPending: false,
       triggerMessageId: null,
       stickyText: null,
-      stickyMessageId: null
+      stickyMessageId: null,
    };
 }
 
@@ -212,14 +212,14 @@ function getDefaultHistorianFailureState(): PersistedHistorianFailureState {
    return {
       failureCount: 0,
       lastError: null,
-      lastFailureAt: null
+      lastFailureAt: null,
    };
 }
 
 export function loadPersistedUsage(db: Database, sessionId: string): { usage: ContextUsage; updatedAt: number } | null {
    const result = db
       .prepare(
-         "SELECT last_context_percentage, last_input_tokens, last_response_time FROM session_meta WHERE session_id = ?"
+         "SELECT last_context_percentage, last_input_tokens, last_response_time FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 
@@ -230,9 +230,9 @@ export function loadPersistedUsage(db: Database, sessionId: string): { usage: Co
    return {
       usage: {
          percentage: result.last_context_percentage,
-         inputTokens: result.last_input_tokens
+         inputTokens: result.last_input_tokens,
       },
-      updatedAt: result.last_response_time || Date.now()
+      updatedAt: result.last_response_time || Date.now(),
    };
 }
 
@@ -248,7 +248,7 @@ export function setPersistedReasoningWatermark(db: Database, sessionId: string, 
    ensureSessionMetaRow(db, sessionId);
    db.prepare("UPDATE session_meta SET cleared_reasoning_through_tag = ? WHERE session_id = ?").run(
       tagNumber,
-      sessionId
+      sessionId,
    );
 }
 
@@ -263,7 +263,7 @@ export function clearPersistedReasoningWatermark(db: Database, sessionId: string
 
 export function getPersistedNudgePlacement(
    db: Database,
-   sessionId: string
+   sessionId: string,
 ): { messageId: string; nudgeText: string } | null {
    const result = db
       .prepare("SELECT nudge_anchor_message_id, nudge_anchor_text FROM session_meta WHERE session_id = ?")
@@ -279,7 +279,7 @@ export function getPersistedNudgePlacement(
 
    return {
       messageId: result.nudge_anchor_message_id,
-      nudgeText: result.nudge_anchor_text
+      nudgeText: result.nudge_anchor_text,
    };
 }
 
@@ -287,28 +287,28 @@ export function setPersistedNudgePlacement(
    db: Database,
    sessionId: string,
    messageId: string,
-   nudgeText: string
+   nudgeText: string,
 ): void {
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare("UPDATE session_meta SET nudge_anchor_message_id = ?, nudge_anchor_text = ? WHERE session_id = ?").run(
          messageId,
          nudgeText,
-         sessionId
+         sessionId,
       );
    })();
 }
 
 export function clearPersistedNudgePlacement(db: Database, sessionId: string): void {
    db.prepare("UPDATE session_meta SET nudge_anchor_message_id = '', nudge_anchor_text = '' WHERE session_id = ?").run(
-      sessionId
+      sessionId,
    );
 }
 
 export function getPersistedStickyTurnReminder(db: Database, sessionId: string): PersistedStickyTurnReminder | null {
    const result = db
       .prepare(
-         "SELECT sticky_turn_reminder_text, sticky_turn_reminder_message_id FROM session_meta WHERE session_id = ?"
+         "SELECT sticky_turn_reminder_text, sticky_turn_reminder_message_id FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 
@@ -322,7 +322,7 @@ export function getPersistedStickyTurnReminder(db: Database, sessionId: string):
 
    return {
       text: result.sticky_turn_reminder_text,
-      messageId: result.sticky_turn_reminder_message_id.length > 0 ? result.sticky_turn_reminder_message_id : null
+      messageId: result.sticky_turn_reminder_message_id.length > 0 ? result.sticky_turn_reminder_message_id : null,
    };
 }
 
@@ -330,21 +330,21 @@ export function setPersistedStickyTurnReminder(db: Database, sessionId: string, 
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET sticky_turn_reminder_text = ?, sticky_turn_reminder_message_id = ? WHERE session_id = ?"
+         "UPDATE session_meta SET sticky_turn_reminder_text = ?, sticky_turn_reminder_message_id = ? WHERE session_id = ?",
       ).run(text, messageId, sessionId);
    })();
 }
 
 export function clearPersistedStickyTurnReminder(db: Database, sessionId: string): void {
    db.prepare(
-      "UPDATE session_meta SET sticky_turn_reminder_text = '', sticky_turn_reminder_message_id = '' WHERE session_id = ?"
+      "UPDATE session_meta SET sticky_turn_reminder_text = '', sticky_turn_reminder_message_id = '' WHERE session_id = ?",
    ).run(sessionId);
 }
 
 export function getPersistedNoteNudge(db: Database, sessionId: string): PersistedNoteNudge {
    const result = db
       .prepare(
-         "SELECT note_nudge_trigger_pending, note_nudge_trigger_message_id, note_nudge_sticky_text, note_nudge_sticky_message_id FROM session_meta WHERE session_id = ?"
+         "SELECT note_nudge_trigger_pending, note_nudge_trigger_message_id, note_nudge_sticky_text, note_nudge_sticky_message_id FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 
@@ -356,7 +356,7 @@ export function getPersistedNoteNudge(db: Database, sessionId: string): Persiste
       triggerPending: result.note_nudge_trigger_pending === 1,
       triggerMessageId: result.note_nudge_trigger_message_id.length > 0 ? result.note_nudge_trigger_message_id : null,
       stickyText: result.note_nudge_sticky_text.length > 0 ? result.note_nudge_sticky_text : null,
-      stickyMessageId: result.note_nudge_sticky_message_id.length > 0 ? result.note_nudge_sticky_message_id : null
+      stickyMessageId: result.note_nudge_sticky_message_id.length > 0 ? result.note_nudge_sticky_message_id : null,
    };
 }
 
@@ -364,7 +364,7 @@ export function setPersistedNoteNudgeTrigger(db: Database, sessionId: string, tr
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET note_nudge_trigger_pending = 1, note_nudge_trigger_message_id = ? WHERE session_id = ?"
+         "UPDATE session_meta SET note_nudge_trigger_pending = 1, note_nudge_trigger_message_id = ? WHERE session_id = ?",
       ).run(triggerMessageId, sessionId);
    })();
 }
@@ -374,7 +374,7 @@ export function setPersistedNoteNudgeTriggerMessageId(db: Database, sessionId: s
       ensureSessionMetaRow(db, sessionId);
       db.prepare("UPDATE session_meta SET note_nudge_trigger_message_id = ? WHERE session_id = ?").run(
          triggerMessageId,
-         sessionId
+         sessionId,
       );
    })();
 }
@@ -383,14 +383,14 @@ export function setPersistedDeliveredNoteNudge(db: Database, sessionId: string, 
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '', note_nudge_sticky_text = ?, note_nudge_sticky_message_id = ? WHERE session_id = ?"
+         "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '', note_nudge_sticky_text = ?, note_nudge_sticky_message_id = ? WHERE session_id = ?",
       ).run(text, messageId, sessionId);
    })();
 }
 
 export function clearPersistedNoteNudge(db: Database, sessionId: string): void {
    db.prepare(
-      "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '', note_nudge_sticky_text = '', note_nudge_sticky_message_id = '' WHERE session_id = ?"
+      "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '', note_nudge_sticky_text = '', note_nudge_sticky_message_id = '' WHERE session_id = ?",
    ).run(sessionId);
 }
 
@@ -414,7 +414,7 @@ function casUpdateJsonArrayColumn<T>(
    column: "note_nudge_anchors" | "auto_search_hint_decisions",
    validator: (value: unknown) => value is T,
    mutate: (current: T[]) => T[] | null,
-   options?: { ensureRow?: boolean }
+   options?: { ensureRow?: boolean },
 ): boolean {
    if (options?.ensureRow === false) {
       const exists = db.prepare("SELECT 1 FROM session_meta WHERE session_id = ?").get(sessionId);
@@ -461,7 +461,7 @@ export function deliverNoteNudgeAtomic(
    db: Database,
    sessionId: string,
    messageId: string,
-   text: string
+   text: string,
 ): NoteNudgeDeliveryOutcome {
    let plan: NoteNudgeDeliveryPlan | null = null;
    const casOk = casUpdateJsonArrayColumn(db, sessionId, "note_nudge_anchors", isValidNoteNudgeAnchor, (current) => {
@@ -490,7 +490,7 @@ export function deliverNoteNudgeAtomic(
       return { ok: false, kind: "conflict" };
    }
    db.prepare(
-      "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '' WHERE session_id = ?"
+      "UPDATE session_meta SET note_nudge_trigger_pending = 0, note_nudge_trigger_message_id = '' WHERE session_id = ?",
    ).run(sessionId);
    return { ok: true, kind: committedPlan.kind };
 }
@@ -498,7 +498,7 @@ export function deliverNoteNudgeAtomic(
 export function appendAutoSearchHintDecision(
    db: Database,
    sessionId: string,
-   entry: AutoSearchHintDecision
+   entry: AutoSearchHintDecision,
 ): AppendAutoSearchHintOutcome {
    if (!entry.messageId) return { ok: false, kind: "cas-exhausted" };
    let staged: { kind: "appended" | "already-present"; decision: AutoSearchHintDecision } | null = null;
@@ -515,7 +515,7 @@ export function appendAutoSearchHintDecision(
          }
          staged = { kind: "appended", decision: entry };
          return [...current, entry];
-      }
+      },
    );
    if (!casOk) return { ok: false, kind: "cas-exhausted" };
    const committed = staged as {
@@ -561,7 +561,7 @@ export function removeNoteNudgeAnchorByMessageId(db: Database, sessionId: string
          removed = next.length !== current.length;
          return removed ? next : null;
       },
-      { ensureRow: false }
+      { ensureRow: false },
    );
    return ok && removed;
 }
@@ -578,7 +578,7 @@ export function removeAutoSearchHintDecisionByMessageId(db: Database, sessionId:
          removed = next.length !== current.length;
          return removed ? next : null;
       },
-      { ensureRow: false }
+      { ensureRow: false },
    );
    return ok && removed;
 }
@@ -586,7 +586,7 @@ export function removeAutoSearchHintDecisionByMessageId(db: Database, sessionId:
 export function getPersistedTodoSyntheticAnchor(db: Database, sessionId: string): PersistedTodoSyntheticAnchor | null {
    const result = db
       .prepare(
-         "SELECT todo_synthetic_call_id, todo_synthetic_anchor_message_id, todo_synthetic_state_json FROM session_meta WHERE session_id = ?"
+         "SELECT todo_synthetic_call_id, todo_synthetic_anchor_message_id, todo_synthetic_state_json FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 
@@ -604,7 +604,7 @@ export function getPersistedTodoSyntheticAnchor(db: Database, sessionId: string)
       // stateJson may be empty for rows persisted by the pre-Finding-#1
       // version of this code path. Defer-pass replay falls back to skip
       // when stateJson is empty, which is the same behavior as before.
-      stateJson: result.todo_synthetic_state_json
+      stateJson: result.todo_synthetic_state_json,
    };
 }
 
@@ -613,19 +613,19 @@ export function setPersistedTodoSyntheticAnchor(
    sessionId: string,
    callId: string,
    messageId: string,
-   stateJson: string
+   stateJson: string,
 ): void {
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET todo_synthetic_call_id = ?, todo_synthetic_anchor_message_id = ?, todo_synthetic_state_json = ? WHERE session_id = ?"
+         "UPDATE session_meta SET todo_synthetic_call_id = ?, todo_synthetic_anchor_message_id = ?, todo_synthetic_state_json = ? WHERE session_id = ?",
       ).run(callId, messageId, stateJson, sessionId);
    })();
 }
 
 export function clearPersistedTodoSyntheticAnchor(db: Database, sessionId: string): void {
    db.prepare(
-      "UPDATE session_meta SET todo_synthetic_call_id = '', todo_synthetic_anchor_message_id = '', todo_synthetic_state_json = '' WHERE session_id = ?"
+      "UPDATE session_meta SET todo_synthetic_call_id = '', todo_synthetic_anchor_message_id = '', todo_synthetic_state_json = '' WHERE session_id = ?",
    ).run(sessionId);
 }
 
@@ -663,7 +663,7 @@ export function setNoteLastReadAt(db: Database, sessionId: string, at = Date.now
 export function getHistorianFailureState(db: Database, sessionId: string): PersistedHistorianFailureState {
    const result = db
       .prepare(
-         "SELECT historian_failure_count, historian_last_error, historian_last_failure_at FROM session_meta WHERE session_id = ?"
+         "SELECT historian_failure_count, historian_last_error, historian_last_failure_at FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
 
@@ -677,7 +677,7 @@ export function getHistorianFailureState(db: Database, sessionId: string): Persi
          typeof result.historian_last_error === "string" && result.historian_last_error.length > 0
             ? result.historian_last_error
             : null,
-      lastFailureAt: typeof result.historian_last_failure_at === "number" ? result.historian_last_failure_at : null
+      lastFailureAt: typeof result.historian_last_failure_at === "number" ? result.historian_last_failure_at : null,
    };
 }
 
@@ -687,7 +687,7 @@ export function incrementHistorianFailure(db: Database, sessionId: string, error
       const current = getHistorianFailureState(db, sessionId);
       const nextCount = current.failureCount + 1;
       db.prepare(
-         "UPDATE session_meta SET historian_failure_count = ?, historian_last_error = ?, historian_last_failure_at = ? WHERE session_id = ?"
+         "UPDATE session_meta SET historian_failure_count = ?, historian_last_error = ?, historian_last_failure_at = ? WHERE session_id = ?",
       ).run(nextCount, error, Date.now(), sessionId);
       // Normalize error to single line for log greppability
       const reason = error.replace(/\s+/g, " ").trim().slice(0, 300);
@@ -699,7 +699,7 @@ export function clearHistorianFailureState(db: Database, sessionId: string): voi
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET historian_failure_count = 0, historian_last_error = NULL, historian_last_failure_at = NULL WHERE session_id = ?"
+         "UPDATE session_meta SET historian_failure_count = 0, historian_last_error = NULL, historian_last_failure_at = NULL WHERE session_id = ?",
       ).run(sessionId);
    })();
 }
@@ -747,11 +747,11 @@ export function recordOverflowDetected(db: Database, sessionId: string, reported
       ensureSessionMetaRow(db, sessionId);
       if (typeof reportedLimit === "number" && reportedLimit > 0) {
          db.prepare(
-            "UPDATE session_meta SET detected_context_limit = ?, needs_emergency_recovery = 1, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?"
+            "UPDATE session_meta SET detected_context_limit = ?, needs_emergency_recovery = 1, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?",
          ).run(reportedLimit, sessionId);
       } else {
          db.prepare(
-            "UPDATE session_meta SET needs_emergency_recovery = 1, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?"
+            "UPDATE session_meta SET needs_emergency_recovery = 1, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?",
          ).run(sessionId);
       }
    })();
@@ -768,7 +768,7 @@ export function recordDetectedContextLimit(db: Database, sessionId: string, repo
    db.transaction(() => {
       ensureSessionMetaRow(db, sessionId);
       db.prepare(
-         "UPDATE session_meta SET detected_context_limit = ?, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?"
+         "UPDATE session_meta SET detected_context_limit = ?, observed_safe_input_tokens = 0, cache_alert_sent = 0 WHERE session_id = ?",
       ).run(reportedLimit, sessionId);
    })();
 }
@@ -805,7 +805,7 @@ export interface PersistedCompactionMarkerState {
 
 export function getPersistedCompactionMarkerState(
    db: Database,
-   sessionId: string
+   sessionId: string,
 ): PersistedCompactionMarkerState | null {
    const row = db.prepare("SELECT compaction_marker_state FROM session_meta WHERE session_id = ?").get(sessionId) as {
       compaction_marker_state?: string;
@@ -834,7 +834,7 @@ export function getPersistedCompactionMarkerState(
 export function setPersistedCompactionMarkerState(
    db: Database,
    sessionId: string,
-   state: PersistedCompactionMarkerState | null
+   state: PersistedCompactionMarkerState | null,
 ): void {
    ensureSessionMetaRow(db, sessionId);
    const json = state ? JSON.stringify(state) : "";
@@ -947,7 +947,7 @@ export function getPendingCompactionMarkerState(db: Database, sessionId: string)
 export function setPendingCompactionMarkerState(
    db: Database,
    sessionId: string,
-   state: PendingCompactionMarker | null
+   state: PendingCompactionMarker | null,
 ): void {
    ensureSessionMetaRow(db, sessionId);
    const blob = state ? stableStringify(state) : null;
@@ -968,13 +968,13 @@ export function setPendingCompactionMarkerState(
 export function clearPendingCompactionMarkerStateIf(
    db: Database,
    sessionId: string,
-   expected: PendingCompactionMarker
+   expected: PendingCompactionMarker,
 ): boolean {
    const expectedBlob = stableStringify(expected);
    const result = db
       .prepare(
          `UPDATE session_meta SET pending_compaction_marker_state = NULL
-             WHERE session_id = ? AND pending_compaction_marker_state = ?`
+             WHERE session_id = ? AND pending_compaction_marker_state = ?`,
       )
       .run(sessionId, expectedBlob);
    return result.changes > 0;
@@ -1026,7 +1026,7 @@ export function getPendingPiCompactionMarkerState(db: Database, sessionId: strin
       // Fall through to clear malformed durable state below.
    }
    db.prepare(
-      "UPDATE session_meta SET pending_pi_compaction_marker_state = NULL WHERE session_id = ? AND pending_pi_compaction_marker_state = ?"
+      "UPDATE session_meta SET pending_pi_compaction_marker_state = NULL WHERE session_id = ? AND pending_pi_compaction_marker_state = ?",
    ).run(sessionId, raw);
    return null;
 }
@@ -1034,26 +1034,26 @@ export function getPendingPiCompactionMarkerState(db: Database, sessionId: strin
 export function setPendingPiCompactionMarkerState(
    db: Database,
    sessionId: string,
-   state: PendingPiCompactionMarker | null
+   state: PendingPiCompactionMarker | null,
 ): void {
    ensureSessionMetaRow(db, sessionId);
    const blob = state ? stableStringify(state) : null;
    db.prepare("UPDATE session_meta SET pending_pi_compaction_marker_state = ? WHERE session_id = ?").run(
       blob,
-      sessionId
+      sessionId,
    );
 }
 
 export function clearPendingPiCompactionMarkerStateIf(
    db: Database,
    sessionId: string,
-   expected: PendingPiCompactionMarker
+   expected: PendingPiCompactionMarker,
 ): boolean {
    const expectedBlob = stableStringify(expected);
    const result = db
       .prepare(
          `UPDATE session_meta SET pending_pi_compaction_marker_state = NULL
-             WHERE session_id = ? AND pending_pi_compaction_marker_state = ?`
+             WHERE session_id = ? AND pending_pi_compaction_marker_state = ?`,
       )
       .run(sessionId, expectedBlob);
    return result.changes > 0;
@@ -1064,7 +1064,7 @@ export function getSessionsWithPendingPiMarker(db: Database): string[] {
       .prepare(
          `SELECT session_id FROM session_meta
              WHERE pending_pi_compaction_marker_state IS NOT NULL
-               AND pending_pi_compaction_marker_state != ''`
+               AND pending_pi_compaction_marker_state != ''`,
       )
       .all() as Array<{ session_id: string }>;
    return rows.map((r) => r.session_id);
@@ -1088,14 +1088,14 @@ export function peekDeferredExecutePending(db: Database, sessionId: string): Def
 export function setDeferredExecutePendingIfAbsent(
    db: Database,
    sessionId: string,
-   payload: DeferredExecutePayload
+   payload: DeferredExecutePayload,
 ): boolean {
    ensureSessionMetaRow(db, sessionId);
    const payloadBlob = stableStringify(payload);
    const result = db
       .prepare(
          `UPDATE session_meta SET deferred_execute_state = ?
-             WHERE session_id = ? AND deferred_execute_state IS NULL`
+             WHERE session_id = ? AND deferred_execute_state IS NULL`,
       )
       .run(payloadBlob, sessionId);
    return result.changes > 0;
@@ -1104,13 +1104,13 @@ export function setDeferredExecutePendingIfAbsent(
 export function clearDeferredExecutePendingIfMatches(
    db: Database,
    sessionId: string,
-   expected: DeferredExecutePayload
+   expected: DeferredExecutePayload,
 ): boolean {
    const expectedBlob = stableStringify(expected);
    const result = db
       .prepare(
          `UPDATE session_meta SET deferred_execute_state = NULL
-             WHERE session_id = ? AND deferred_execute_state = ?`
+             WHERE session_id = ? AND deferred_execute_state = ?`,
       )
       .run(sessionId, expectedBlob);
    return result.changes > 0;
@@ -1132,7 +1132,7 @@ export function getSessionsWithPendingMarker(db: Database): string[] {
       .prepare(
          `SELECT session_id FROM session_meta
              WHERE pending_compaction_marker_state IS NOT NULL
-               AND pending_compaction_marker_state != ''`
+               AND pending_compaction_marker_state != ''`,
       )
       .all() as Array<{ session_id: string }>;
    return rows.map((r) => r.session_id);
@@ -1142,19 +1142,19 @@ export function setSessionWorkMetrics(
    db: Database,
    sessionId: string,
    newWorkTokens: number,
-   totalInputTokens: number
+   totalInputTokens: number,
 ): void {
    ensureSessionMetaRow(db, sessionId);
    db.prepare(
       `UPDATE session_meta
          SET new_work_tokens = ?, total_input_tokens = ?
-         WHERE session_id = ?`
+         WHERE session_id = ?`,
    ).run(Math.max(0, Math.floor(newWorkTokens)), Math.max(0, Math.floor(totalInputTokens)), sessionId);
 }
 
 export function getSessionWorkMetrics(
    db: Database,
-   sessionId: string
+   sessionId: string,
 ): { newWorkTokens: number; totalInputTokens: number } {
    const row = db
       .prepare("SELECT new_work_tokens, total_input_tokens FROM session_meta WHERE session_id = ?")
@@ -1164,6 +1164,6 @@ export function getSessionWorkMetrics(
    } | null;
    return {
       newWorkTokens: typeof row?.new_work_tokens === "number" ? row.new_work_tokens : 0,
-      totalInputTokens: typeof row?.total_input_tokens === "number" ? row.total_input_tokens : 0
+      totalInputTokens: typeof row?.total_input_tokens === "number" ? row.total_input_tokens : 0,
    };
 }

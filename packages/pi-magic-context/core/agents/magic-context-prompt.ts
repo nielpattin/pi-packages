@@ -10,7 +10,7 @@ function getToolHistoryGuidance(dropToolStructure: boolean): string {
 
 const BASE_INTRO = (
    protectedTags: number,
-   dropToolStructure: boolean
+   dropToolStructure: boolean,
 ): string => `Messages and tool outputs are tagged with §N§ identifiers (e.g., §1§, §42§).
 Use \`ctx_reduce\` to manage context size. It supports one operation:
 - \`drop\`: Remove entirely (best for tool outputs you already acted on).
@@ -42,7 +42,7 @@ Before your turn finishes, consider using \`ctx_reduce\` to drop large tool outp
  *  a tagging system they can't observe just wastes tokens and (empirically) primes
  *  some models to emit malformed `§N">§` tokens at the start of their own text. */
 const BASE_INTRO_NO_REDUCE = (
-   dropToolStructure: boolean
+   dropToolStructure: boolean,
 ): string => `Use \`ctx_note\` for deferred intentions — things to tackle later, not right now. NOT for task tracking (use todos). Notes survive context compression and you'll be reminded at natural work boundaries (after commits, historian runs, todo completion).
 Use \`ctx_memory\` to manage cross-session project memories. Write new memories or delete stale ones. Memories persist across sessions and are automatically injected into new sessions.
 **Save to memory proactively**: If you spent multiple turns finding something (a file path, a DB location, a config pattern, a workaround), save it with \`ctx_memory\` so future sessions don't repeat the search. Examples:
@@ -88,7 +88,7 @@ export function buildMagicContextSection(
    dreamerEnabled = false,
    dropToolStructure = true,
    temporalAwarenessEnabled = false,
-   cavemanTextCompressionEnabled = false
+   cavemanTextCompressionEnabled = false,
 ): string {
    const smartNoteGuidance = dreamerEnabled
       ? `\nWhen \`surface_condition\` is provided with \`write\`, the note becomes a project-scoped smart note.\nThe dreamer evaluates smart note conditions during nightly runs and surfaces them when conditions are met.\nExample: \`ctx_note(action="write", content="Implement X because Y", surface_condition="When PR #42 is merged in this repo")\``

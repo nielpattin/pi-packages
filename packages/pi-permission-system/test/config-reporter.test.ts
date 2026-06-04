@@ -16,7 +16,7 @@ test("buildResolvedConfigLogEntry includes policy paths and legacy detection fla
       agentsDir: "/home/user/.pi/agent/agents",
       agentsDirExists: true,
       projectAgentsDir: "/projects/my-app/.pi/agent/agents",
-      projectAgentsDirExists: false
+      projectAgentsDirExists: false,
    };
 
    const result = buildResolvedConfigLogEntry({ policyPaths });
@@ -43,7 +43,7 @@ test("buildResolvedConfigLogEntry handles null project paths", () => {
       agentsDir: "/home/user/.pi/agent/agents",
       agentsDirExists: false,
       projectAgentsDir: null,
-      projectAgentsDirExists: false
+      projectAgentsDirExists: false,
    };
 
    const result = buildResolvedConfigLogEntry({ policyPaths });
@@ -63,13 +63,13 @@ test("buildResolvedConfigLogEntry surfaces legacy detection flags", () => {
       agentsDir: "/home/user/.pi/agent/agents",
       agentsDirExists: false,
       projectAgentsDir: null,
-      projectAgentsDirExists: false
+      projectAgentsDirExists: false,
    };
 
    const result = buildResolvedConfigLogEntry({
       policyPaths,
       legacyGlobalPolicyDetected: true,
-      legacyExtensionConfigDetected: true
+      legacyExtensionConfigDetected: true,
    });
 
    expect(result.legacyGlobalPolicyDetected).toBe(true);
@@ -91,18 +91,18 @@ test("config.resolved entry appears in review log via logger", () => {
 
       const pm = new PermissionManager({
          globalConfigPath,
-         agentsDir
+         agentsDir,
       });
 
       const logger = createPermissionSystemLogger({
          getConfig: () => ({
             debugLog: false,
             permissionReviewLog: true,
-            yoloMode: false
+            yoloMode: false,
          }),
          debugLogPath,
          reviewLogPath,
-         ensureLogsDirectory: () => undefined
+         ensureLogsDirectory: () => undefined,
       });
 
       const policyPaths = pm.getResolvedPolicyPaths();

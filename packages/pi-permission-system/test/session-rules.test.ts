@@ -21,8 +21,8 @@ describe("SessionRules", () => {
                pattern: "/other/project/*",
                action: "allow",
                layer: "session",
-               origin: "session"
-            }
+               origin: "session",
+            },
          ]);
       });
 
@@ -34,7 +34,7 @@ describe("SessionRules", () => {
             surface: "bash",
             pattern: "*",
             action: "deny",
-            origin: "session"
+            origin: "session",
          });
          expect(rules.getRuleset()).toHaveLength(1);
       });

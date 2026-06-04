@@ -36,7 +36,7 @@ export class SubagentsServiceAdapter implements SubagentsService {
    constructor(
       private readonly manager: AgentManagerLike,
       private readonly resolveModel: (input: string, registry: ModelRegistry) => unknown,
-      private readonly runtime: ServiceRuntimeLike
+      private readonly runtime: ServiceRuntimeLike,
    ) {}
 
    spawn(type: string, prompt: string, options?: SpawnOptions): string {
@@ -70,7 +70,7 @@ export class SubagentsServiceAdapter implements SubagentsService {
          inheritContext: options?.inheritContext,
          bypassQueue: options?.bypassQueue,
          isolation: options?.isolation,
-         isBackground
+         isBackground,
       });
    }
 
@@ -128,7 +128,7 @@ export function toSubagentRecord(record: Agent): SubagentRecord {
       toolUses: record.toolUses,
       startedAt: record.startedAt,
       lifetimeUsage: record.lifetimeUsage,
-      compactionCount: record.compactionCount
+      compactionCount: record.compactionCount,
    };
 
    if (record.result !== undefined) out.result = record.result;

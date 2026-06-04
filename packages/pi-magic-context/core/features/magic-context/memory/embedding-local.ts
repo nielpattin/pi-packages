@@ -171,7 +171,7 @@ async function injectWasmOrtForElectron(): Promise<boolean> {
          // the WASM cache. We log and continue rather than blocking embeddings.
          log(
             "[magic-context] could not resolve local onnxruntime-web/dist, falling back to default WASM paths:",
-            pathError instanceof Error ? pathError.message : String(pathError)
+            pathError instanceof Error ? pathError.message : String(pathError),
          );
       }
 
@@ -182,7 +182,7 @@ async function injectWasmOrtForElectron(): Promise<boolean> {
       // instead of its own native selection logic.
       (globalThis as Record<symbol, unknown>)[Symbol.for("onnxruntime")] = ortWeb;
       log(
-         "[magic-context] Electron detected — using onnxruntime-web (WASM) for embeddings (bypasses onnxruntime-node native load)"
+         "[magic-context] Electron detected — using onnxruntime-web (WASM) for embeddings (bypasses onnxruntime-node native load)",
       );
       return true;
    } catch (error) {
@@ -192,7 +192,7 @@ async function injectWasmOrtForElectron(): Promise<boolean> {
       // user's actual problem rather than something masked by our shim.
       log(
          "[magic-context] failed to inject onnxruntime-web for Electron — letting transformers fall back to native:",
-         error instanceof Error ? error.message : String(error)
+         error instanceof Error ? error.message : String(error),
       );
       return false;
    }
@@ -211,7 +211,7 @@ type EmbeddingPipeline = {
 type CreateEmbeddingPipeline = (
    task: "feature-extraction",
    model: string,
-   options: { dtype: string }
+   options: { dtype: string },
 ) => Promise<EmbeddingPipeline>;
 
 /**
@@ -405,8 +405,8 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
                      // all-MiniLM-L6-v2).
                      const pipeline = await withQuietConsole(() =>
                         createPipeline("feature-extraction", this.model, {
-                           dtype: "fp32"
-                        })
+                           dtype: "fp32",
+                        }),
                      );
                      if (this.disposing) {
                         await pipeline.dispose?.();
@@ -424,7 +424,7 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
                      // Jittered backoff: 300ms + random 0-200ms, grows by attempt.
                      const delayMs = 300 * attempt + Math.floor(Math.random() * 200);
                      log(
-                        `[magic-context] embedding model load attempt ${attempt}/${MAX_ATTEMPTS} failed transiently, retrying in ${delayMs}ms`
+                        `[magic-context] embedding model load attempt ${attempt}/${MAX_ATTEMPTS} failed transiently, retrying in ${delayMs}ms`,
                      );
                      await new Promise((resolve) => setTimeout(resolve, delayMs));
                   }
@@ -494,8 +494,8 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
          const result = await withQuietConsole(() =>
             pipeline(text, {
                pooling: "mean",
-               normalize: true
-            })
+               normalize: true,
+            }),
          );
 
          return extractBatchEmbeddings(result, 1)[0] ?? null;
@@ -535,8 +535,8 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
          const result = await withQuietConsole(() =>
             pipeline(texts, {
                pooling: "mean",
-               normalize: true
-            })
+               normalize: true,
+            }),
          );
 
          return extractBatchEmbeddings(result, texts.length);

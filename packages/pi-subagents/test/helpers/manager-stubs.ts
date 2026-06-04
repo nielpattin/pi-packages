@@ -21,7 +21,7 @@ import { createMockSession, type MockSession, toAgentSession } from "#test/helpe
 export function createBlockingRunner(): AgentRunner {
    return {
       run: vi.fn().mockImplementation(() => new Promise<RunResult>(() => {})),
-      resume: vi.fn()
+      resume: vi.fn(),
    };
 }
 
@@ -39,7 +39,7 @@ export function createRunResult(session?: MockSession): RunResult {
       responseText: "done",
       session: toAgentSession(sess),
       aborted: false,
-      steered: false
+      steered: false,
    };
 }
 
@@ -60,13 +60,13 @@ export function createSessionRunner(session: MockSession): AgentRunner {
                _snapshot: unknown,
                _type: unknown,
                _prompt: unknown,
-               opts: { onSessionCreated?: (s: unknown) => void }
+               opts: { onSessionCreated?: (s: unknown) => void },
             ) => {
                opts.onSessionCreated?.(session);
                return createRunResult(session);
-            }
+            },
          ),
-      resume: vi.fn()
+      resume: vi.fn(),
    };
 }
 
@@ -95,6 +95,6 @@ export function createMockWorktrees(overrides?: {
    return {
       create: vi.fn().mockReturnValue(createReturn),
       cleanup: vi.fn(() => cleanupReturn),
-      prune: vi.fn()
+      prune: vi.fn(),
    };
 }

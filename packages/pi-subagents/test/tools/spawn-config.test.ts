@@ -10,7 +10,7 @@ function makeModelInfo(overrides: Partial<Parameters<typeof resolveSpawnConfig>[
    return {
       parentModel: { id: "claude-sonnet", name: "Claude Sonnet" } as { id: string; name?: string } | undefined,
       modelRegistry: { getAll: () => [], getAvailable: () => [] } as unknown,
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -22,7 +22,7 @@ describe("resolveSpawnConfig — type resolution", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       expect("error" in result && result.error).toBeFalsy();
       if ("error" in result) return;
@@ -35,7 +35,7 @@ describe("resolveSpawnConfig — type resolution", () => {
          { subagent_type: "unknown-type", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       expect("error" in result && result.error).toBeFalsy();
       if ("error" in result) return;
@@ -48,7 +48,7 @@ describe("resolveSpawnConfig — type resolution", () => {
          { subagent_type: "Explore", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.identity.displayName).toBe("Explore");
@@ -59,7 +59,7 @@ describe("resolveSpawnConfig — type resolution", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       // general-purpose config has displayName: "Agent"
@@ -74,7 +74,7 @@ describe("resolveSpawnConfig — model resolution", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo({ parentModel }),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.model).toBe(parentModel);
@@ -87,7 +87,7 @@ describe("resolveSpawnConfig — model resolution", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", model: "nonexistent-xyz" },
          testRegistry,
          makeModelInfo({ modelRegistry: { getAll: () => [], getAvailable: () => [] } }),
-         defaultSettings
+         defaultSettings,
       );
       expect("error" in result && result.error).toBeTruthy();
    });
@@ -99,7 +99,7 @@ describe("resolveSpawnConfig — max turns normalization", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", max_turns: 10 },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.effectiveMaxTurns).toBe(10);
@@ -110,7 +110,7 @@ describe("resolveSpawnConfig — max turns normalization", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         { defaultMaxTurns: 25 }
+         { defaultMaxTurns: 25 },
       );
       if ("error" in result) return;
       expect(result.execution.effectiveMaxTurns).toBe(25);
@@ -121,7 +121,7 @@ describe("resolveSpawnConfig — max turns normalization", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.effectiveMaxTurns).toBeUndefined();
@@ -134,7 +134,7 @@ describe("resolveSpawnConfig — invocation fields", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", run_in_background: true },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.runInBackground).toBe(true);
@@ -145,7 +145,7 @@ describe("resolveSpawnConfig — invocation fields", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", isolated: true },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.isolated).toBe(true);
@@ -156,7 +156,7 @@ describe("resolveSpawnConfig — invocation fields", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", isolation: "worktree" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.isolation).toBe("worktree");
@@ -167,7 +167,7 @@ describe("resolveSpawnConfig — invocation fields", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", thinking: "high" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.agentInvocation).toEqual({
@@ -177,7 +177,7 @@ describe("resolveSpawnConfig — invocation fields", () => {
          isolated: false,
          inheritContext: false,
          runInBackground: false,
-         isolation: undefined
+         isolation: undefined,
       });
    });
 });
@@ -188,7 +188,7 @@ describe("resolveSpawnConfig — detailBase and tags", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "my task" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.presentation.detailBase.description).toBe("my task");
@@ -201,7 +201,7 @@ describe("resolveSpawnConfig — detailBase and tags", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d", thinking: "high" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.presentation.agentTags).toContain("thinking: high");
@@ -212,7 +212,7 @@ describe("resolveSpawnConfig — detailBase and tags", () => {
          { subagent_type: "Explore", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       // Explore has promptMode: "replace" → no mode label, no invocation overrides
@@ -224,7 +224,7 @@ describe("resolveSpawnConfig — detailBase and tags", () => {
          { subagent_type: "general-purpose", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       // general-purpose has promptMode: "append" → gets "twin" label
@@ -236,7 +236,7 @@ describe("resolveSpawnConfig — detailBase and tags", () => {
          { subagent_type: "Explore", prompt: "test", description: "d" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       // Explore has promptMode: "replace" and no invocation overrides → no tags
@@ -250,7 +250,7 @@ describe("resolveSpawnConfig — prompt and rawType passthrough", () => {
          { subagent_type: "Explore", prompt: "search for bugs", description: "bug search" },
          testRegistry,
          makeModelInfo(),
-         defaultSettings
+         defaultSettings,
       );
       if ("error" in result) return;
       expect(result.execution.prompt).toBe("search for bugs");

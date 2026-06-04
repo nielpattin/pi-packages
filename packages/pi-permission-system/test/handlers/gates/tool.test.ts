@@ -13,13 +13,13 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: {},
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides
+      ...overrides,
    };
 }
 
 function makeCheckResult(
    state: "allow" | "deny" | "ask",
-   overrides: Partial<PermissionCheckResult> = {}
+   overrides: Partial<PermissionCheckResult> = {},
 ): PermissionCheckResult {
    return {
       state,
@@ -27,7 +27,7 @@ function makeCheckResult(
       source: "tool",
       origin: "builtin",
       matchedPattern: "*",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -48,7 +48,7 @@ describe("describeToolGate", () => {
    it("returns bash surface with command in decision.value for bash tools", () => {
       const check = makeCheckResult("ask", {
          toolName: "bash",
-         command: "git status"
+         command: "git status",
       });
       const desc = describeToolGate(makeTcc({ toolName: "bash", input: { command: "git status" } }), check);
       expect(desc.surface).toBe("bash");
@@ -59,7 +59,7 @@ describe("describeToolGate", () => {
    it("returns mcp surface with target in decision.value for MCP tools", () => {
       const check = makeCheckResult("ask", {
          toolName: "mcp",
-         target: "server:tool"
+         target: "server:tool",
       });
       const desc = describeToolGate(makeTcc({ toolName: "mcp", input: { tool: "server:tool" } }), check);
       expect(desc.surface).toBe("mcp");
@@ -74,7 +74,7 @@ describe("describeToolGate", () => {
          kind: "tool",
          check,
          agentName: undefined,
-         input: {}
+         input: {},
       });
    });
 
@@ -89,14 +89,14 @@ describe("describeToolGate", () => {
       const desc = describeToolGate(makeTcc({ toolName: "bash", input: { command: "ls" } }), check);
       expect(desc.denialContext).toMatchObject({
          kind: "tool",
-         input: { command: "ls" }
+         input: { command: "ls" },
       });
    });
 
    it("populates sessionApproval via suggestSessionPattern", () => {
       const check = makeCheckResult("ask", {
          toolName: "bash",
-         command: "git status"
+         command: "git status",
       });
       const desc = describeToolGate(makeTcc({ toolName: "bash", input: { command: "git status" } }), check);
       expect(desc.sessionApproval).toBeDefined();
@@ -111,7 +111,7 @@ describe("describeToolGate", () => {
          source: "tool_call",
          agentName: "my-agent",
          toolCallId: "tc-42",
-         toolName: "read"
+         toolName: "read",
       });
       expect(desc.promptDetails.message).toBeDefined();
       expect(desc.promptDetails.sessionLabel).toBeDefined();
@@ -122,7 +122,7 @@ describe("describeToolGate", () => {
       const desc = describeToolGate(makeTcc({ toolName: "bash", input: { command: "ls" } }), check);
       expect(desc.logContext).toMatchObject({
          source: "tool_call",
-         toolName: "bash"
+         toolName: "bash",
       });
       expect(desc.logContext.command).toBe("ls");
    });
@@ -130,7 +130,7 @@ describe("describeToolGate", () => {
    it("uses toolName as input for checkPermission surface", () => {
       const desc = describeToolGate(
          makeTcc({ toolName: "edit", input: { path: "/a.ts" } }),
-         makeCheckResult("ask", { toolName: "edit" })
+         makeCheckResult("ask", { toolName: "edit" }),
       );
       expect(desc.surface).toBe("edit");
       expect(desc.input).toEqual({ path: "/a.ts" });

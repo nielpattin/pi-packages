@@ -14,7 +14,7 @@ import type {
    DreamerConfig,
    HistorianConfig,
    MagicContextConfig,
-   SidekickConfig
+   SidekickConfig,
 } from "#core/config/schema/magic-context";
 import { resolveProjectIdentity } from "#core/features/magic-context/memory/project-identity";
 import { scheduleIncrementalIndex } from "#core/features/magic-context/message-index-async";
@@ -23,7 +23,7 @@ import type { ContextDatabase } from "#core/features/magic-context/storage";
 import {
    getOrCreateSessionMeta,
    getSessionsWithPendingPiMarker,
-   updateSessionMeta
+   updateSessionMeta,
 } from "#core/features/magic-context/storage";
 import { openDatabase } from "#core/features/magic-context/storage-db";
 import { getOverflowState, recordOverflowDetected } from "#core/features/magic-context/storage-meta-persisted";
@@ -36,7 +36,7 @@ import {
    ANNOUNCEMENT_FOOTER,
    ANNOUNCEMENT_VERSION,
    markAnnouncementSeen,
-   shouldShowAnnouncement
+   shouldShowAnnouncement,
 } from "#core/shared/announcement";
 import { getMagicContextStorageDir } from "#core/shared/data-path";
 import { setHarness } from "#core/shared/harness";
@@ -66,7 +66,7 @@ import {
    signalPiPendingMaterialization,
    signalPiSystemPromptRefresh,
    signalPiSystemPromptRefreshForProject,
-   trackSessionForProject
+   trackSessionForProject,
 } from "./context-handler";
 import { awaitInFlightDreamers, registerPiDreamerProject, unregisterPiDreamerProject } from "./dreamer";
 import { ensureProjectRegisteredFromPiDirectory } from "./embedding-bootstrap";
@@ -142,7 +142,7 @@ function getPiMessageModel(message: unknown): {
    const msg = message as { provider?: unknown; model?: unknown };
    return {
       provider: typeof msg.provider === "string" ? msg.provider : undefined,
-      model: typeof msg.model === "string" ? msg.model : undefined
+      model: typeof msg.model === "string" ? msg.model : undefined,
    };
 }
 
@@ -183,7 +183,7 @@ export async function persistPiPressureFromMessageEnd(args: {
       sessionId: args.sessionId,
       provider,
       model,
-      piContextWindow: args.piContextWindow
+      piContextWindow: args.piContextWindow,
    });
    const usage = extractAssistantUsage(args.message);
    const pressure = computePiPressure(usage, effectiveContextLimit);
@@ -211,19 +211,19 @@ export async function persistPiPressureFromMessageEnd(args: {
             sessionId: args.sessionId,
             provider,
             model,
-            piContextWindow: args.piContextWindow
+            piContextWindow: args.piContextWindow,
          });
          if (contextLimit >= pressure.inputTokens) {
             percentage = (pressure.inputTokens / contextLimit) * 100;
             log(
-               `${PREFIX} models-dev-cache: regression recovered for ${provider}/${model} via Pi cache reload (was=${oldLimit}, now=${contextLimit})`
+               `${PREFIX} models-dev-cache: regression recovered for ${provider}/${model} via Pi cache reload (was=${oldLimit}, now=${contextLimit})`,
             );
          } else if (!meta.cacheAlertSent) {
             updates.cacheAlertSent = true;
             const safeTokens = Math.max(observedSafeInputTokens, pressure.inputTokens);
             const modelLabel = provider && model ? `${provider}/${model}` : "the active model";
             await args.notifyIssue?.(
-               `⚠️ Magic Context: Pi reports a context limit of ${formatTokens(contextLimit)} tokens for ${modelLabel} but you've successfully sent ${formatTokens(safeTokens)} tokens in this session — the cached limit looks wrong. Restart Pi if you suspect this is incorrect.`
+               `⚠️ Magic Context: Pi reports a context limit of ${formatTokens(contextLimit)} tokens for ${modelLabel} but you've successfully sent ${formatTokens(safeTokens)} tokens in this session — the cached limit looks wrong. Restart Pi if you suspect this is incorrect.`,
             );
          }
       }
@@ -279,7 +279,7 @@ export function resolveSidekickFromConfig(config: MagicContextConfig): PiSidekic
       systemPrompt: sidekick.system_prompt,
       timeoutMs: sidekick.timeout_ms,
       thinking_level: sidekick.thinking_level,
-      fallbackModels: resolveFallbackChain("sidekick", sidekick.fallback_models)
+      fallbackModels: resolveFallbackChain("sidekick", sidekick.fallback_models),
    };
 }
 
@@ -332,10 +332,10 @@ export function resolveHistorianFromConfig(config: MagicContextConfig): PiHistor
          maxMergeDepth: config.compressor.max_merge_depth,
          cooldownMs: config.compressor.cooldown_ms,
          maxCompartmentsPerPass: config.compressor.max_compartments_per_pass,
-         graceCompartments: config.compressor.grace_compartments
+         graceCompartments: config.compressor.grace_compartments,
       },
       memoryEnabled: config.memory.enabled,
-      autoPromote: config.memory.auto_promote
+      autoPromote: config.memory.auto_promote,
    };
 }
 
@@ -345,7 +345,7 @@ function resolveNudgeFromConfig(config: MagicContextConfig): PiNudgeOptions | un
       protectedTags: config.protected_tags ?? 20,
       nudgeIntervalTokens: config.nudge_interval_tokens,
       iterationNudgeThreshold: config.iteration_nudge_threshold,
-      executeThresholdPercentage: config.execute_threshold_percentage
+      executeThresholdPercentage: config.execute_threshold_percentage,
    };
 }
 
@@ -355,7 +355,7 @@ function resolveAutoSearchFromConfig(config: MagicContextConfig): PiAutoSearchHa
    return {
       enabled,
       scoreThreshold: auto?.score_threshold ?? 0.55,
-      minPromptChars: auto?.min_prompt_chars ?? 20
+      minPromptChars: auto?.min_prompt_chars ?? 20,
    };
 }
 
@@ -382,7 +382,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       const message = err instanceof Error ? err.message : String(err);
       warn(
          `Magic Context (pi) failed to open SQLite store at ${dbPath}: ${message}. ` +
-            "Plugin will not register hooks; storage path is unwritable or corrupt."
+            "Plugin will not register hooks; storage path is unwritable or corrupt.",
       );
       return;
    }
@@ -405,7 +405,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       }
    } catch (err) {
       warn(
-         `Magic Context (pi) failed to rehydrate deferred Pi compaction markers: ${err instanceof Error ? err.message : String(err)}`
+         `Magic Context (pi) failed to rehydrate deferred Pi compaction markers: ${err instanceof Error ? err.message : String(err)}`,
       );
    }
 
@@ -421,7 +421,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
    // them in the magic-context log. Loading never throws — bad config
    // gracefully degrades to defaults.
    const { config, warnings, loadedFromPaths } = loadPiConfig({
-      cwd: projectDir
+      cwd: projectDir,
    });
    if (loadedFromPaths.length > 0) {
       info(`config loaded from: ${loadedFromPaths.join(", ")}`);
@@ -464,12 +464,12 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       // Smart notes (surface_condition) only work when dreamer is
       // running — otherwise the note sits `pending` forever with no
       // path to surface. Match the user's dreamer config flag.
-      dreamerEnabled: isDreamerRunnable(config)
+      dreamerEnabled: isDreamerRunnable(config),
    });
    info(
       `registered tools: ctx_search, ctx_memory, ctx_note, ctx_expand${
          config.ctx_reduce_enabled === true ? ", ctx_reduce" : ""
-      }`
+      }`,
    );
 
    // Register the per-LLM-call transform pipeline. Tags eligible message
@@ -480,7 +480,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       historianConfig.onStatusChange = (ctx) => {
          updateStatusLine(ctx, {
             db,
-            projectIdentity: resolveCurrentProject(ctx).projectIdentity
+            projectIdentity: resolveCurrentProject(ctx).projectIdentity,
          });
       };
    }
@@ -508,48 +508,48 @@ export default async function (pi: ExtensionAPI): Promise<void> {
             config.ctx_reduce_enabled === false && config.experimental?.caveman_text_compression
                ? {
                     enabled: config.experimental.caveman_text_compression.enabled,
-                    minChars: config.experimental.caveman_text_compression.min_chars
+                    minChars: config.experimental.caveman_text_compression.min_chars,
                  }
                : undefined,
          // Forward the user's clear_reasoning_age. Pi previously hardcoded
          // 30, ignoring this config entirely. Schema default is 50 (matches
          // Host `magic-context.ts:303`).
-         clearReasoningAge: config.clear_reasoning_age
+         clearReasoningAge: config.clear_reasoning_age,
       },
       // <session-history> injection — writes compartments + facts +
       // project memories into message[0]. Cross-harness coherent:
       // memories shared with Host show up here automatically.
       injection: {
          injectionBudgetTokens: config.memory.injection_budget_tokens,
-         temporalAwareness: config.experimental?.temporal_awareness === true
+         temporalAwareness: config.experimental?.temporal_awareness === true,
       },
       // Scheduler config — TTL + threshold gating for cache-busting
       // stages. Heuristic cleanup runs only on execute passes so
       // provider prompt cache stays warm on defer passes.
       scheduler: {
          executeThresholdPercentage: config.execute_threshold_percentage,
-         executeThresholdTokens: config.execute_threshold_tokens
+         executeThresholdTokens: config.execute_threshold_tokens,
       },
       historian: historianConfig,
       nudge: nudgeConfig,
-      autoSearch: autoSearchConfig
+      autoSearch: autoSearchConfig,
    });
    const executeThreshold =
       typeof historianConfig?.executeThresholdPercentage === "number" ? historianConfig.executeThresholdPercentage : 65;
    info(
       historianConfig
          ? `registered historian trigger (model=${String(historianConfig.model)}, executeThreshold=${executeThreshold}%)`
-         : "registered historian trigger: DISABLED (set historian.model in magic-context.jsonc)"
+         : "registered historian trigger: DISABLED (set historian.model in magic-context.jsonc)",
    );
    info(
       nudgeConfig
          ? `registered nudges (protected=${nudgeConfig.protectedTags}, interval=${nudgeConfig.nudgeIntervalTokens}, iter=${nudgeConfig.iterationNudgeThreshold})`
-         : "registered nudges: DISABLED (ctx_reduce_enabled=false)"
+         : "registered nudges: DISABLED (ctx_reduce_enabled=false)",
    );
    info(
       autoSearchConfig.enabled
          ? `registered auto-search hint (threshold=${autoSearchConfig.scoreThreshold}, minChars=${autoSearchConfig.minPromptChars})`
-         : "registered auto-search hint: DISABLED (experimental.auto_search.enabled=false)"
+         : "registered auto-search hint: DISABLED (experimental.auto_search.enabled=false)",
    );
 
    // Register the /ctx-aug slash command. Sidekick config is read straight
@@ -560,7 +560,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
    info(
       sidekickConfig
          ? `registered /ctx-aug (sidekick model=${sidekickConfig.model})`
-         : "registered /ctx-aug (sidekick disabled — set sidekick.disable=false and sidekick.model in config)"
+         : "registered /ctx-aug (sidekick disabled — set sidekick.disable=false and sidekick.model in config)",
    );
 
    // Step 5c: register the four diagnostic/admin slash commands so Pi
@@ -582,8 +582,8 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       executeThresholdTokens: config.execute_threshold_tokens,
       dreamer: {
          runnable: isDreamerRunnable(config),
-         schedule: config.dreamer?.schedule
-      }
+         schedule: config.dreamer?.schedule,
+      },
    });
    info("registered /ctx-status");
    registerStatusLine(pi, { db, projectIdentity });
@@ -604,7 +604,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       historianTimeoutMs: config.historian_timeout_ms,
       historianThinkingLevel: historianConfig?.thinkingLevel,
       memoryEnabled: config.memory.enabled,
-      autoPromote: config.memory.auto_promote
+      autoPromote: config.memory.auto_promote,
    });
    info("registered /ctx-recomp");
 
@@ -614,7 +614,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       projectIdentity,
       resolveProject: resolveCurrentProject,
       dreamerEnabled: isDreamerRunnable(config),
-      onProjectSeen: (identity) => seenDreamerProjectIdentities.add(identity)
+      onProjectSeen: (identity) => seenDreamerProjectIdentities.add(identity),
    });
    info("registered /ctx-dream");
 
@@ -636,16 +636,16 @@ export default async function (pi: ExtensionAPI): Promise<void> {
          embeddingConfig: config.embedding,
          memoryEnabled: config.memory.enabled,
          gitCommitIndexing: config.experimental.git_commit_indexing,
-         onAdjunctsRefreshNeeded: signalPiSystemPromptRefreshForProject
+         onAdjunctsRefreshNeeded: signalPiSystemPromptRefreshForProject,
       });
       info(
-         `registered dreamer (schedule=${dreamerConfig.schedule || "manual-only"}, tasks=[${dreamerConfig.tasks.join(",")}])`
+         `registered dreamer (schedule=${dreamerConfig.schedule || "manual-only"}, tasks=[${dreamerConfig.tasks.join(",")}])`,
       );
    } else {
       info(
          isDreamerRunnable(config)
             ? "registered dreamer: DISABLED (no dreamer config)"
-            : "registered dreamer: DISABLED (dreamer.disable=true or no dreamer config)"
+            : "registered dreamer: DISABLED (dreamer.disable=true or no dreamer config)",
       );
    }
 
@@ -771,7 +771,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
             pinKeyFilesEnabled: config.dreamer?.pin_key_files?.enabled ?? false,
             pinKeyFilesTokenBudget: config.dreamer?.pin_key_files?.token_budget ?? 10_000,
             isCacheBusting,
-            existingSystemPrompt: event.systemPrompt
+            existingSystemPrompt: event.systemPrompt,
          });
 
          // Compose the final system prompt: base prompt from Pi + our
@@ -793,7 +793,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
             db,
             sessionId,
             systemPrompt: composedPrompt,
-            isCacheBusting
+            isCacheBusting,
          });
 
          if (result.hashChanged) {
@@ -921,7 +921,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
                const normalizedTodos = normalizeTodoStateJson(todos);
                if (normalizedTodos !== null) {
                   updateSessionMeta(db, sessionId, {
-                     lastTodoState: normalizedTodos
+                     lastTodoState: normalizedTodos,
                   });
                }
             }
@@ -1043,7 +1043,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
             db,
             sessionId,
             message: event.message,
-            cacheTtlConfig: config.cache_ttl
+            cacheTtlConfig: config.cache_ttl,
          });
          // Compute pressure with Host-equivalent semantics: pull
          // the assistant's `usage` field and use
@@ -1069,7 +1069,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
                } else {
                   warn(message);
                }
-            }
+            },
          });
 
          // Synthetic-todowrite capture (Pi parity with Host
@@ -1114,7 +1114,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
                      const normalized = normalizeTodoStateJson(todos);
                      if (normalized === null) continue;
                      updateSessionMeta(db, sessionId, {
-                        lastTodoState: normalized
+                        lastTodoState: normalized,
                      });
                      // First valid todowrite block wins — mirrors Host's
                      // `tool.execute.after` behavior of capturing one
@@ -1162,7 +1162,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
          log(
             `[magic-context][${sessionId}] overflow detected: reportedLimit=${
                detection.reportedLimit ?? "?"
-            } pattern=${detection.matchedPattern ?? "?"}`
+            } pattern=${detection.matchedPattern ?? "?"}`,
          );
       } catch (err) {
          warn("message_end: overflow detection failed:", err);

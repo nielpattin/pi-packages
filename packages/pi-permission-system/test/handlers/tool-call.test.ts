@@ -22,14 +22,14 @@ function makeCtx(overrides: Partial<ExtensionContext> & { cwd?: string } = {}): 
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn()
+         input: vi.fn(),
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn()
+         addEntry: vi.fn(),
       },
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionContext;
 }
 
@@ -39,7 +39,7 @@ function makeToolCallEvent(toolName: string, extraFields: Record<string, unknown
       toolCallId: "tc-1",
       name: toolName,
       input: {},
-      ...extraFields
+      ...extraFields,
    };
 }
 
@@ -61,14 +61,14 @@ function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>
       getInfrastructureReadPaths: vi.fn().mockReturnValue([]),
       canPrompt: vi.fn().mockReturnValue(true),
       prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
-      ...overrides
+      ...overrides,
    } as unknown as PermissionSession;
 }
 
 function makeEvents() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined)
+      on: vi.fn().mockReturnValue(() => undefined),
    };
 }
 
@@ -76,7 +76,7 @@ function makeToolRegistry(overrides: Partial<ToolRegistry> = {}): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "bash" }]),
       setActive: vi.fn(),
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -100,13 +100,13 @@ function makeHandler(overrides?: {
 describe("getEventInput", () => {
    it("returns the input field when present", () => {
       expect(getEventInput({ input: { path: "/foo" } })).toEqual({
-         path: "/foo"
+         path: "/foo",
       });
    });
 
    it("returns the arguments field when input is absent", () => {
       expect(getEventInput({ arguments: { command: "ls" } })).toEqual({
-         command: "ls"
+         command: "ls",
       });
    });
 
@@ -116,7 +116,7 @@ describe("getEventInput", () => {
 
    it("prefers input over arguments when both are present", () => {
       expect(getEventInput({ input: { a: 1 }, arguments: { b: 2 } })).toEqual({
-         a: 1
+         a: 1,
       });
    });
 });
@@ -136,15 +136,15 @@ describe("handleToolCall", () => {
       const result = await handler.handleToolCall({ type: "tool_call" }, makeCtx());
       expect(result).toEqual({
          block: true,
-         reason: expect.stringContaining("tool")
+         reason: expect.stringContaining("tool"),
       });
    });
 
    it("blocks when tool is not registered", async () => {
       const { handler } = makeHandler({
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       const result = await handler.handleToolCall(makeToolCallEvent("unknown-tool"), makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -159,8 +159,8 @@ describe("handleToolCall", () => {
    it("blocks when tool is denied by policy", async () => {
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny"))
-         }
+            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny")),
+         },
       });
       const result = await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -177,21 +177,21 @@ describe("handleToolCall — skill-read gate", () => {
          location: "/skills/librarian/SKILL.md",
          state: "deny" as const,
          normalizedLocation: "/skills/librarian/SKILL.md",
-         normalizedBaseDir: "/skills/librarian"
+         normalizedBaseDir: "/skills/librarian",
       };
       const { handler } = makeHandler({
          session: {
-            getActiveSkillEntries: vi.fn().mockReturnValue([skillEntry])
+            getActiveSkillEntries: vi.fn().mockReturnValue([skillEntry]),
          },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ toolName: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ toolName: "read" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-skill",
          toolName: "read",
-         input: { path: "/skills/librarian/SKILL.md" }
+         input: { path: "/skills/librarian/SKILL.md" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -204,21 +204,21 @@ describe("handleToolCall — skill-read gate", () => {
          location: "/skills/librarian/SKILL.md",
          state: "deny" as const,
          normalizedLocation: "/skills/librarian/SKILL.md",
-         normalizedBaseDir: "/skills/librarian"
+         normalizedBaseDir: "/skills/librarian",
       };
       const { handler } = makeHandler({
          session: {
-            getActiveSkillEntries: vi.fn().mockReturnValue([skillEntry])
+            getActiveSkillEntries: vi.fn().mockReturnValue([skillEntry]),
          },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ toolName: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ toolName: "read" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-ok",
          toolName: "read",
-         input: { path: "/test/project/src/index.ts" }
+         input: { path: "/test/project/src/index.ts" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toEqual({});
@@ -231,17 +231,17 @@ describe("handleToolCall — external-directory gate", () => {
    it("blocks a read of a path outside cwd when policy is deny", async () => {
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny"))
+            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny")),
          },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-ext",
          name: "read",
-         input: { path: "/outside/project/file.ts" }
+         input: { path: "/outside/project/file.ts" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -254,17 +254,17 @@ describe("handleToolCall — bash external-directory gate", () => {
    it("blocks a bash command referencing an external path when policy is deny", async () => {
       const { handler } = makeHandler({
          session: {
-            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny"))
+            checkPermission: vi.fn().mockReturnValue(makePermissionResult("deny")),
          },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "bash" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "bash" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-bash-ext",
          name: "bash",
-         input: { command: "cat /outside/project/file.ts" }
+         input: { command: "cat /outside/project/file.ts" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -284,14 +284,14 @@ describe("handleToolCall — path gate (tools)", () => {
       const { handler } = makeHandler({
          session: { checkPermission },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-path",
          name: "read",
-         input: { path: ".env" }
+         input: { path: ".env" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toMatchObject({ block: true });
@@ -300,14 +300,14 @@ describe("handleToolCall — path gate (tools)", () => {
    it("allows a read when path surface allows", async () => {
       const { handler } = makeHandler({
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "read" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "read" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-path-ok",
          name: "read",
-         input: { path: "src/index.ts" }
+         input: { path: "src/index.ts" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toEqual({});
@@ -327,14 +327,14 @@ describe("handleToolCall — bash path gate", () => {
       const { handler } = makeHandler({
          session: { checkPermission },
          toolRegistry: {
-            getAll: vi.fn().mockReturnValue([{ name: "bash" }])
-         }
+            getAll: vi.fn().mockReturnValue([{ name: "bash" }]),
+         },
       });
       const event = {
          type: "tool_call",
          toolCallId: "tc-bash-path",
          name: "bash",
-         input: { command: "cat .env" }
+         input: { command: "cat .env" },
       };
       const result = await handler.handleToolCall(event, makeCtx());
       expect(result).toMatchObject({ block: true });

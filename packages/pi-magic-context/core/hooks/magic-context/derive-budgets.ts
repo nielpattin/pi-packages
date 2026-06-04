@@ -110,7 +110,7 @@ export function resolveHistorianContextLimit(historianModelOverride?: string): n
       // because the fallback chain still produces a workable budget.
       // eslint-disable-next-line no-console
       console.warn(
-         `[magic-context] historian.model "${historianModelOverride}" lacks provider prefix ("provider/model-id"); using fallback chain for chunk-budget derivation.`
+         `[magic-context] historian.model "${historianModelOverride}" lacks provider prefix ("provider/model-id"); using fallback chain for chunk-budget derivation.`,
       );
    }
 

@@ -64,7 +64,7 @@ export function findProjectsNeedingDream(db: Database): string[] {
              UNION
              SELECT DISTINCT project_path FROM notes
              WHERE type = 'smart' AND status = 'pending' AND project_path IS NOT NULL
-             ORDER BY project_path`
+             ORDER BY project_path`,
       )
       .all();
 
@@ -86,14 +86,14 @@ export function findProjectsNeedingDream(db: Database): string[] {
       const updatedMemories = db
          .prepare<[string, number], { cnt: number }>(
             `SELECT COUNT(*) as cnt FROM memories
-                 WHERE project_path = ? AND status = 'active' AND updated_at > ?`
+                 WHERE project_path = ? AND status = 'active' AND updated_at > ?`,
          )
          .get(row.project_path, lastDreamAt);
 
       const pendingSmartNotes = db
          .prepare<[string], { cnt: number }>(
             `SELECT COUNT(*) as cnt FROM notes
-                 WHERE project_path = ? AND type = 'smart' AND status = 'pending'`
+                 WHERE project_path = ? AND type = 'smart' AND status = 'pending'`,
          )
          .get(row.project_path);
 

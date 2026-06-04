@@ -24,7 +24,7 @@ function isPathWithinDirectoryForSubagent(pathValue: string, directory: string):
 export function isSubagentExecutionContext(
    ctx: ExtensionContext,
    subagentSessionsDir: string,
-   registry?: SubagentSessionRegistry
+   registry?: SubagentSessionRegistry,
 ): boolean {
    const sessionDir = ctx.sessionManager.getSessionDir();
 

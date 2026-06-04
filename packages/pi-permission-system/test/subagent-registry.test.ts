@@ -4,7 +4,7 @@ import { type SubagentSessionInfo, SubagentSessionRegistry } from "#src/subagent
 function makeInfo(overrides: Partial<SubagentSessionInfo> = {}): SubagentSessionInfo {
    return {
       agentName: "Explore",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -36,7 +36,7 @@ describe("SubagentSessionRegistry", () => {
       const registry = new SubagentSessionRegistry();
       registry.register("/sessions/task-abc", makeInfo());
       expect(registry.get("/sessions/task-abc")).toEqual({
-         agentName: "Explore"
+         agentName: "Explore",
       });
    });
 

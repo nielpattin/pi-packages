@@ -59,7 +59,7 @@ function capEditorLines(lines: string[], count: number): string[] {
       line
          .replace(/\x1b\[[0-9;]*m/g, "")
          .trimStart()
-         .startsWith("→ ")
+         .startsWith("→ "),
    );
    if (selectedRow === -1) {
       return lines.slice(0, count);
@@ -80,7 +80,7 @@ function extractCursor(lines: string[]): FixedEditorClusterRender {
       if (!cursor) {
          cursor = {
             col: visibleWidth(line.slice(0, markerIndex)),
-            row
+            row,
          };
       }
 

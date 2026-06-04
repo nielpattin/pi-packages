@@ -34,7 +34,7 @@ import type { ContextDatabase } from "#core/features/magic-context/storage";
 import {
    clearPersistedTodoSyntheticAnchor,
    getPersistedTodoSyntheticAnchor,
-   setPersistedTodoSyntheticAnchor
+   setPersistedTodoSyntheticAnchor,
 } from "#core/features/magic-context/storage-meta";
 import { buildSyntheticTodoPart, type SyntheticTodoPart } from "#core/hooks/magic-context/todo-view";
 
@@ -124,7 +124,7 @@ function piBlocksFromSynthetic(part: SyntheticTodoPart): {
          id: part.callID,
          name: part.tool,
          arguments: { todos: part.state.input.todos },
-         syntheticTodoMarker: true
+         syntheticTodoMarker: true,
       },
       result: {
          role: "toolResult",
@@ -132,8 +132,8 @@ function piBlocksFromSynthetic(part: SyntheticTodoPart): {
          toolName: part.tool,
          content: [{ type: "text", text: part.state.output }],
          timestamp: 0,
-         syntheticTodoMarker: true
-      }
+         syntheticTodoMarker: true,
+      },
    };
 }
 
@@ -241,7 +241,7 @@ export function injectSyntheticTodowriteForPi(args: {
                args.sessionId,
                persistedAnchor.callId,
                persistedAnchor.messageId,
-               args.lastTodoState
+               args.lastTodoState,
             );
          }
          return args.messages;

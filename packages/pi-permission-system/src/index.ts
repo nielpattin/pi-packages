@@ -28,7 +28,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       agentDir: runtime.agentDir,
       exec: maybeExec ? maybeExec.bind(pi) : undefined,
       requestPermissionDecisionFromUi,
-      warn: (message, error) => console.warn(message, error)
+      warn: (message, error) => console.warn(message, error),
    });
 
    const prompter = new PermissionPrompter({
@@ -37,7 +37,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       subagentSessionsDir: runtime.subagentSessionsDir,
       forwardingDir: runtime.forwardingDir,
       registry: subagentRegistry,
-      requestPermissionDecisionFromUi: requestPermissionDecisionWithSound
+      requestPermissionDecisionFromUi: requestPermissionDecisionWithSound,
    });
 
    const forwardingDeps: PermissionForwardingDeps = {
@@ -46,11 +46,11 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       registry: subagentRegistry,
       logger: {
          writeReviewLog: runtime.writeReviewLog.bind(runtime),
-         writeDebugLog: runtime.writeDebugLog.bind(runtime)
+         writeDebugLog: runtime.writeDebugLog.bind(runtime),
       },
       writeReviewLog: runtime.writeReviewLog.bind(runtime),
       requestPermissionDecisionFromUi: requestPermissionDecisionWithSound,
-      shouldAutoApprove: () => shouldAutoApprovePermissionState("ask", runtime.config)
+      shouldAutoApprove: () => shouldAutoApprovePermissionState("ask", runtime.config),
    };
 
    refreshExtensionConfig(runtime);
@@ -67,10 +67,10 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
             canResolveAskPermissionRequest({
                config: runtime.config,
                hasUI: ctx.hasUI,
-               isSubagent: isSubagentExecutionContext(ctx, runtime.subagentSessionsDir, subagentRegistry)
+               isSubagent: isSubagentExecutionContext(ctx, runtime.subagentSessionsDir, subagentRegistry),
             }),
-         promptPermission: (ctx, details) => prompter.prompt(ctx, details)
-      }
+         promptPermission: (ctx, details) => prompter.prompt(ctx, details),
+      },
    );
 
    registerPermissionSystemCommand(pi, {
@@ -78,7 +78,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       setConfig: (next, ctx) => saveExtensionConfig(runtime, next, ctx),
       getConfigPath: () => getGlobalConfigPath(runtime.agentDir),
       getComposedRules: () =>
-         runtime.permissionManager.getComposedConfigRules(runtime.lastKnownActiveAgentName ?? undefined)
+         runtime.permissionManager.getComposedConfigRules(runtime.lastKnownActiveAgentName ?? undefined),
    });
 
    const rpcHandles = registerPermissionRpcHandlers(pi.events, {
@@ -86,7 +86,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       getSessionRules: () => runtime.sessionRules.getRuleset(),
       getRuntimeContext: () => runtime.runtimeContext,
       requestPermissionDecisionFromUi: requestPermissionDecisionWithSound,
-      writeReviewLog: runtime.writeReviewLog.bind(runtime)
+      writeReviewLog: runtime.writeReviewLog.bind(runtime),
    });
 
    const permissionsService: PermissionsService = {
@@ -103,7 +103,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       },
       getToolPermission(toolName, agentName) {
          return runtime.permissionManager.getToolPermission(toolName, agentName);
-      }
+      },
    };
    publishPermissionsService(permissionsService);
 
@@ -115,7 +115,7 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
 
    const toolRegistry = {
       getAll: () => pi.getAllTools(),
-      setActive: (names: string[]) => pi.setActiveTools(names)
+      setActive: (names: string[]) => pi.setActiveTools(names),
    };
 
    const lifecycle = new SessionLifecycleHandler(session, () => {

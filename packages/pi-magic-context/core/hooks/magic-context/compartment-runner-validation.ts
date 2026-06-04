@@ -24,7 +24,7 @@ const MIN_RECOMP_CHUNK_TOKEN_BUDGET = 20;
  */
 function healCompartmentGaps(
    compartments: Array<{ startMessage: number; endMessage: number }>,
-   toolOnlyRanges: ReadonlyArray<{ start: number; end: number }> = []
+   toolOnlyRanges: ReadonlyArray<{ start: number; end: number }> = [],
 ): void {
    const SAFETY_HEAL_GAP = 15;
 
@@ -60,13 +60,13 @@ export function validateHistorianOutput(
       toolOnlyRanges?: ReadonlyArray<{ start: number; end: number }>;
    },
    _priorCompartments: StoredCompartmentRange[],
-   sequenceOffset: number
+   sequenceOffset: number,
 ): ValidatedHistorianPassResult {
    const parsed = parseCompartmentOutput(text);
    if (parsed.compartments.length === 0) {
       return {
          ok: false,
-         error: "Historian returned no usable compartments."
+         error: "Historian returned no usable compartments.",
       };
    }
 
@@ -79,7 +79,7 @@ export function validateHistorianOutput(
    if (!mapped.ok) {
       return {
          ok: false,
-         error: `Historian returned invalid compartment output: ${mapped.error}`
+         error: `Historian returned invalid compartment output: ${mapped.error}`,
       };
    }
 
@@ -87,12 +87,12 @@ export function validateHistorianOutput(
       parsed.compartments,
       chunk.startIndex,
       chunk.endIndex,
-      parsed.unprocessedFrom
+      parsed.unprocessedFrom,
    );
    if (parsedValidationError) {
       return {
          ok: false,
-         error: `Historian returned invalid compartment output: ${parsedValidationError}`
+         error: `Historian returned invalid compartment output: ${parsedValidationError}`,
       };
    }
 
@@ -100,14 +100,14 @@ export function validateHistorianOutput(
       ok: true,
       compartments: mapped.compartments,
       facts: parsed.facts,
-      userObservations: parsed.userObservations.length > 0 ? parsed.userObservations : undefined
+      userObservations: parsed.userObservations.length > 0 ? parsed.userObservations : undefined,
    };
 }
 
 export function buildHistorianRepairPrompt(
    originalPrompt: string,
    previousOutput: string,
-   validationError: string
+   validationError: string,
 ): string {
    return [
       originalPrompt,
@@ -119,12 +119,12 @@ export function buildHistorianRepairPrompt(
       "Every displayed message range must belong to exactly one compartment unless it is intentionally left in one trailing suffix marked by <unprocessed_from>.",
       "",
       "Previous invalid XML:",
-      previousOutput
+      previousOutput,
    ].join("\n");
 }
 
 export function validateStoredCompartments(
-   compartments: Array<{ startMessage: number; endMessage: number }>
+   compartments: Array<{ startMessage: number; endMessage: number }>,
 ): string | null {
    if (compartments.length === 0) {
       return null;
@@ -151,7 +151,7 @@ function validateParsedCompartments(
    compartments: Array<{ startMessage: number; endMessage: number }>,
    chunkStart: number,
    chunkEnd: number,
-   unprocessedFrom: number | null
+   unprocessedFrom: number | null,
 ): string | null {
    let expectedStart = chunkStart;
 

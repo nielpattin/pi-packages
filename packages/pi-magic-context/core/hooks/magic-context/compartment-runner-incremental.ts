@@ -2,7 +2,7 @@ import {
    appendCompartments,
    getCompartments,
    getSessionFacts,
-   replaceSessionFacts
+   replaceSessionFacts,
 } from "../../features/magic-context/compartment-storage";
 // Re-export the historian-state-file helpers so existing callers
 // (compartment-runner-recomp.ts, compartment-runner.ts, tests) keep working
@@ -13,7 +13,7 @@ import { cleanupHistorianStateFile, maybeWriteHistorianStateFile } from "./histo
 export {
    cleanupHistorianStateFile,
    HISTORIAN_STATE_INLINE_THRESHOLD,
-   maybeWriteHistorianStateFile
+   maybeWriteHistorianStateFile,
 } from "./historian-state-file";
 
 import { isCompartmentLeaseHeld } from "../../features/magic-context/compartment-lease";
@@ -24,7 +24,7 @@ import {
    clearEmergencyRecovery,
    clearHistorianFailureState,
    incrementHistorianFailure,
-   setPendingCompactionMarkerState
+   setPendingCompactionMarkerState,
 } from "../../features/magic-context/storage";
 import { updateSessionMeta } from "../../features/magic-context/storage-meta";
 import { insertUserMemoryCandidates } from "../../features/magic-context/user-memory/storage-user-memory";
@@ -93,7 +93,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          // it so `doctor --issue` and the >=95% abort path can see it.
          incrementHistorianFailure(db, sessionId, existingValidationError);
          await notifyHistorianIssue(
-            `## Historian alert\n\nHistorian skipped this session because existing stored compartments are invalid: ${existingValidationError}\n\nNo new compartments or facts were written. Rebuild or clear the broken compartments before continuing.`
+            `## Historian alert\n\nHistorian skipped this session because existing stored compartments are invalid: ${existingValidationError}\n\nNo new compartments or facts were written. Rebuild or clear the broken compartments before continuing.`,
          );
          return;
       }
@@ -113,7 +113,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          // that stays useful for pressure math.
          sessionLog(
             sessionId,
-            `historian no-op: protectedTailStart=${protectedTailStart} <= offset=${offset} — nothing to compact`
+            `historian no-op: protectedTailStart=${protectedTailStart} <= offset=${offset} — nothing to compact`,
          );
          clearEmergencyRecovery(db, sessionId);
          return;
@@ -129,7 +129,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          // loop.
          sessionLog(
             sessionId,
-            `historian no-op: chunk empty after filtering (messageCount=${chunk.messageCount}, textLen=${chunk.text?.length ?? 0}) range=${offset}-${protectedTailStart - 1}`
+            `historian no-op: chunk empty after filtering (messageCount=${chunk.messageCount}, textLen=${chunk.text?.length ?? 0}) range=${offset}-${protectedTailStart - 1}`,
          );
          clearEmergencyRecovery(db, sessionId);
          return;
@@ -139,7 +139,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
       if (chunkCoverageError) {
          sessionLog(
             sessionId,
-            `historian failure: source=chunk-coverage reason="${chunkCoverageError}" chunkRange=${chunk.startIndex}-${chunk.endIndex}`
+            `historian failure: source=chunk-coverage reason="${chunkCoverageError}" chunkRange=${chunk.startIndex}-${chunk.endIndex}`,
          );
          // Record this so `doctor --issue` reports it and `>=95%` abort
          // can react. Previously this path was silent (no failure count,
@@ -147,7 +147,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          // diagnostics.
          incrementHistorianFailure(db, sessionId, chunkCoverageError);
          await notifyHistorianIssue(
-            `## Historian alert\n\nHistorian skipped this session because the raw chunk could not be represented safely: ${chunkCoverageError}\n\nNo new compartments or facts were written.`
+            `## Historian alert\n\nHistorian skipped this session because the raw chunk could not be represented safely: ${chunkCoverageError}\n\nNo new compartments or facts were written.`,
          );
          return;
       }
@@ -176,20 +176,20 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
       if (stateFilePath) {
          sessionLog(
             sessionId,
-            `historian: existing state offloaded to file (${existingState.length} chars) → ${stateFilePath}`
+            `historian: existing state offloaded to file (${existingState.length} chars) → ${stateFilePath}`,
          );
       }
 
       const prompt = buildCompartmentAgentPrompt(
          existingState,
          `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-         { stateFilePath }
+         { stateFilePath },
       );
 
       // Intentional: session.get failure is non-fatal — we fall back to deps.directory
       const parentSessionResponse = await client.session.get({ path: { id: sessionId } }).catch(() => null);
       const parentSession = normalizeSDKResponse(parentSessionResponse, null as { directory?: string } | null, {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       const sessionDirectory = parentSession?.directory ?? directory;
 
@@ -214,7 +214,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          timeoutMs: historianTimeoutMs,
          fallbackModelId: deps.fallbackModelId,
          fallbackModels: deps.fallbackModels,
-         twoPass: deps.historianTwoPass
+         twoPass: deps.historianTwoPass,
       });
       if (!validatedPass.ok) {
          // Always track historian failures regardless of usage percentage.
@@ -222,11 +222,11 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          // at any pressure level must be recorded.
          sessionLog(
             sessionId,
-            `historian failure: source=validation reason="${validatedPass.error}" chunkRange=${chunk.startIndex}-${chunk.endIndex} fallbackModel=${deps.fallbackModelId ?? "<none>"} twoPass=${deps.historianTwoPass ? "true" : "false"}`
+            `historian failure: source=validation reason="${validatedPass.error}" chunkRange=${chunk.startIndex}-${chunk.endIndex} fallbackModel=${deps.fallbackModelId ?? "<none>"} twoPass=${deps.historianTwoPass ? "true" : "false"}`,
          );
          incrementHistorianFailure(db, sessionId, validatedPass.error);
          await notifyHistorianIssue(
-            `## Historian alert\n\n${validatedPass.error}\n\nNo new compartments or facts were written. Check the historian model/output and try again.`
+            `## Historian alert\n\n${validatedPass.error}\n\nNo new compartments or facts were written. Check the historian model/output and try again.`,
          );
          return;
       }
@@ -237,11 +237,11 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
       if (lastNewEnd + 1 <= offset) {
          sessionLog(
             sessionId,
-            `historian failure: source=no-progress reason="historian returned compartments that did not advance past raw message ${offset - 1}" newCompartmentCount=${newCompartments.length} lastNewEnd=${lastNewEnd} priorEnd=${offset - 1}`
+            `historian failure: source=no-progress reason="historian returned compartments that did not advance past raw message ${offset - 1}" newCompartmentCount=${newCompartments.length} lastNewEnd=${lastNewEnd} priorEnd=${offset - 1}`,
          );
          incrementHistorianFailure(db, sessionId, `no forward progress beyond raw message ${offset - 1}`);
          await notifyHistorianIssue(
-            `## Historian alert\n\nHistorian returned compartments that made no forward progress beyond raw message ${offset - 1}.\n\nNo new compartments or facts were written. Check the historian model/output and try again.`
+            `## Historian alert\n\nHistorian returned compartments that made no forward progress beyond raw message ${offset - 1}.\n\nNo new compartments or facts were written. Check the historian model/output and try again.`,
          );
          return;
       }
@@ -291,7 +291,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
             setPendingCompactionMarkerState(db, sessionId, {
                ordinal: lastCompartmentEnd,
                endMessageId: lastNewEndMessageId,
-               publishedAt: Date.now()
+               publishedAt: Date.now(),
             });
          }
          db.exec("COMMIT");
@@ -345,7 +345,7 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
             historianTimeoutMs,
             fallbackModels: deps.fallbackModels,
             minCompartmentRatio: deps.compressorMinCompartmentRatio,
-            maxMergeDepth: deps.compressorMaxMergeDepth
+            maxMergeDepth: deps.compressorMaxMergeDepth,
          });
          // No marker update needed after compression — marker uses static placeholder text.
          // Compressor changes compartment content but not the boundary ordinal.
@@ -365,8 +365,8 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
                   content: obs,
                   sessionId,
                   sourceCompartmentStart: newCompartments[0]?.startMessage,
-                  sourceCompartmentEnd: lastNew?.endMessage
-               }))
+                  sourceCompartmentEnd: lastNew?.endMessage,
+               })),
             );
             sessionLog(sessionId, `stored ${validatedPass.userObservations.length} user memory candidate(s)`);
          } catch (error) {
@@ -378,12 +378,12 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
       const desc = describeError(error);
       sessionLog(
          sessionId,
-         `historian failure: source=exception ${desc.brief}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`
+         `historian failure: source=exception ${desc.brief}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`,
       );
       if (!issueNotified) {
          incrementHistorianFailure(db, sessionId, desc.brief);
          await notifyHistorianIssue(
-            `## Historian alert\n\nHistorian failed unexpectedly: ${desc.brief}\n\nNo new compartments or facts were written. Check the historian model/output and try again.`
+            `## Historian alert\n\nHistorian failed unexpectedly: ${desc.brief}\n\nNo new compartments or facts were written. Check the historian model/output and try again.`,
          );
       }
    } finally {

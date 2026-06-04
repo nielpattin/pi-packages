@@ -33,7 +33,7 @@ function getInsertMessageStatement(db: Database): PreparedStatement {
    let stmt = insertMessageStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO message_history_fts (session_id, message_ordinal, message_id, role, content) VALUES (?, ?, ?, ?, ?)"
+         "INSERT INTO message_history_fts (session_id, message_ordinal, message_id, role, content) VALUES (?, ?, ?, ?, ?)",
       );
       insertMessageStatements.set(db, stmt);
    }
@@ -44,7 +44,7 @@ function getUpsertIndexStatement(db: Database): PreparedStatement {
    let stmt = upsertIndexStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO message_history_index (session_id, last_indexed_ordinal, updated_at, harness) VALUES (?, ?, ?, ?) ON CONFLICT(session_id) DO UPDATE SET last_indexed_ordinal = excluded.last_indexed_ordinal, updated_at = excluded.updated_at"
+         "INSERT INTO message_history_index (session_id, last_indexed_ordinal, updated_at, harness) VALUES (?, ?, ?, ?) ON CONFLICT(session_id) DO UPDATE SET last_indexed_ordinal = excluded.last_indexed_ordinal, updated_at = excluded.updated_at",
       );
       upsertIndexStatements.set(db, stmt);
    }
@@ -172,7 +172,7 @@ export function indexMessagesAfterOrdinal(
    sessionId: string,
    messages: RawMessage[],
    lastIndexedOrdinal: number,
-   finalWatermark: number = messages.length
+   finalWatermark: number = messages.length,
 ): number {
    const now = Date.now();
    let inserted = 0;
@@ -226,7 +226,7 @@ export function indexMessagesAfterOrdinal(
 export function ensureMessagesIndexed(
    db: Database,
    sessionId: string,
-   readMessages: (sessionId: string) => RawMessage[]
+   readMessages: (sessionId: string) => RawMessage[],
 ): void {
    const messages = readMessages(sessionId);
 

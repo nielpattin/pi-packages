@@ -12,7 +12,7 @@ type CheckPermissionFn = (
    surface: string,
    input: unknown,
    agentName?: string,
-   sessionRules?: Rule[]
+   sessionRules?: Rule[],
 ) => PermissionCheckResult;
 
 /**
@@ -31,7 +31,7 @@ type CheckPermissionFn = (
 export async function describeBashPathGate(
    tcc: ToolCallContext,
    checkPermission: CheckPermissionFn,
-   getSessionRuleset: () => Rule[]
+   getSessionRuleset: () => Rule[],
 ): Promise<GateResult> {
    if (tcc.toolName !== "bash") return null;
 
@@ -87,9 +87,9 @@ export async function describeBashPathGate(
                agentName: tcc.agentName,
                command,
                tokens,
-               resolution: "session_approved"
-            }
-         }
+               resolution: "session_approved",
+            },
+         },
       };
    }
 
@@ -106,11 +106,11 @@ export async function describeBashPathGate(
          kind: "bash_path",
          command,
          pathValue: worstToken,
-         agentName: tcc.agentName ?? undefined
+         agentName: tcc.agentName ?? undefined,
       },
       sessionApproval: {
          surface: "path",
-         pattern
+         pattern,
       },
       promptDetails: {
          source: "tool_call",
@@ -118,7 +118,7 @@ export async function describeBashPathGate(
          message: askMessage,
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
-         command
+         command,
       },
       logContext: {
          source: "tool_call",
@@ -126,12 +126,12 @@ export async function describeBashPathGate(
          toolName: tcc.toolName,
          agentName: tcc.agentName,
          command,
-         path: worstToken
+         path: worstToken,
       },
       decision: {
          surface: "path",
-         value: worstToken
+         value: worstToken,
       },
-      preCheck: worstCheck
+      preCheck: worstCheck,
    };
 }

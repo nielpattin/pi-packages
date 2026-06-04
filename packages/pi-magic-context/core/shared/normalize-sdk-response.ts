@@ -9,7 +9,7 @@ export interface NormalizeSDKResponseOptions {
 export function normalizeSDKResponse<TData>(
    response: unknown,
    fallback: TData,
-   options?: NormalizeSDKResponseOptions
+   options?: NormalizeSDKResponseOptions,
 ): TData {
    if (response === null || response === undefined) {
       return fallback;

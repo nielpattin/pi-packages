@@ -7,13 +7,13 @@ const source = readFileSync(new URL("../index.ts", import.meta.url), "utf8");
 
 test("station registers only bash, stash, and stash-history shortcuts", () => {
    const registrations = [...source.matchAll(/pi\.registerShortcut\((config\.shortcuts\.[a-zA-Z]+) as any,/g)].map(
-      (match) => match[1]
+      (match) => match[1],
    );
 
    assert.deepEqual(registrations, [
       "config.shortcuts.bashMode",
       "config.shortcuts.stash",
-      "config.shortcuts.stashHistory"
+      "config.shortcuts.stashHistory",
    ]);
 });
 

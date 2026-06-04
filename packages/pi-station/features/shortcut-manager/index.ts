@@ -7,7 +7,7 @@ export interface StationShortcuts {
 export const DEFAULT_STATION_SHORTCUTS: StationShortcuts = {
    bashMode: "ctrl+b",
    stash: "alt+s",
-   stashHistory: "ctrl+alt+h"
+   stashHistory: "ctrl+alt+h",
 };
 
 function normalizeShortcut(value: unknown): string | null {
@@ -28,6 +28,6 @@ export function resolveStationShortcuts(value: unknown): StationShortcuts {
    return {
       bashMode: normalizeShortcut(raw.bashMode) ?? DEFAULT_STATION_SHORTCUTS.bashMode,
       stash: normalizeShortcut(raw.stash) ?? DEFAULT_STATION_SHORTCUTS.stash,
-      stashHistory: normalizeShortcut(raw.stashHistory) ?? DEFAULT_STATION_SHORTCUTS.stashHistory
+      stashHistory: normalizeShortcut(raw.stashHistory) ?? DEFAULT_STATION_SHORTCUTS.stashHistory,
    };
 }

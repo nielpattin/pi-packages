@@ -12,7 +12,7 @@ const toolCall = (name: string): ToolCall => ({
    type: "toolCall",
    id: "call_1",
    name,
-   arguments: {}
+   arguments: {},
 });
 
 // ── getToolCallName ───────────────────────────────────────────────────────────
@@ -37,14 +37,14 @@ describe("extractAssistantContent", () => {
    it("collects text items", () => {
       expect(extractAssistantContent([text("Hello"), text("World")])).toEqual({
          textParts: ["Hello", "World"],
-         toolNames: []
+         toolNames: [],
       });
    });
 
    it("collects toolCall items", () => {
       expect(extractAssistantContent([toolCall("Bash"), toolCall("Read")])).toEqual({
          textParts: [],
-         toolNames: ["Bash", "Read"]
+         toolNames: ["Bash", "Read"],
       });
    });
 
@@ -52,7 +52,7 @@ describe("extractAssistantContent", () => {
       const content = [text("Some analysis"), toolCall("Bash"), text("More text"), toolCall("Write")];
       expect(extractAssistantContent(content)).toEqual({
          textParts: ["Some analysis", "More text"],
-         toolNames: ["Bash", "Write"]
+         toolNames: ["Bash", "Write"],
       });
    });
 
@@ -60,14 +60,14 @@ describe("extractAssistantContent", () => {
       const thinking = { type: "thinking" };
       expect(extractAssistantContent([text("Before"), thinking, toolCall("Read")])).toEqual({
          textParts: ["Before"],
-         toolNames: ["Read"]
+         toolNames: ["Read"],
       });
    });
 
    it("skips text items with empty text", () => {
       expect(extractAssistantContent([text(""), text("Real content")])).toEqual({
          textParts: ["Real content"],
-         toolNames: []
+         toolNames: [],
       });
    });
 });

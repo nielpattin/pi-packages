@@ -4,7 +4,7 @@ import {
    FUZZY_HYPHENS_RE,
    FUZZY_DOUBLE_QUOTES_RE,
    FUZZY_SINGLE_QUOTES_RE,
-   FUZZY_UNICODE_SPACES_RE
+   FUZZY_UNICODE_SPACES_RE,
 } from "./hashline";
 
 // ─── Line ending normalization ──────────────────────────────────────────
@@ -81,7 +81,7 @@ function buildNormalizedWithMap(text: string): {
 function mapNormalizedSpanToOriginal(
    indexMap: number[],
    normalizedStart: number,
-   normalizedLength: number
+   normalizedLength: number,
 ): { index: number; matchLength: number } | null {
    if (normalizedStart < 0 || normalizedLength <= 0) return null;
    const normalizedEnd = normalizedStart + normalizedLength;
@@ -100,7 +100,7 @@ function mapNormalizedSpanToOriginal(
  */
 export function fuzzyFindText(
    content: string,
-   oldText: string
+   oldText: string,
 ): {
    found: boolean;
    index: number;
@@ -113,7 +113,7 @@ export function fuzzyFindText(
          found: true,
          index: exactIndex,
          matchLength: oldText.length,
-         usedFuzzyMatch: false
+         usedFuzzyMatch: false,
       };
    }
 
@@ -135,7 +135,7 @@ export function fuzzyFindText(
       found: true,
       index: mapped.index,
       matchLength: mapped.matchLength,
-      usedFuzzyMatch: true
+      usedFuzzyMatch: true,
    };
 }
 
@@ -148,7 +148,7 @@ export function replaceText(
    content: string,
    oldText: string,
    newText: string,
-   opts: { all?: boolean }
+   opts: { all?: boolean },
 ): { content: string; count: number } {
    if (!oldText.length) return { content, count: 0 };
    const normalizedNew = normalizeToLF(newText);
@@ -158,7 +158,7 @@ export function replaceText(
       if (exactCount > 0) {
          return {
             content: content.split(oldText).join(normalizedNew),
-            count: exactCount
+            count: exactCount,
          };
       }
 
@@ -198,7 +198,7 @@ export function replaceText(
    return {
       content:
          content.substring(0, result.index) + normalizedNew + content.substring(result.index + result.matchLength),
-      count: 1
+      count: 1,
    };
 }
 
@@ -209,7 +209,7 @@ function formatDiffPreviewLine(
    lineNum: number,
    lineNumWidth: number,
    line: string,
-   includeHash: boolean
+   includeHash: boolean,
 ): string {
    const paddedLineNum = String(lineNum).padStart(lineNumWidth, " ");
    if (!includeHash) {
@@ -221,7 +221,7 @@ function formatDiffPreviewLine(
 export function generateDiffString(
    oldContent: string,
    newContent: string,
-   contextLines = 4
+   contextLines = 4,
 ): { diff: string; firstChangedLine: number | undefined } {
    const parts = Diff.diffLines(oldContent, newContent);
    const output: string[] = [];
@@ -326,7 +326,7 @@ export function buildCompactHashlineDiffPreview(
       maxAdditionRun?: number;
       maxDeletionRun?: number;
       maxOutputLines?: number;
-   } = {}
+   } = {},
 ): CompactHashlineDiffPreview {
    const { maxUnchangedRun = 2, maxAdditionRun = 4, maxDeletionRun = 4, maxOutputLines = 12 } = options;
 
@@ -373,13 +373,13 @@ export function buildCompactHashlineDiffPreview(
       return {
          preview: visibleLines.join("\n"),
          addedLines,
-         removedLines
+         removedLines,
       };
    }
 
    return {
       preview: previewLines.join("\n"),
       addedLines,
-      removedLines
+      removedLines,
    };
 }

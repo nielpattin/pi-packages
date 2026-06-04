@@ -68,14 +68,14 @@ function loadConfigFile(path: string, scope: "user" | "project"): LoadedConfigFi
       const rawText = readFileSync(path, "utf-8");
       const substituted = substituteConfigVariables({
          text: rawText,
-         configPath: path
+         configPath: path,
       });
       return {
          path,
          scope,
          config: parseJsonc(substituted.text) as Record<string, unknown>,
          warnings: substituted.warnings.map((warning) => `${path}: ${warning}`),
-         loadOutcome: substituted.warnings.length > 0 ? "substitution-failure" : "ok"
+         loadOutcome: substituted.warnings.length > 0 ? "substitution-failure" : "ok",
       };
    } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
@@ -87,7 +87,7 @@ function loadConfigFile(path: string, scope: "user" | "project"): LoadedConfigFi
          loadOutcome:
             typeof (error as { code?: unknown }).code === "string"
                ? "project-file-io-error"
-               : "project-file-parse-error"
+               : "project-file-parse-error",
       };
    }
 }
@@ -128,7 +128,7 @@ function mergeRawConfigs(base: Record<string, unknown>, override: Record<string,
 
 function parsePiConfig(
    rawConfig: Record<string, unknown>,
-   recoveredTopLevelKeys: string[] = []
+   recoveredTopLevelKeys: string[] = [],
 ): {
    config: MagicContextConfig;
    warnings: string[];
@@ -164,7 +164,7 @@ function parsePiConfig(
 
       const defaultValue = (defaults as unknown as Record<string, unknown>)[key];
       warnings.push(
-         `"${key}": invalid value (${redactConfigValue(rawConfig[key])}), using default ${JSON.stringify(defaultValue)}.`
+         `"${key}": invalid value (${redactConfigValue(rawConfig[key])}), using default ${JSON.stringify(defaultValue)}.`,
       );
    }
 
@@ -212,7 +212,7 @@ export function loadPiConfig(opts: LoadPiConfigOptions = {}): LoadPiConfigResult
    return {
       config: parsed.config,
       warnings,
-      loadedFromPaths: loadedFiles.map((loaded) => loaded.path)
+      loadedFromPaths: loadedFiles.map((loaded) => loaded.path),
    };
 }
 
@@ -233,7 +233,7 @@ function collectEmptyStringPaths(value: unknown, prefix = ""): string[] {
 }
 
 function bindSubstitutionFailures(
-   loaded: LoadedConfigFile
+   loaded: LoadedConfigFile,
 ): Array<{ keyPath: string; source: "user" | "project"; message: string }> {
    if (loaded.warnings.length === 0 || loaded.loadOutcome !== "substitution-failure") {
       return [];
@@ -247,7 +247,7 @@ function bindSubstitutionFailures(
       return {
          keyPath: matchedPath ?? "<unknown>",
          source: loaded.scope,
-         message
+         message,
       };
    });
 }
@@ -302,7 +302,7 @@ export function loadPiConfigDetailed(opts: LoadPiConfigOptions = {}): LoadPiConf
    const projectLoaded = loadedFiles.find((loaded) => loaded.scope === "project");
    const sources = {
       userConfig: userLoaded?.loadOutcome ?? ("ok" as LoadOutcome),
-      projectConfig: projectLoaded?.loadOutcome ?? ("ok" as LoadOutcome)
+      projectConfig: projectLoaded?.loadOutcome ?? ("ok" as LoadOutcome),
    };
 
    return {
@@ -312,10 +312,10 @@ export function loadPiConfigDetailed(opts: LoadPiConfigOptions = {}): LoadPiConf
       loadOutcome: combinedOutcome({
          sources,
          substitutionFailures,
-         recoveredTopLevelKeys
+         recoveredTopLevelKeys,
       }),
       sources,
       substitutionFailures,
-      recoveredTopLevelKeys
+      recoveredTopLevelKeys,
    };
 }

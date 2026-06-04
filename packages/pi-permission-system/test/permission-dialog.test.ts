@@ -4,7 +4,7 @@ import {
    isPermissionDecisionState,
    normalizePermissionDenialReason,
    type PermissionDecisionUi,
-   requestPermissionDecisionFromUi
+   requestPermissionDecisionFromUi,
 } from "#src/permission-dialog";
 
 describe("isPermissionDecisionState", () => {
@@ -38,7 +38,7 @@ describe("requestPermissionDecisionFromUi", () => {
    it("returns approved when user selects Yes", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue("Yes"),
-         input: vi.fn()
+         input: vi.fn(),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({ approved: true, state: "approved" });
@@ -47,7 +47,7 @@ describe("requestPermissionDecisionFromUi", () => {
    it("returns approved_for_session when user selects session option", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue("Yes, for this session"),
-         input: vi.fn()
+         input: vi.fn(),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({ approved: true, state: "approved_for_session" });
@@ -56,7 +56,7 @@ describe("requestPermissionDecisionFromUi", () => {
    it("returns denied when user selects No", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue("No"),
-         input: vi.fn()
+         input: vi.fn(),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({ approved: false, state: "denied" });
@@ -65,20 +65,20 @@ describe("requestPermissionDecisionFromUi", () => {
    it("returns denied_with_reason when user provides reason", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue("No, provide reason"),
-         input: vi.fn().mockResolvedValue("not now")
+         input: vi.fn().mockResolvedValue("not now"),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({
          approved: false,
          state: "denied_with_reason",
-         denialReason: "not now"
+         denialReason: "not now",
       });
    });
 
    it("returns denied when user selects deny-with-reason but gives empty input", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue("No, provide reason"),
-         input: vi.fn().mockResolvedValue("")
+         input: vi.fn().mockResolvedValue(""),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({ approved: false, state: "denied" });
@@ -87,7 +87,7 @@ describe("requestPermissionDecisionFromUi", () => {
    it("returns denied when user dismisses dialog (undefined)", async () => {
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue(undefined),
-         input: vi.fn()
+         input: vi.fn(),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message");
       expect(result).toEqual({ approved: false, state: "denied" });
@@ -97,7 +97,7 @@ describe("requestPermissionDecisionFromUi", () => {
       const selectFn = vi.fn().mockResolvedValue("Yes");
       const ui: PermissionDecisionUi = {
          select: selectFn,
-         input: vi.fn()
+         input: vi.fn(),
       };
       await requestPermissionDecisionFromUi(ui, "Title", "Message");
       const options = selectFn.mock.calls[0][1] as string[];
@@ -108,10 +108,10 @@ describe("requestPermissionDecisionFromUi", () => {
       const selectFn = vi.fn().mockResolvedValue("Yes");
       const ui: PermissionDecisionUi = {
          select: selectFn,
-         input: vi.fn()
+         input: vi.fn(),
       };
       await requestPermissionDecisionFromUi(ui, "Title", "Message", {
-         sessionLabel: 'Yes, allow "git *" for this session'
+         sessionLabel: 'Yes, allow "git *" for this session',
       });
       const options = selectFn.mock.calls[0][1] as string[];
       expect(options[1]).toBe('Yes, allow "git *" for this session');
@@ -121,7 +121,7 @@ describe("requestPermissionDecisionFromUi", () => {
       const customLabel = 'Yes, allow "git *" for this session';
       const ui: PermissionDecisionUi = {
          select: vi.fn().mockResolvedValue(customLabel),
-         input: vi.fn()
+         input: vi.fn(),
       };
       const result = await requestPermissionDecisionFromUi(ui, "Title", "Message", { sessionLabel: customLabel });
       expect(result).toEqual({ approved: true, state: "approved_for_session" });
@@ -131,7 +131,7 @@ describe("requestPermissionDecisionFromUi", () => {
       const selectFn = vi.fn().mockResolvedValue("Yes");
       const ui: PermissionDecisionUi = {
          select: selectFn,
-         input: vi.fn()
+         input: vi.fn(),
       };
       await requestPermissionDecisionFromUi(ui, "Title", "Message");
       const options = selectFn.mock.calls[0][1] as string[];
@@ -158,14 +158,14 @@ describe("createDeniedPermissionDecision", () => {
       expect(createDeniedPermissionDecision("nope")).toEqual({
          approved: false,
          state: "denied_with_reason",
-         denialReason: "nope"
+         denialReason: "nope",
       });
    });
 
    it("returns denied when no reason", () => {
       expect(createDeniedPermissionDecision()).toEqual({
          approved: false,
-         state: "denied"
+         state: "denied",
       });
    });
 });

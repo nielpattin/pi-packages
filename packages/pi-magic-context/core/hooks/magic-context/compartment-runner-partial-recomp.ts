@@ -7,13 +7,13 @@ import {
    getSessionFacts,
    promoteRecompStaging,
    saveRecompStagingPass,
-   setRecompPartialRange
+   setRecompPartialRange,
 } from "../../features/magic-context/compartment-storage";
 import { clearCompressionDepthRange } from "../../features/magic-context/compression-depth-storage";
 import {
    clearPendingCompactionMarkerStateIf,
    getPendingCompactionMarkerState,
-   updateSessionMeta
+   updateSessionMeta,
 } from "../../features/magic-context/storage-meta";
 import { normalizeSDKResponse } from "../../shared";
 import { getErrorMessage } from "../../shared/error-message";
@@ -26,7 +26,7 @@ import type { CandidateCompartment, CompartmentRunnerDeps } from "./compartment-
 import {
    getReducedRecompTokenBudget,
    validateChunkCoverage,
-   validateStoredCompartments
+   validateStoredCompartments,
 } from "./compartment-runner-validation";
 import { clearInjectionCache } from "./inject-compartments";
 import { getProtectedTailStartOrdinal, readSessionChunk } from "./read-session-chunk";
@@ -58,11 +58,11 @@ export interface SnappedPartialRange {
  */
 export function snapRangeToCompartments(
    compartments: Compartment[],
-   range: PartialRecompRange
+   range: PartialRecompRange,
 ): SnappedPartialRange | { error: string } {
    if (compartments.length === 0) {
       return {
-         error: "No compartments exist yet for this session. Run `/ctx-recomp` (full) first, then use partial recomp to refine specific ranges."
+         error: "No compartments exist yet for this session. Run `/ctx-recomp` (full) first, then use partial recomp to refine specific ranges.",
       };
    }
 
@@ -78,7 +78,7 @@ export function snapRangeToCompartments(
    if (firstEnclosingIdx === -1) {
       const last = sorted[sorted.length - 1];
       return {
-         error: `Range ${start}-${end} starts after the last compartment (which ends at message ${last.endMessage}). Nothing to rebuild.`
+         error: `Range ${start}-${end} starts after the last compartment (which ends at message ${last.endMessage}). Nothing to rebuild.`,
       };
    }
 
@@ -91,7 +91,7 @@ export function snapRangeToCompartments(
    }
    if (lastEnclosingIdx === -1 || lastEnclosingIdx < firstEnclosingIdx) {
       return {
-         error: `Range ${start}-${end} does not overlap any compartment.`
+         error: `Range ${start}-${end} does not overlap any compartment.`,
       };
    }
 
@@ -100,7 +100,7 @@ export function snapRangeToCompartments(
       snapEnd: sorted[lastEnclosingIdx].endMessage,
       priorCompartments: sorted.slice(0, firstEnclosingIdx),
       rangeCompartments: sorted.slice(firstEnclosingIdx, lastEnclosingIdx + 1),
-      tailCompartments: sorted.slice(lastEnclosingIdx + 1)
+      tailCompartments: sorted.slice(lastEnclosingIdx + 1),
    };
 }
 
@@ -112,13 +112,13 @@ function compartmentToInput(c: Compartment, newSequence: number): CompartmentInp
       startMessageId: c.startMessageId,
       endMessageId: c.endMessageId,
       title: c.title,
-      content: c.content
+      content: c.content,
    };
 }
 
 export async function executePartialRecompInternal(
    deps: CompartmentRunnerDeps,
-   range: PartialRecompRange
+   range: PartialRecompRange,
 ): Promise<string> {
    const { client, db, sessionId, historianChunkTokens, directory, historianTimeoutMs, getNotificationParams } = deps;
    const notifParams = () => getNotificationParams?.() ?? {};
@@ -156,7 +156,7 @@ export async function executePartialRecompInternal(
             `An unfinished partial recomp is already staged for range ${storedRange.start}-${storedRange.end}, which does not match the requested range ${snapStart}-${snapEnd}.`,
             "",
             "Resume that range by running `/ctx-recomp` with the same original arguments,",
-            "or cancel it by running `/ctx-flush` before starting a new partial recomp."
+            "or cancel it by running `/ctx-flush` before starting a new partial recomp.",
          ].join("\n");
       }
       if (existingStaging && !storedRange) {
@@ -165,7 +165,7 @@ export async function executePartialRecompInternal(
             "",
             "An unfinished full recomp is already staged for this session.",
             "Resume it by running `/ctx-recomp` without arguments,",
-            "or cancel it before starting a partial recomp."
+            "or cancel it before starting a partial recomp.",
          ].join("\n");
       }
 
@@ -175,14 +175,14 @@ export async function executePartialRecompInternal(
       // set. We carry existing facts through staging unchanged.
       const currentFacts = getSessionFacts(db, sessionId).map((f) => ({
          category: f.category,
-         content: f.content
+         content: f.content,
       }));
 
       // ── Resolve project memories for historian fact dedup context ─────
       // Intentional: session.get failure is non-fatal — we fall back to deps.directory
       const parentSessionResponse = await client.session.get({ path: { id: sessionId } }).catch(() => null);
       const parentSession = normalizeSDKResponse(parentSessionResponse, null as { directory?: string } | null, {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       const sessionDirectory = parentSession?.directory ?? directory;
 
@@ -231,7 +231,7 @@ export async function executePartialRecompInternal(
          resumed
             ? `## Magic Recomp — Resumed (Partial)\n\nFound ${candidateCompartments.length - priorCompartments.length} newly built compartment(s) from ${passCount} previous pass(es), covering messages ${snapStart}-${offset - 1}. Resuming from message ${offset} toward ${snapEnd}.`
             : `## Magic Recomp — Partial\n\nSnapped to compartment boundaries: rebuilding messages ${snapStart}-${snapEnd} (${tailCompartments.length} tail compartment(s) preserved).`,
-         notifParams()
+         notifParams(),
       );
 
       /** Final promote path: merge prior + new + tail into one coherent set and
@@ -277,7 +277,7 @@ export async function executePartialRecompInternal(
          // existing sequence — producing UNIQUE constraint failures.
          const merged: CompartmentInput[] = [
             ...candidateCompartments,
-            ...tailCompartments.map((c, idx) => compartmentToInput(c, candidateCompartments.length + idx))
+            ...tailCompartments.map((c, idx) => compartmentToInput(c, candidateCompartments.length + idx)),
          ];
 
          const mergedError = validateStoredCompartments(merged);
@@ -326,7 +326,7 @@ export async function executePartialRecompInternal(
             sessionId,
             currentTokenBudget,
             offset,
-            snapEnd + 1 // exclusive upper bound — readSessionChunk stops before this ordinal
+            snapEnd + 1, // exclusive upper bound — readSessionChunk stops before this ordinal
          );
          if (!chunk.text || chunk.messageCount === 0 || chunk.endIndex < offset) {
             return `## Magic Recomp — Failed\n\nRecomp stopped because raw history ${offset}-${snapEnd} could not be turned into a valid historian chunk. Partial recomp preserved original state (staging kept for retry).`;
@@ -344,14 +344,14 @@ export async function executePartialRecompInternal(
 
          const prompt = buildCompartmentAgentPrompt(
             existingState,
-            `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`
+            `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
          );
 
          await sendIgnoredMessage(
             client,
             sessionId,
             `## Magic Recomp — Partial\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} started for messages ${chunk.startIndex}-${chunk.endIndex}.`,
-            notifParams()
+            notifParams(),
          );
 
          const validatedPass = await runValidatedHistorianPass({
@@ -373,10 +373,10 @@ export async function executePartialRecompInternal(
                      client,
                      sessionId,
                      `## Magic Recomp — Partial\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} is continuing with a repair retry for messages ${chunk.startIndex}-${chunk.endIndex}.\n\nThe previous output did not validate: ${error}`,
-                     notifParams()
+                     notifParams(),
                   );
-               }
-            }
+               },
+            },
          });
          if (!validatedPass.ok) {
             const reducedBudget = getReducedRecompTokenBudget(currentTokenBudget);
@@ -387,7 +387,7 @@ export async function executePartialRecompInternal(
                      client,
                      sessionId,
                      `## Magic Recomp — Partial\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} is continuing with a smaller chunk ending at ${smallerChunk.endIndex} because messages ${chunk.startIndex}-${chunk.endIndex} could not be validated.\n\nValidator result: ${validatedPass.error}`,
-                     notifParams()
+                     notifParams(),
                   );
                   currentTokenBudget = reducedBudget;
                   passAttempt += 1;
@@ -429,7 +429,7 @@ export async function executePartialRecompInternal(
          `Rebuilt compartments covering messages ${snapStart}-${snapEnd} using ${passCount} historian pass${passCount === 1 ? "" : "es"}.`,
          `Preserved ${priorCompartments.length} prior compartment(s) and ${tailCompartments.length} tail compartment(s) unchanged.`,
          `Facts unchanged (${currentFacts.length} entr${currentFacts.length === 1 ? "y" : "ies"}).`,
-         `Total compartments: ${finalResult.compartmentCount}.`
+         `Total compartments: ${finalResult.compartmentCount}.`,
       ].join("\n");
    } catch (error: unknown) {
       const message = getErrorMessage(error);
@@ -447,7 +447,7 @@ export async function executePartialRecompInternal(
          // Unexpected: staging without range marker in a partial-recomp context.
          // Clear to avoid a future full recomp resuming into partial state.
          log(
-            `[magic-context] partial recomp cleanup: clearing orphaned staging without range marker for session ${sessionId}`
+            `[magic-context] partial recomp cleanup: clearing orphaned staging without range marker for session ${sessionId}`,
          );
          clearRecompStaging(db, sessionId);
       }

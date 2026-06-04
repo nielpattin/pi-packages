@@ -33,7 +33,7 @@ export interface AssemblerIO {
       cwd: string,
       env: EnvInfo,
       parentPrompt?: string,
-      extras?: PromptExtras
+      extras?: PromptExtras,
    ) => string;
 }
 
@@ -117,7 +117,7 @@ export interface SessionConfig {
 function resolveDefaultModel(
    parentModel: unknown,
    registry: AssemblerContext["modelRegistry"],
-   configModel?: string
+   configModel?: string,
 ): unknown {
    if (configModel) {
       const slashIdx = configModel.indexOf("/");
@@ -158,7 +158,7 @@ export function assembleSessionConfig(
    options: AssemblerOptions,
    env: EnvInfo,
    registry: AgentConfigLookup,
-   io: AssemblerIO
+   io: AssemblerIO,
 ): SessionConfig {
    const agentConfig = registry.resolveAgentConfig(type);
 
@@ -206,6 +206,6 @@ export function assembleSessionConfig(
       thinkingLevel,
       noSkills,
       extras,
-      agentMaxTurns
+      agentMaxTurns,
    };
 }

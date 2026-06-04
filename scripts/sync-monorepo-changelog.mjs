@@ -30,7 +30,7 @@ function latestSection(changelog) {
       return {
          version: match[1],
          date: match[2],
-         body: cleaned || body
+         body: cleaned || body,
       };
    }
 

@@ -11,10 +11,10 @@ describe("mergeFlatPermissions", () => {
    test("both objects → shallow-merge pattern maps", () => {
       const result = mergeFlatPermissions(
          { bash: { "rm *": "deny", "git *": "ask" } },
-         { bash: { "rm *": "allow", "npm *": "allow" } }
+         { bash: { "rm *": "allow", "npm *": "allow" } },
       );
       expect(result).toEqual({
-         bash: { "rm *": "allow", "git *": "ask", "npm *": "allow" }
+         bash: { "rm *": "allow", "git *": "ask", "npm *": "allow" },
       });
    });
 

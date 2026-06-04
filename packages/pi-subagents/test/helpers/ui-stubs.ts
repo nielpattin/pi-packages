@@ -10,7 +10,7 @@ const DEFAULT_TEST_AGENT_CONFIG: AgentConfig = {
    extensions: true,
    skills: true,
    isDefault: true,
-   source: "default"
+   source: "default",
 };
 
 /**
@@ -25,7 +25,7 @@ export function makeFileOps() {
       write: vi.fn((_path: string, _content: string): void => {}),
       remove: vi.fn((_path: string): void => {}),
       ensureDir: vi.fn((_path: string): void => {}),
-      findAgentFile: vi.fn((_name: string, _dirs: string[]): string | undefined => undefined)
+      findAgentFile: vi.fn((_name: string, _dirs: string[]): string | undefined => undefined),
    };
 }
 
@@ -46,7 +46,7 @@ export function makeMenuUI(selectResults: (string | undefined)[] = []) {
       confirm: vi.fn(),
       editor: vi.fn(),
       notify: vi.fn(),
-      custom: vi.fn()
+      custom: vi.fn(),
    };
 }
 
@@ -60,7 +60,7 @@ export function makeMenuManager() {
    return {
       listAgents: vi.fn().mockReturnValue([]),
       getRecord: vi.fn(),
-      spawnAndWait: vi.fn()
+      spawnAndWait: vi.fn(),
    };
 }
 

@@ -6,14 +6,14 @@ import {
    renderFailed,
    renderRunning,
    renderStats,
-   renderStopped
+   renderStopped,
 } from "#src/tools/result-renderer";
 import type { AgentDetails, Theme } from "#src/ui/display";
 
 function makeTheme(): Theme {
    return {
       fg: (color: string, text: string) => `[${color}:${text}]`,
-      bold: (text: string) => `**${text}**`
+      bold: (text: string) => `**${text}**`,
    };
 }
 
@@ -26,7 +26,7 @@ function makeDetails(overrides: Partial<AgentDetails> = {}): AgentDetails {
       tokens: "",
       durationMs: 2000,
       status: "completed",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -282,7 +282,7 @@ describe("renderAgentResult", () => {
    it("dispatches to renderFailed for aborted status", () => {
       const details = makeDetails({ status: "aborted" });
       expect(renderAgentResult(details, "", false, false, theme)).toContain(
-         "[warning:  \u23BF  Aborted (max turns exceeded)]"
+         "[warning:  \u23BF  Aborted (max turns exceeded)]",
       );
    });
 });

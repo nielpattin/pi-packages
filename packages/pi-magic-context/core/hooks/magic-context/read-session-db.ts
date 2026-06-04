@@ -15,7 +15,7 @@ export function getRawSessionMessageCountFromDb(db: Database, sessionId: string)
       .prepare(
          `SELECT COUNT(*) as count FROM message WHERE session_id = ?
              AND NOT (COALESCE(json_extract(data, '$.summary'), 0) = 1
-                      AND COALESCE(json_extract(data, '$.finish'), '') = 'stop')`
+                      AND COALESCE(json_extract(data, '$.finish'), '') = 'stop')`,
       )
       .get(sessionId) as RawCountRow | null;
    return typeof row?.count === "number" ? row.count : 0;
@@ -30,7 +30,7 @@ export function getMessageTimesFromFallbackDb(_sessionId: string, _messageIds: r
 }
 
 export function findLastAssistantModelFromFallbackDb(
-   _sessionId: string
+   _sessionId: string,
 ): { providerID: string; modelID: string; agent?: string } | null {
    return null;
 }

@@ -27,7 +27,7 @@ import type { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
 export function subscribeUIObserver(
    session: SubscribableSession,
    tracker: AgentActivityTracker,
-   onUpdate?: () => void
+   onUpdate?: () => void,
 ): () => void {
    return session.subscribe((event) => {
       if (event.type === "tool_execution_start") {

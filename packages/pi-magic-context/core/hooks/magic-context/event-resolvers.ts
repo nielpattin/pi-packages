@@ -26,7 +26,7 @@ type CacheTtlConfig = string | Record<string, string>;
 export function resolveContextLimit(
    providerID: string | undefined,
    modelID: string | undefined,
-   ctx?: { db?: ContextDatabase; sessionID?: string }
+   ctx?: { db?: ContextDatabase; sessionID?: string },
 ): number {
    const fromModelsDev = providerID && modelID ? getModelsDevContextLimit(providerID, modelID) : undefined;
    const baseline = fromModelsDev ?? DEFAULT_CONTEXT_LIMIT;
@@ -150,7 +150,7 @@ export function resolveExecuteThresholdDetail(
    config: ExecuteThresholdConfig,
    modelKey: string | undefined,
    fallback: number,
-   options?: ExecuteThresholdOptions
+   options?: ExecuteThresholdOptions,
 ): ExecuteThresholdDetail {
    // 1. Tokens-based resolution takes precedence when configured. Token values
    //    only make sense against a known context_limit — callers must supply it.
@@ -184,7 +184,7 @@ export function resolveExecuteThresholdDetail(
             percentage: Math.min(percentage, MAX_EXECUTE_THRESHOLD),
             mode: "tokens",
             absoluteTokens: Math.floor(effectiveTokens),
-            matchedKey: tokenMatch.matchedKey
+            matchedKey: tokenMatch.matchedKey,
          };
       }
    }
@@ -228,7 +228,7 @@ export function resolveExecuteThresholdDetail(
    return {
       percentage: Math.min(resolved, MAX_EXECUTE_THRESHOLD),
       mode: "percentage",
-      matchedKey
+      matchedKey,
    };
 }
 
@@ -240,7 +240,7 @@ export function resolveExecuteThreshold(
    config: ExecuteThresholdConfig,
    modelKey: string | undefined,
    fallback: number,
-   options?: ExecuteThresholdOptions
+   options?: ExecuteThresholdOptions,
 ): number {
    return resolveExecuteThresholdDetail(config, modelKey, fallback, options).percentage;
 }
@@ -248,7 +248,7 @@ export function resolveExecuteThreshold(
 // Variant of resolveTokensMatch that also returns which key matched, for mode display.
 function resolveTokensMatchWithKey(
    tokensConfig: ExecuteThresholdTokensConfig,
-   modelKey: string | undefined
+   modelKey: string | undefined,
 ): { value: number; matchedKey: string } | undefined {
    if (!tokensConfig) {
       return undefined;

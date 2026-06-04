@@ -74,7 +74,7 @@ export async function readGitCommits(directory: string, options: ReadGitCommitsO
       options.branch ?? "HEAD",
       "--no-merges",
       `--max-count=${options.maxCommits ?? DEFAULT_MAX_COMMITS}`,
-      `--format=%H${FIELD_SEPARATOR}%s${FIELD_SEPARATOR}%ae${FIELD_SEPARATOR}%ct${FIELD_SEPARATOR}%b${RECORD_SEPARATOR}`
+      `--format=%H${FIELD_SEPARATOR}%s${FIELD_SEPARATOR}%ae${FIELD_SEPARATOR}%ct${FIELD_SEPARATOR}%b${RECORD_SEPARATOR}`,
    ];
    if (options.sinceMs !== undefined && options.sinceMs > 0) {
       // git accepts ISO 8601 to --since
@@ -90,7 +90,7 @@ export async function readGitCommits(directory: string, options: ReadGitCommitsO
          // Default buffer is 1MB; bump to 32MB for large repos. Commits are
          // small but history can be long.
          maxBuffer: 32 * 1024 * 1024,
-         encoding: "utf8"
+         encoding: "utf8",
       });
       stdout = result.stdout;
    } catch (error) {
@@ -106,7 +106,7 @@ export async function readGitCommits(directory: string, options: ReadGitCommitsO
 
    if (stdout.trim().length === 0) {
       log(
-         `[git-commits] readGitCommits returned empty stdout at cwd=${directory} (sinceMs=${options.sinceMs ?? "none"} args=${args.slice(0, 4).join(" ")})`
+         `[git-commits] readGitCommits returned empty stdout at cwd=${directory} (sinceMs=${options.sinceMs ?? "none"} args=${args.slice(0, 4).join(" ")})`,
       );
    }
 
@@ -153,7 +153,7 @@ export function parseGitLogOutput(stdout: string): GitCommit[] {
          shortSha: sha.slice(0, 7),
          message,
          author: author.length > 0 ? author : null,
-         committedAtMs: timeSec * 1000
+         committedAtMs: timeSec * 1000,
       });
    }
 

@@ -61,7 +61,7 @@ const SPECIAL_PERMISSION_KEYS = new Set(["external_directory", "path"]);
 export function normalizeInput(
    toolName: string,
    input: unknown,
-   configuredMcpServerNames: readonly string[]
+   configuredMcpServerNames: readonly string[],
 ): NormalizedInput {
    // --- Special surfaces (external_directory) ---
    if (SPECIAL_PERMISSION_KEYS.has(toolName)) {
@@ -70,7 +70,7 @@ export function normalizeInput(
       return {
          surface: toolName,
          values: [pathValue ?? "*"],
-         resultExtras: {}
+         resultExtras: {},
       };
    }
 
@@ -82,7 +82,7 @@ export function normalizeInput(
       return {
          surface: "skill",
          values: [lookupValue],
-         resultExtras: {}
+         resultExtras: {},
       };
    }
 
@@ -93,7 +93,7 @@ export function normalizeInput(
       return {
          surface: "bash",
          values: [command],
-         resultExtras: { command }
+         resultExtras: { command },
       };
    }
 
@@ -104,7 +104,7 @@ export function normalizeInput(
       return {
          surface: "mcp",
          values: mcpTargets,
-         resultExtras: { target: fallbackTarget }
+         resultExtras: { target: fallbackTarget },
       };
    }
 
@@ -114,7 +114,7 @@ export function normalizeInput(
       return {
          surface: toolName,
          values: [path ?? "*"],
-         resultExtras: {}
+         resultExtras: {},
       };
    }
 
@@ -122,6 +122,6 @@ export function normalizeInput(
    return {
       surface: toolName,
       values: ["*"],
-      resultExtras: {}
+      resultExtras: {},
    };
 }

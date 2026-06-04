@@ -8,8 +8,8 @@ describe("usage", () => {
          const session = {
             getSessionStats: () => ({
                tokens: { input: 100, output: 200, cacheRead: 500_000, cacheWrite: 50, total: 500_350 },
-               contextUsage: { tokens: 50_300, contextWindow: 200_000, percent: 25 }
-            })
+               contextUsage: { tokens: 50_300, contextWindow: 200_000, percent: 25 },
+            }),
          };
          expect(getSessionTokens(session)).toBe(350);
       });
@@ -19,7 +19,7 @@ describe("usage", () => {
          const broken = {
             getSessionStats: (): never => {
                throw new Error("nope");
-            }
+            },
          };
          expect(getSessionTokens(broken)).toBe(0);
       });
@@ -28,7 +28,7 @@ describe("usage", () => {
    describe("getSessionContextPercent", () => {
       it("returns null when contextUsage is unavailable", () => {
          const session = {
-            getSessionStats: () => ({ tokens: { input: 10, output: 20, cacheWrite: 5 } })
+            getSessionStats: () => ({ tokens: { input: 10, output: 20, cacheWrite: 5 } }),
          };
          expect(getSessionContextPercent(session)).toBeNull();
       });
@@ -37,8 +37,8 @@ describe("usage", () => {
          const session = {
             getSessionStats: () => ({
                tokens: { input: 10, output: 20, cacheWrite: 5 },
-               contextUsage: { tokens: null, contextWindow: 200_000, percent: null }
-            })
+               contextUsage: { tokens: null, contextWindow: 200_000, percent: null },
+            }),
          };
          expect(getSessionContextPercent(session)).toBeNull();
       });
@@ -47,8 +47,8 @@ describe("usage", () => {
          const session = {
             getSessionStats: () => ({
                tokens: { input: 10, output: 20, cacheWrite: 5 },
-               contextUsage: { tokens: 50_000, contextWindow: 200_000, percent: 25 }
-            })
+               contextUsage: { tokens: 50_000, contextWindow: 200_000, percent: 25 },
+            }),
          };
          expect(getSessionContextPercent(session)).toBe(25);
       });
@@ -66,7 +66,7 @@ describe("usage", () => {
       it("agrees with getSessionTokens pre-compaction, diverges after", () => {
          let sessionStatsTokens = { input: 100, output: 200, cacheWrite: 50 };
          const session = {
-            getSessionStats: () => ({ tokens: sessionStatsTokens })
+            getSessionStats: () => ({ tokens: sessionStatsTokens }),
          };
          const lifetime = { input: 100, output: 200, cacheWrite: 50 };
 

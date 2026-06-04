@@ -53,7 +53,7 @@ export function subscribeSubagentLifecycle(events: LifecycleEventBus, registry: 
       const event = data as ChildSessionCreatedEvent;
       registry.register(event.sessionDir, {
          agentName: event.agentName,
-         parentSessionId: event.parentSessionId
+         parentSessionId: event.parentSessionId,
       });
    });
 

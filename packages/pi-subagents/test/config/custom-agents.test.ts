@@ -52,7 +52,7 @@ run_in_background: true
 isolated: true
 ---
 
-You are a security auditor.`
+You are a security auditor.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -78,7 +78,7 @@ You are a security auditor.`
          `---
 ---
 
-Just a prompt.`
+Just a prompt.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -118,7 +118,7 @@ Just a prompt.`
 tools: none
 ---
 
-No tools.`
+No tools.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -132,7 +132,7 @@ No tools.`
 tools: all
 ---
 
-All tools.`
+All tools.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -147,7 +147,7 @@ extensions: false
 skills: false
 ---
 
-No extensions.`
+No extensions.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -164,7 +164,7 @@ extensions: web-search, mcp-server
 skills: planning, review
 ---
 
-Partial access.`
+Partial access.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -182,7 +182,7 @@ Partial access.`
 extensions: pi-github-tools
 ---
 
-Deprecated.`
+Deprecated.`,
       );
 
       loadCustomAgents(tmpDir);
@@ -198,7 +198,7 @@ Deprecated.`
 tools: read, my_custom_tool, grep
 ---
 
-Custom tools.`
+Custom tools.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -213,7 +213,7 @@ Custom tools.`
 thinking: turbo
 ---
 
-Any thinking.`
+Any thinking.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -228,7 +228,7 @@ Any thinking.`
 max_turns: 0
 ---
 
-Unlimited turns.`
+Unlimited turns.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -242,7 +242,7 @@ Unlimited turns.`
 max_turns: -5
 ---
 
-Negative turns.`
+Negative turns.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -256,7 +256,7 @@ Negative turns.`
 prompt_mode: append
 ---
 
-Extra instructions.`
+Extra instructions.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -270,7 +270,7 @@ Extra instructions.`
 prompt_mode: merge
 ---
 
-Unknown mode.`
+Unknown mode.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -284,7 +284,7 @@ Unknown mode.`
 description: First
 ---
 
-First agent.`
+First agent.`,
       );
       writeAgent(
          "agent2",
@@ -292,7 +292,7 @@ First agent.`
 description: Second
 ---
 
-Second agent.`
+Second agent.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -311,7 +311,7 @@ Second agent.`
 description: Real Agent
 ---
 
-Real.`
+Real.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -326,7 +326,7 @@ Real.`
 description: Custom Explore
 ---
 
-Custom explore agent.`
+Custom explore agent.`,
       );
       writeAgent(
          "custom",
@@ -334,7 +334,7 @@ Custom explore agent.`
 description: Custom Agent
 ---
 
-Should be loaded.`
+Should be loaded.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -350,7 +350,7 @@ Should be loaded.`
 description: No body
 tools: read
 ---
-`
+`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -365,7 +365,7 @@ inherit_extensions: false
 inherit_skills: false
 ---
 
-Alt keys.`
+Alt keys.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -382,7 +382,7 @@ extensions: none
 skills: none
 ---
 
-None.`
+None.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -399,7 +399,7 @@ extensions: true
 skills: true
 ---
 
-All.`
+All.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -414,7 +414,7 @@ All.`
          `---
 enabled: false
 ---
-`
+`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -430,7 +430,7 @@ description: My Agent
 display_name: MyAgent
 ---
 
-Agent prompt.`
+Agent prompt.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -445,7 +445,7 @@ description: Worktree agent
 isolation: worktree
 ---
 
-Isolated.`
+Isolated.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -459,7 +459,7 @@ Isolated.`
 description: Normal
 ---
 
-Normal.`
+Normal.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -473,7 +473,7 @@ Normal.`
 isolation: docker
 ---
 
-Bad isolation.`
+Bad isolation.`,
       );
 
       const result = loadCustomAgents(tmpDir);
@@ -489,7 +489,7 @@ Bad isolation.`
          mkdirSync(globalAgentsDir, { recursive: true });
          writeFileSync(
             join(globalAgentsDir, "via-env.md"),
-            "---\ndescription: Discovered via env var\n---\n\nTest body."
+            "---\ndescription: Discovered via env var\n---\n\nTest body.",
          );
 
          const result = loadCustomAgents(tmpDir);

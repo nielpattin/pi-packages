@@ -23,7 +23,7 @@ interface BeforeAgentStartPayload {
 export function shouldExposeTool(
    toolName: string,
    agentName: string | null,
-   getToolPermission: (toolName: string, agentName?: string) => PermissionState
+   getToolPermission: (toolName: string, agentName?: string) => PermissionState,
 ): boolean {
    const toolPermission = getToolPermission(toolName, agentName ?? undefined);
    return toolPermission !== "deny";
@@ -39,7 +39,7 @@ export function shouldExposeTool(
 export class AgentPrepHandler {
    constructor(
       private readonly session: PermissionSession,
-      private readonly toolRegistry: ToolRegistry
+      private readonly toolRegistry: ToolRegistry,
    ) {}
 
    // eslint-disable-next-line @typescript-eslint/require-await
@@ -50,7 +50,7 @@ export class AgentPrepHandler {
       const agentName = this.session.resolveAgentName(ctx, event.systemPrompt);
       const candidateTools = event.systemPromptOptions?.selectedTools ?? [];
       const allowedTools = candidateTools.filter((toolName) =>
-         shouldExposeTool(toolName, agentName, (t, a) => this.session.getToolPermission(t, a))
+         shouldExposeTool(toolName, agentName, (t, a) => this.session.getToolPermission(t, a)),
       );
 
       const activeToolsCacheKey = createActiveToolsCacheKey(allowedTools);
@@ -64,7 +64,7 @@ export class AgentPrepHandler {
          cwd: ctx.cwd,
          permissionStamp: this.session.getPolicyCacheStamp(agentName ?? undefined),
          systemPrompt: event.systemPrompt,
-         allowedToolNames: allowedTools
+         allowedToolNames: allowedTools,
       });
 
       if (!this.session.shouldUpdatePromptState(promptStateCacheKey)) {

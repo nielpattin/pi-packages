@@ -57,7 +57,7 @@ export function formatBashExecution(msg: BashExecutionMessage, width: number, ct
    const lines: string[] = [truncateToWidth(theme.fg("muted", `  $ ${msg.command}`), width)];
    const output = msg.output ?? "";
    if (output.trim()) {
-      const out = output.length > 500 ? `${output.slice(0, 500)}... (truncated)` : output;
+      const out = output.length > 500 ? output.slice(0, 500) + "... (truncated)" : output;
       lines.push(...wrapText(out.trim(), width).map((l) => theme.fg("dim", l)));
    }
    return lines;
@@ -73,7 +73,7 @@ export function formatStreamingIndicator(
    activeTools: ReadonlyMap<string, string>,
    responseText: string | undefined,
    width: number,
-   theme: Theme
+   theme: Theme,
 ): string[] {
    const act = describeActivity(activeTools, responseText);
    return ["", truncateToWidth(theme.fg("accent", "\u25cd ") + theme.fg("dim", act), width)];
@@ -88,7 +88,7 @@ export function formatStreamingIndicator(
 export function formatToolResult(content: unknown[], width: number, ctx: FormatterContext): string[] | null {
    const { theme, wrapText } = ctx;
    const text = extractText(content);
-   const truncated = text.length > 500 ? `${text.slice(0, 500)}... (truncated)` : text;
+   const truncated = text.length > 500 ? text.slice(0, 500) + "... (truncated)" : text;
    if (!truncated.trim()) return null;
    return [theme.fg("dim", "[Result]"), ...wrapText(truncated.trim(), width).map((l) => theme.fg("dim", l))];
 }
@@ -112,7 +112,7 @@ export function formatAssistantMessage(
    content: { type: string; [key: string]: unknown }[],
    width: number,
    ctx: FormatterContext,
-   attribution?: MessageAttribution
+   attribution?: MessageAttribution,
 ): string[] {
    const { theme, wrapText } = ctx;
    const { textParts, toolNames } = extractAssistantContent(content);
@@ -136,7 +136,7 @@ export function formatAssistantMessage(
 export function formatMessage(
    msg: { role: string; [key: string]: unknown },
    width: number,
-   ctx: FormatterContext
+   ctx: FormatterContext,
 ): string[] | null {
    if (msg.role === "user") {
       return formatUserMessage(msg.content as string | unknown[], width, ctx);
@@ -144,7 +144,7 @@ export function formatMessage(
    if (msg.role === "assistant") {
       const attribution: MessageAttribution = {
          provider: msg.provider as string | undefined,
-         model: msg.model as string | undefined
+         model: msg.model as string | undefined,
       };
       return formatAssistantMessage(msg.content as { type: string; [key: string]: unknown }[], width, ctx, attribution);
    }

@@ -8,7 +8,7 @@ import {
    type Memory,
    peekProjectEmbeddings,
    searchMemoriesFTS,
-   updateMemoryRetrievalCount
+   updateMemoryRetrievalCount,
 } from "./memory";
 import { cosineSimilarity } from "./memory/cosine-similarity";
 import { embedText, isEmbeddingEnabled } from "./memory/embedding";
@@ -140,7 +140,7 @@ function getMessageSearchStatement(db: Database): PreparedStatement {
    let stmt = messageSearchStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT message_ordinal AS messageOrdinal, message_id AS messageId, role, content FROM message_history_fts WHERE session_id = ? AND message_history_fts MATCH ? ORDER BY bm25(message_history_fts), CAST(message_ordinal AS INTEGER) ASC LIMIT ?"
+         "SELECT message_ordinal AS messageOrdinal, message_id AS messageId, role, content FROM message_history_fts WHERE session_id = ? AND message_history_fts MATCH ? ORDER BY bm25(message_history_fts), CAST(message_ordinal AS INTEGER) ASC LIMIT ?",
       );
       messageSearchStatements.set(db, stmt);
    }
@@ -182,7 +182,7 @@ async function getSemanticScores(args: {
       db: args.db,
       projectIdentity: args.projectPath,
       memories: args.memories,
-      existingEmbeddings: cachedEmbeddings
+      existingEmbeddings: cachedEmbeddings,
    });
 
    for (const memory of args.memories) {
@@ -277,7 +277,7 @@ function mergeMemoryResults(args: {
          score,
          memoryId: memory.id,
          category: memory.category,
-         matchType
+         matchType,
       });
    }
 
@@ -316,19 +316,19 @@ async function searchMemories(args: {
       db: args.db,
       projectPath: args.projectPath,
       query: args.query,
-      limit: FTS_SEMANTIC_CANDIDATE_LIMIT
+      limit: FTS_SEMANTIC_CANDIDATE_LIMIT,
    });
    const ftsScores = getFtsScores(ftsMatches);
    const semanticCandidates = selectSemanticCandidates({
       memories,
       projectPath: args.projectPath,
-      ftsMatches
+      ftsMatches,
    });
    const semanticScores = await getSemanticScores({
       db: args.db,
       projectPath: args.projectPath,
       memories: semanticCandidates,
-      queryEmbedding: args.queryEmbedding
+      queryEmbedding: args.queryEmbedding,
    });
 
    return mergeMemoryResults({
@@ -336,7 +336,7 @@ async function searchMemories(args: {
       semanticScores,
       ftsScores,
       limit: args.limit,
-      visibleMemoryIds: args.visibleMemoryIds
+      visibleMemoryIds: args.visibleMemoryIds,
    });
 }
 
@@ -396,18 +396,18 @@ function searchMessages(args: {
             messageOrdinal,
             messageId: row.messageId,
             role: row.role,
-            content: row.content
+            content: row.content,
          };
       })
       .filter(
          (
-            result
+            result,
          ): result is {
             messageOrdinal: number;
             messageId: string;
             role: string;
             content: string;
-         } => result !== null
+         } => result !== null,
       )
       .slice(0, args.limit);
 
@@ -419,7 +419,7 @@ function searchMessages(args: {
       score: linearDecayScore(rank, filtered.length),
       messageOrdinal: row.messageOrdinal,
       messageId: row.messageId,
-      role: row.role
+      role: row.role,
    }));
 }
 
@@ -467,7 +467,7 @@ function toGitCommitResult(hit: GitCommitSearchHit): GitCommitSearchResult {
       shortSha: hit.commit.shortSha,
       author: hit.commit.author,
       committedAtMs: hit.commit.committedAtMs,
-      matchType: hit.matchType
+      matchType: hit.matchType,
    };
 }
 
@@ -485,7 +485,7 @@ function searchGitCommits(args: {
 
    const hits = searchGitCommitsSync(args.db, args.projectPath, args.query, {
       limit: args.limit,
-      queryEmbedding: args.queryEmbedding
+      queryEmbedding: args.queryEmbedding,
    });
    return hits.map(toGitCommitResult);
 }
@@ -511,7 +511,7 @@ export async function unifiedSearch(
    sessionId: string,
    projectPath: string,
    query: string,
-   options: UnifiedSearchOptions = {}
+   options: UnifiedSearchOptions = {},
 ): Promise<UnifiedSearchResult[]> {
    const trimmedQuery = query.trim();
    if (trimmedQuery.length === 0) {
@@ -574,7 +574,7 @@ export async function unifiedSearch(
            sessionId,
            query: trimmedQuery,
            limit: tierLimit,
-           maxOrdinal: options.maxMessageOrdinal
+           maxOrdinal: options.maxMessageOrdinal,
         })
       : [];
 
@@ -591,7 +591,7 @@ export async function unifiedSearch(
               limit: tierLimit,
               memoryEnabled: true,
               queryEmbedding,
-              visibleMemoryIds: options.visibleMemoryIds
+              visibleMemoryIds: options.visibleMemoryIds,
            })
          : Promise.resolve([] as MemorySearchResult[]),
       runGitCommits
@@ -601,10 +601,10 @@ export async function unifiedSearch(
                  projectPath,
                  query: trimmedQuery,
                  limit: tierLimit,
-                 queryEmbedding
-              })
+                 queryEmbedding,
+              }),
            )
-         : Promise.resolve([] as GitCommitSearchResult[])
+         : Promise.resolve([] as GitCommitSearchResult[]),
    ]);
 
    const results = [...memoryResults, ...messageResults, ...gitCommitResults]

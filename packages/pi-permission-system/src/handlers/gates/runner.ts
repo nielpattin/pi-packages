@@ -22,7 +22,7 @@ export async function runGateCheck(
    descriptor: GateDescriptor,
    agentName: string | null,
    toolCallId: string,
-   deps: GateRunnerDeps
+   deps: GateRunnerDeps,
 ): Promise<GateOutcome> {
    // 1. Resolve permission state — pre-check, pre-resolved, or via checkPermission
    let check: PermissionCheckResult;
@@ -33,14 +33,14 @@ export async function runGateCheck(
          state: descriptor.preResolved.state,
          toolName: descriptor.surface,
          source: "tool",
-         origin: "builtin"
+         origin: "builtin",
       };
    } else {
       check = deps.checkPermission(
          descriptor.surface,
          descriptor.input,
          agentName ?? undefined,
-         deps.getSessionRuleset()
+         deps.getSessionRuleset(),
       );
    }
 
@@ -50,7 +50,7 @@ export async function runGateCheck(
          ...descriptor.logContext,
          agentName,
          resolution: "session_approved",
-         sessionApprovalPattern: check.matchedPattern
+         sessionApprovalPattern: check.matchedPattern,
       });
       deps.emitDecision({
          surface: descriptor.decision.surface,
@@ -60,7 +60,7 @@ export async function runGateCheck(
          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- ?? null normalises undefined to null for the log record
          origin: check.origin ?? null,
          agentName: agentName ?? null,
-         matchedPattern: check.matchedPattern ?? null
+         matchedPattern: check.matchedPattern ?? null,
       });
       return { action: "allow" };
    }
@@ -73,12 +73,12 @@ export async function runGateCheck(
       ? "pattern" in descriptor.sessionApproval
          ? {
               surface: descriptor.sessionApproval.surface,
-              pattern: descriptor.sessionApproval.pattern
+              pattern: descriptor.sessionApproval.pattern,
            }
          : descriptor.sessionApproval.patterns.length > 0
            ? {
                 surface: descriptor.sessionApproval.surface,
-                pattern: descriptor.sessionApproval.patterns[0]
+                pattern: descriptor.sessionApproval.patterns[0],
              }
            : undefined
       : undefined;
@@ -88,7 +88,7 @@ export async function runGateCheck(
       denyReason: formatDenyReason(descriptor.denialContext),
       unavailableReason: formatUnavailableReason(descriptor.denialContext),
       userDeniedReason: (decision: PermissionPromptDecision) =>
-         formatUserDeniedReason(descriptor.denialContext, decision.denialReason)
+         formatUserDeniedReason(descriptor.denialContext, decision.denialReason),
    };
 
    let autoApproved = false;
@@ -99,7 +99,7 @@ export async function runGateCheck(
       promptForApproval: async () => {
          const decision = await deps.promptPermission({
             requestId: toolCallId,
-            ...descriptor.promptDetails
+            ...descriptor.promptDetails,
          });
          autoApproved = decision.autoApproved === true;
          return decision;
@@ -107,7 +107,7 @@ export async function runGateCheck(
       // eslint-disable-next-line @typescript-eslint/unbound-method -- logger methods are plain functions; no this-binding issue
       writeLog: deps.writeReviewLog,
       logContext: { ...descriptor.logContext, agentName },
-      messages
+      messages,
    });
 
    // 4. Determine whether session approval was granted
@@ -122,7 +122,7 @@ export async function runGateCheck(
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- ?? null normalises undefined to null for the log record
       origin: check.origin ?? null,
       agentName: agentName ?? null,
-      matchedPattern: check.matchedPattern ?? null
+      matchedPattern: check.matchedPattern ?? null,
    });
 
    // 6. Record session approval(s)

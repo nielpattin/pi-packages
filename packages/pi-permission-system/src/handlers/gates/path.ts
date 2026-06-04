@@ -10,7 +10,7 @@ type CheckPermissionFn = (
    surface: string,
    input: unknown,
    agentName?: string,
-   sessionRules?: Rule[]
+   sessionRules?: Rule[],
 ) => PermissionCheckResult;
 
 /**
@@ -24,7 +24,7 @@ type CheckPermissionFn = (
 export function describePathGate(
    tcc: ToolCallContext,
    checkPermission: CheckPermissionFn,
-   getSessionRuleset: () => Rule[]
+   getSessionRuleset: () => Rule[],
 ): GateResult {
    const filePath = getPathBearingToolPath(tcc.toolName, tcc.input);
    if (!filePath) return null;
@@ -48,11 +48,11 @@ export function describePathGate(
          kind: "path",
          toolName: tcc.toolName,
          pathValue: filePath,
-         agentName: tcc.agentName ?? undefined
+         agentName: tcc.agentName ?? undefined,
       },
       sessionApproval: {
          surface: "path",
-         pattern
+         pattern,
       },
       promptDetails: {
          source: "tool_call",
@@ -60,20 +60,20 @@ export function describePathGate(
          message: formatPathAskPrompt(tcc.toolName, filePath, tcc.agentName ?? undefined),
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
-         path: filePath
+         path: filePath,
       },
       logContext: {
          source: "tool_call",
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
          agentName: tcc.agentName,
-         path: filePath
+         path: filePath,
       },
       decision: {
          surface: "path",
-         value: filePath
+         value: filePath,
       },
-      preCheck: check
+      preCheck: check,
    };
 
    return descriptor;

@@ -294,7 +294,7 @@ export function buildHistorianEditorPrompt(draft: string): string {
       draft,
       "</draft>",
       "",
-      "Return the cleaned draft as valid XML matching the original structure."
+      "Return the cleaned draft as valid XML matching the original structure.",
    ].join("\n");
 }
 
@@ -328,7 +328,7 @@ export function buildCompressorPrompt(
    currentTokens: number,
    targetTokens: number,
    outputDepth: number,
-   outputCount?: number
+   outputCount?: number,
 ): string {
    const lines: string[] = [];
    const densityLabel =
@@ -343,24 +343,24 @@ export function buildCompressorPrompt(
 
    lines.push(`Density target: LEVEL ${outputDepth} (${densityLabel}). See system prompt for level rules.`);
    lines.push(
-      `Input: ${compartments.length} compartments, ~${currentTokens} tokens. Target output: exactly ${resolvedOutputCount} compartments, ~${targetTokens} tokens total.`
+      `Input: ${compartments.length} compartments, ~${currentTokens} tokens. Target output: exactly ${resolvedOutputCount} compartments, ~${targetTokens} tokens total.`,
    );
    lines.push("");
 
    // Depth-specific reminder (keep it brief; full rules live in system prompt).
    if (outputDepth === 1) {
       lines.push(
-         "Merge only. Preserve narrative and all U: lines. Drop only genuine duplicate sentences spanning compartments."
+         "Merge only. Preserve narrative and all U: lines. Drop only genuine duplicate sentences spanning compartments.",
       );
    } else if (outputDepth === 2) {
       lines.push("Merge + drop filler words and hedging. Keep grammar, keep U: lines verbatim.");
    } else if (outputDepth === 3) {
       lines.push(
-         "Merge into single-paragraph compartments. Drop articles and weak auxiliaries. Keep only IRREPLACEABLE U: lines."
+         "Merge into single-paragraph compartments. Drop articles and weak auxiliaries. Keep only IRREPLACEABLE U: lines.",
       );
    } else {
       lines.push(
-         "Merge into telegraphic fragments with symbol connectives (→ + // |). U: lines only if truly irreplaceable."
+         "Merge into telegraphic fragments with symbol connectives (→ + // |). U: lines only if truly irreplaceable.",
       );
    }
    lines.push("");
@@ -380,7 +380,7 @@ export function buildCompressorPrompt(
 export function buildCompartmentAgentPrompt(
    existingState: string,
    inputSource: string,
-   options?: { userMemoriesEnabled?: boolean; stateFilePath?: string }
+   options?: { userMemoriesEnabled?: boolean; stateFilePath?: string },
 ): string {
    const existingStateBlock = options?.stateFilePath
       ? `Read the existing session state from this file before proceeding:\n${options.stateFilePath}\n\nThe file contains the full XML existing state (compartments, facts, memories). Read it first, then process the new messages below.`
@@ -402,8 +402,8 @@ export function buildCompartmentAgentPrompt(
       "- Drop obsolete or task-local facts.",
       ...(options?.userMemoriesEnabled
          ? [
-              "- Also emit <user_observations> with universal behavioral observations about the user (see system prompt for rules)."
+              "- Also emit <user_observations> with universal behavioral observations about the user (see system prompt for rules).",
            ]
-         : [])
+         : []),
    ].join("\n");
 }

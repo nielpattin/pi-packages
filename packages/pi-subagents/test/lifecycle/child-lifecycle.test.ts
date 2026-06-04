@@ -5,7 +5,7 @@ import {
    SUBAGENT_CHILD_COMPLETED,
    SUBAGENT_CHILD_DISPOSED,
    SUBAGENT_CHILD_SESSION_CREATED,
-   SUBAGENT_CHILD_SPAWNING
+   SUBAGENT_CHILD_SPAWNING,
 } from "#src/lifecycle/child-lifecycle";
 
 function setup(): {
@@ -26,7 +26,7 @@ describe("createChildLifecyclePublisher", () => {
       expect(emit).toHaveBeenCalledOnce();
       expect(emit).toHaveBeenCalledWith(SUBAGENT_CHILD_SPAWNING, {
          agentName: "Explore",
-         parentSessionId: "parent-42"
+         parentSessionId: "parent-42",
       });
    });
 
@@ -36,14 +36,14 @@ describe("createChildLifecyclePublisher", () => {
       publisher.sessionCreated({
          sessionDir: "/sessions/child-abc",
          agentName: "Explore",
-         parentSessionId: "parent-42"
+         parentSessionId: "parent-42",
       });
 
       expect(emit).toHaveBeenCalledOnce();
       expect(emit).toHaveBeenCalledWith(SUBAGENT_CHILD_SESSION_CREATED, {
          sessionDir: "/sessions/child-abc",
          agentName: "Explore",
-         parentSessionId: "parent-42"
+         parentSessionId: "parent-42",
       });
    });
 
@@ -54,7 +54,7 @@ describe("createChildLifecyclePublisher", () => {
          sessionDir: "/sessions/child-abc",
          agentName: "Explore",
          aborted: false,
-         steered: true
+         steered: true,
       });
 
       expect(emit).toHaveBeenCalledOnce();
@@ -62,7 +62,7 @@ describe("createChildLifecyclePublisher", () => {
          sessionDir: "/sessions/child-abc",
          agentName: "Explore",
          aborted: false,
-         steered: true
+         steered: true,
       });
    });
 
@@ -73,7 +73,7 @@ describe("createChildLifecyclePublisher", () => {
 
       expect(emit).toHaveBeenCalledOnce();
       expect(emit).toHaveBeenCalledWith(SUBAGENT_CHILD_DISPOSED, {
-         sessionDir: "/sessions/child-abc"
+         sessionDir: "/sessions/child-abc",
       });
    });
 
@@ -84,7 +84,7 @@ describe("createChildLifecyclePublisher", () => {
 
       expect(emit).toHaveBeenCalledWith(SUBAGENT_CHILD_SPAWNING, {
          agentName: "general-purpose",
-         parentSessionId: undefined
+         parentSessionId: undefined,
       });
    });
 

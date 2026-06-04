@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
    SUBAGENT_CHILD_DISPOSED,
    SUBAGENT_CHILD_SESSION_CREATED,
-   subscribeSubagentLifecycle
+   subscribeSubagentLifecycle,
 } from "#src/subagent-lifecycle-events";
 import { SubagentSessionRegistry } from "#src/subagent-registry";
 
@@ -21,12 +21,12 @@ describe("subscribeSubagentLifecycle", () => {
       bus.emit(SUBAGENT_CHILD_SESSION_CREATED, {
          sessionDir: "/sessions/child-abc",
          agentName: "Explore",
-         parentSessionId: "parent-42"
+         parentSessionId: "parent-42",
       });
 
       expect(registry.get("/sessions/child-abc")).toEqual({
          agentName: "Explore",
-         parentSessionId: "parent-42"
+         parentSessionId: "parent-42",
       });
    });
 
@@ -41,7 +41,7 @@ describe("subscribeSubagentLifecycle", () => {
 
       bus.emit(SUBAGENT_CHILD_SESSION_CREATED, {
          sessionDir: "/sessions/child-sync",
-         agentName: "Explore"
+         agentName: "Explore",
       });
 
       // No await between emit and this assertion.
@@ -54,12 +54,12 @@ describe("subscribeSubagentLifecycle", () => {
 
       bus.emit(SUBAGENT_CHILD_SESSION_CREATED, {
          sessionDir: "/sessions/child-xyz",
-         agentName: "general-purpose"
+         agentName: "general-purpose",
       });
 
       expect(registry.get("/sessions/child-xyz")).toEqual({
          agentName: "general-purpose",
-         parentSessionId: undefined
+         parentSessionId: undefined,
       });
    });
 
@@ -81,7 +81,7 @@ describe("subscribeSubagentLifecycle", () => {
 
       bus.emit(SUBAGENT_CHILD_SESSION_CREATED, {
          sessionDir: "/sessions/child-abc",
-         agentName: "Explore"
+         agentName: "Explore",
       });
       bus.emit(SUBAGENT_CHILD_DISPOSED, { sessionDir: "/sessions/child-abc" });
 
@@ -94,7 +94,7 @@ describe("subscribeSubagentLifecycle", () => {
          on: vi.fn((channel: string, handler: (data: unknown) => void) => {
             handlers.set(channel, handler);
             return () => handlers.delete(channel);
-         })
+         }),
       };
 
       subscribeSubagentLifecycle(bus, registry);

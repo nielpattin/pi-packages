@@ -6,7 +6,7 @@
  * Uses the callback form of setWidget for themed rendering.
  */
 
-import type { AgentTypeRegistry } from "#src/config/agent-types";
+import { AgentTypeRegistry } from "#src/config/agent-types";
 import type { AgentManager } from "#src/lifecycle/agent-manager";
 import type { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
 import { ERROR_STATUSES, type Theme } from "#src/ui/display";
@@ -36,7 +36,7 @@ export interface WidgetState {
  */
 export function assembleWidgetState(
    agents: readonly AgentSummary[],
-   shouldShowFinished: (agentId: string, status: string) => boolean
+   shouldShowFinished: (agentId: string, status: string) => boolean,
 ): WidgetState {
    let runningCount = 0;
    let queuedCount = 0;
@@ -59,7 +59,7 @@ export type UICtx = {
    setWidget(
       key: string,
       content: undefined | ((tui: any, theme: Theme) => { render(): string[]; invalidate(): void }),
-      options?: { placement?: "aboveEditor" | "belowEditor" }
+      options?: { placement?: "aboveEditor" | "belowEditor" },
    ): void;
 };
 
@@ -84,7 +84,7 @@ export class AgentWidget {
    constructor(
       private manager: AgentManager,
       private agentActivity: Map<string, AgentActivityTracker>,
-      private registry: AgentTypeRegistry
+      private registry: AgentTypeRegistry,
    ) {}
 
    /** Set the UI context (grabbed from first tool execution). */
@@ -144,7 +144,7 @@ export class AgentWidget {
          spinnerFrame: this.widgetFrame,
          terminalWidth: tui.terminal.columns,
          theme,
-         shouldShowFinished: (id, status) => this.shouldShowFinished(id, status)
+         shouldShowFinished: (id, status) => this.shouldShowFinished(id, status),
       });
    }
 
@@ -219,10 +219,10 @@ export class AgentWidget {
                      // Theme changed — force re-registration so factory captures fresh theme.
                      this.widgetRegistered = false;
                      this.tui = undefined;
-                  }
+                  },
                };
             },
-            { placement: "aboveEditor" }
+            { placement: "aboveEditor" },
          );
          this.widgetRegistered = true;
       } else {

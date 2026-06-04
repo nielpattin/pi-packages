@@ -4,7 +4,7 @@ import {
    DEFAULT_COMPRESSOR_MAX_COMPARTMENTS_PER_PASS,
    DEFAULT_COMPRESSOR_MAX_MERGE_DEPTH,
    DEFAULT_COMPRESSOR_MIN_COMPARTMENT_RATIO,
-   DEFAULT_HISTORIAN_TIMEOUT_MS
+   DEFAULT_HISTORIAN_TIMEOUT_MS,
 } from "../../config/schema/magic-context";
 import type { Compartment } from "../../features/magic-context/compartment-storage";
 import {
@@ -14,7 +14,7 @@ import {
    incrementCompressionDepth,
    openDatabase,
    replaceAllCompartmentState,
-   replaceAllCompartmentStateAndBumpDepth
+   replaceAllCompartmentStateAndBumpDepth,
 } from "../../features/magic-context/storage";
 import { recordChildInvocation } from "../../features/magic-context/subagent-token-capture";
 import type { PluginContext } from "../../plugin/types";
@@ -98,7 +98,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
    let totalTokens = 0;
    for (const c of compartments) {
       totalTokens += estimateTokens(
-         `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`
+         `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`,
       );
    }
    for (const f of facts) {
@@ -108,7 +108,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
    if (totalTokens <= historyBudgetTokens) {
       sessionLog(
          sessionId,
-         `compressor: history block ~${totalTokens} tokens within budget ${historyBudgetTokens}, skipping`
+         `compressor: history block ~${totalTokens} tokens within budget ${historyBudgetTokens}, skipping`,
       );
       return false;
    }
@@ -119,7 +119,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
    if (compartments.length <= floor) {
       sessionLog(
          sessionId,
-         `compressor: at floor (${compartments.length} compartments, floor=${floor} from ${lastEndMessage} msgs), skipping`
+         `compressor: at floor (${compartments.length} compartments, floor=${floor} from ${lastEndMessage} msgs), skipping`,
       );
       return false;
    }
@@ -127,7 +127,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
    const overage = totalTokens - historyBudgetTokens;
    sessionLog(
       sessionId,
-      `compressor: history block ~${totalTokens} tokens exceeds budget ${historyBudgetTokens} by ~${overage} tokens`
+      `compressor: history block ~${totalTokens} tokens exceeds budget ${historyBudgetTokens} by ~${overage} tokens`,
    );
 
    const maxCompartmentsPerPass = deps.maxCompartmentsPerPass ?? DEFAULT_COMPRESSOR_MAX_COMPARTMENTS_PER_PASS;
@@ -163,7 +163,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
    if (floorHeadroom < 1) {
       sessionLog(
          sessionId,
-         `compressor: no floor headroom (${compartments.length} compartments, floor=${floor}), skipping`
+         `compressor: no floor headroom (${compartments.length} compartments, floor=${floor}), skipping`,
       );
       return false;
    }
@@ -172,13 +172,13 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
       maxPickable: maxCompartmentsPerPass,
       maxMergeDepth,
       graceCompartments,
-      floorHeadroom
+      floorHeadroom,
    });
 
    if (contiguous.length < 2) {
       sessionLog(
          sessionId,
-         `compressor: no eligible same-depth band found (floor=${floor}, maxDepth=${maxMergeDepth}, grace=${graceCompartments}, maxPerPass=${maxCompartmentsPerPass}), skipping`
+         `compressor: no eligible same-depth band found (floor=${floor}, maxDepth=${maxMergeDepth}, grace=${graceCompartments}, maxPerPass=${maxCompartmentsPerPass}), skipping`,
       );
       return false;
    }
@@ -197,7 +197,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
 
    sessionLog(
       sessionId,
-      `compressor: scored ${compartments.length}, picked ${contiguous.length} contiguous (${selectedCompartments[0].startMessage}-${selectedCompartments[selectedCompartments.length - 1].endMessage}, ~${selectedTokens} tokens), avg_depth=${overallAverageDepth.toFixed(1)} → output_depth=${outputDepth} (ratio=${mergeRatio}, target=${outputCount} compartments)`
+      `compressor: scored ${compartments.length}, picked ${contiguous.length} contiguous (${selectedCompartments[0].startMessage}-${selectedCompartments[selectedCompartments.length - 1].endMessage}, ~${selectedTokens} tokens), avg_depth=${overallAverageDepth.toFixed(1)} → output_depth=${outputDepth} (ratio=${mergeRatio}, target=${outputCount} compartments)`,
    );
 
    // Depth 5 short-circuit: collapse to title-only. No LLM call needed.
@@ -215,13 +215,13 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
             startMessageId: c.startMessageId,
             endMessageId: c.endMessageId,
             title: c.title,
-            content: ""
+            content: "",
          })),
          originalStart: selectedCompartments[0].startMessage,
          originalEnd: selectedCompartments[selectedCompartments.length - 1].endMessage,
          facts,
          logLabel: `depth-5 title-only collapse (${selectedCompartments.length} → ${selectedCompartments.length})`,
-         holderId: deps.compartmentLeaseHolderId
+         holderId: deps.compartmentLeaseHolderId,
       });
    }
 
@@ -236,7 +236,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
          currentTokens: selectedTokens,
          targetTokens,
          outputCount,
-         outputDepth
+         outputDepth,
       });
 
       if (!llmCompressed) {
@@ -262,7 +262,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
          originalEnd: selectedCompartments[selectedCompartments.length - 1].endMessage,
          facts,
          logLabel: `depth-${outputDepth} (${selectedCompartments.length} → ${finalCompressed.length})`,
-         holderId: deps.compartmentLeaseHolderId
+         holderId: deps.compartmentLeaseHolderId,
       });
    } catch (error: unknown) {
       sessionLog(sessionId, "compressor: unexpected error:", getErrorMessage(error));
@@ -285,7 +285,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
 function scoreCompartments(db: Database, sessionId: string, compartments: Compartment[]): ScoredCompartment[] {
    return compartments.map((compartment, index) => {
       const tokenEstimate = estimateTokens(
-         `<compartment start="${compartment.startMessage}" end="${compartment.endMessage}" title="${compartment.title}">\n${compartment.content}\n</compartment>\n`
+         `<compartment start="${compartment.startMessage}" end="${compartment.endMessage}" title="${compartment.title}">\n${compartment.content}\n</compartment>\n`,
       );
       const averageDepth = getAverageCompressionDepth(db, sessionId, compartment.startMessage, compartment.endMessage);
       return { compartment, index, tokenEstimate, averageDepth };
@@ -339,7 +339,7 @@ interface SelectionConstraints {
  */
 export function selectCompressionBand(
    scored: ScoredCompartment[],
-   constraints: SelectionConstraints
+   constraints: SelectionConstraints,
 ): ScoredCompartment[] {
    const { maxPickable, maxMergeDepth, graceCompartments, floorHeadroom } = constraints;
    const hardMaxPick = Math.max(0, Math.min(maxPickable, floorHeadroom));
@@ -427,7 +427,7 @@ function snapLLMOutputToInputBoundaries(
       title: string;
       content: string;
    }>,
-   inputCompartments: Compartment[]
+   inputCompartments: Compartment[],
 ): {
    result: Array<{
       startMessage: number;
@@ -481,7 +481,7 @@ function snapLLMOutputToInputBoundaries(
          startMessageId: startOwner.startMessageId,
          endMessageId: endOwner.endMessageId,
          title: pc.title,
-         content: pc.content
+         content: pc.content,
       });
    }
 
@@ -527,7 +527,7 @@ function finalizeCompression(args: FinalizeArgs): boolean {
       originalEnd,
       facts,
       logLabel,
-      holderId
+      holderId,
    } = args;
 
    const compressedStart = compressed[0].startMessage;
@@ -536,7 +536,7 @@ function finalizeCompression(args: FinalizeArgs): boolean {
    if (compressedStart !== originalStart || compressedEnd !== originalEnd) {
       sessionLog(
          sessionId,
-         `compressor: compressed range ${compressedStart}-${compressedEnd} doesn't match original ${originalStart}-${originalEnd}, aborting`
+         `compressor: compressed range ${compressedStart}-${compressedEnd} doesn't match original ${originalStart}-${originalEnd}, aborting`,
       );
       return false;
    }
@@ -566,7 +566,7 @@ function finalizeCompression(args: FinalizeArgs): boolean {
          startMessageId: c.startMessageId,
          endMessageId: c.endMessageId,
          title: c.title,
-         content: c.content
+         content: c.content,
       })),
       ...compressed.map((c, i) => ({
          sequence: leading.length + i,
@@ -575,7 +575,7 @@ function finalizeCompression(args: FinalizeArgs): boolean {
          startMessageId: c.startMessageId,
          endMessageId: c.endMessageId,
          title: c.title,
-         content: c.content
+         content: c.content,
       })),
       ...trailing.map((c, i) => ({
          sequence: leading.length + compressed.length + i,
@@ -584,8 +584,8 @@ function finalizeCompression(args: FinalizeArgs): boolean {
          startMessageId: c.startMessageId,
          endMessageId: c.endMessageId,
          title: c.title,
-         content: c.content
-      }))
+         content: c.content,
+      })),
    ];
 
    const factInputs = facts.map((f) => ({ category: f.category, content: f.content }));
@@ -597,7 +597,7 @@ function finalizeCompression(args: FinalizeArgs): boolean {
            allCompartments,
            factInputs,
            originalStart,
-           originalEnd
+           originalEnd,
         )
       : (() => {
            replaceAllCompartmentState(db, sessionId, allCompartments, factInputs);
@@ -652,7 +652,7 @@ async function runCompressorPass(args: CompressorPassArgs): Promise<Array<{
       outputCount,
       outputDepth,
       historianTimeoutMs,
-      fallbackModels
+      fallbackModels,
    } = args;
 
    const prompt = buildCompressorPrompt(compartments, currentTokens, targetTokens, outputDepth, outputCount);
@@ -672,7 +672,7 @@ async function runCompressorPass(args: CompressorPassArgs): Promise<Array<{
             startedAt,
             status: params.status,
             messages: params.messages,
-            error: params.error
+            error: params.error,
          });
       } catch (error) {
          sessionLog(sessionId, "subagent token accounting unavailable", getErrorMessage(error));
@@ -681,11 +681,11 @@ async function runCompressorPass(args: CompressorPassArgs): Promise<Array<{
    try {
       const createResponse = await client.session.create({
          body: { parentID: sessionId, title: "magic-context-compressor" },
-         query: { directory }
+         query: { directory },
       });
 
       const createdSession = normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       agentSessionId = typeof createdSession?.id === "string" ? createdSession.id : null;
 
@@ -704,22 +704,22 @@ async function runCompressorPass(args: CompressorPassArgs): Promise<Array<{
                agent: HISTORIAN_AGENT,
                // synthetic: true hides this internal prompt from the TUI subagent
                // pane while still delivering it to the model. See issue #50.
-               parts: [{ type: "text", text: prompt, synthetic: true }]
-            }
+               parts: [{ type: "text", text: prompt, synthetic: true }],
+            },
          },
          {
             timeoutMs: historianTimeoutMs ?? DEFAULT_HISTORIAN_TIMEOUT_MS,
             fallbackModels,
-            callContext: "compressor"
-         }
+            callContext: "compressor",
+         },
       );
 
       const messagesResponse = await client.session.messages({
          path: { id: agentSessionId },
-         query: { directory, limit: 50 }
+         query: { directory, limit: 50 },
       });
       const messages = normalizeSDKResponse(messagesResponse, [] as unknown[], {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       recordInvocation({ status: "completed", messages });
       const result = extractLatestAssistantText(messages);
@@ -747,7 +747,7 @@ async function runCompressorPass(args: CompressorPassArgs): Promise<Array<{
       if (snapped.snapCount > 0) {
          sessionLog(
             sessionId,
-            `compressor: snapped ${snapped.snapCount} LLM boundary value(s) to input compartment boundaries`
+            `compressor: snapped ${snapped.snapCount} LLM boundary value(s) to input compartment boundaries`,
          );
       }
       return snapped.result;

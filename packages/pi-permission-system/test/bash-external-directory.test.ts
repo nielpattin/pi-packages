@@ -5,14 +5,14 @@ vi.mock("node:os", () => {
    const homedir = vi.fn(() => "/mock/home");
    return {
       homedir,
-      default: { homedir }
+      default: { homedir },
    };
 });
 
 import { formatDenyReason } from "#src/denial-messages";
 import {
    extractExternalPathsFromBashCommand,
-   extractTokensForPathRules
+   extractTokensForPathRules,
 } from "#src/handlers/gates/bash-path-extractor";
 import { formatBashExternalDirectoryAskPrompt } from "#src/handlers/gates/external-directory-messages";
 
@@ -142,7 +142,7 @@ describe("extractExternalPathsFromBashCommand", () => {
       test("does not flag path inside double-quoted string", async () => {
          const result = await extractExternalPathsFromBashCommand(
             'git commit -m "fix: update /etc/hosts handler"',
-            cwd
+            cwd,
          );
          expect(result).toHaveLength(0);
       });
@@ -250,7 +250,7 @@ describe("extractExternalPathsFromBashCommand", () => {
       test("does not flag path inside single-quoted string in node -e argument", async () => {
          const result = await extractExternalPathsFromBashCommand(
             "node -e \"const p = '/etc/hosts'; console.log(p);\"",
-            cwd
+            cwd,
          );
          expect(result).toHaveLength(0);
       });
@@ -272,7 +272,7 @@ describe("extractExternalPathsFromBashCommand", () => {
             "  const cmd = \\\"cat << 'EOF'\\n/etc/hosts\\nsome content\\nEOF\\\";",
             "  console.log(JSON.stringify(parse(cmd)));",
             "});",
-            '"'
+            '"',
          ].join("\n");
          const result = await extractExternalPathsFromBashCommand(cmd, cwd);
          expect(result).toHaveLength(0);
@@ -284,7 +284,7 @@ describe("extractExternalPathsFromBashCommand", () => {
          // tree-sitter correctly parses the escaped quote and keeps the path inside the string.
          const result = await extractExternalPathsFromBashCommand(
             'git commit -m "fix: update \\"the /etc/hosts\\" handler"',
-            cwd
+            cwd,
          );
          expect(result).toHaveLength(0);
       });
@@ -508,7 +508,7 @@ describe("extractExternalPathsFromBashCommand", () => {
          test("sd: both pattern positionals skipped, file extracted", async () => {
             const result = await extractExternalPathsFromBashCommand(
                "sd '/usr/local/bin' '/opt/bin' /etc/profile",
-               cwd
+               cwd,
             );
             expect(result).toContain("/etc/profile");
             expect(result).toHaveLength(1);
@@ -544,7 +544,7 @@ describe("extractExternalPathsFromBashCommand", () => {
          test("redirect target still extracted for pattern-first command", async () => {
             const result = await extractExternalPathsFromBashCommand(
                "sed 's/foo/bar/' input.txt > /tmp/output.txt",
-               cwd
+               cwd,
             );
             expect(result).toContain("/tmp/output.txt");
          });
@@ -552,7 +552,7 @@ describe("extractExternalPathsFromBashCommand", () => {
          test("pipeline: sed piped to cat with external path", async () => {
             const result = await extractExternalPathsFromBashCommand(
                "sed 's/foo/bar/' src/file.ts | cat /etc/hosts",
-               cwd
+               cwd,
             );
             expect(result).toContain("/etc/hosts");
             expect(result).toHaveLength(1);
@@ -587,7 +587,7 @@ describe("extractExternalPathsFromBashCommand", () => {
       test("grep -v with //.*pattern is not flagged", async () => {
          const result = await extractExternalPathsFromBashCommand(
             'grep -n "glob" src/foo.ts 2>/dev/null | grep -v "//.*glob\\|globalConfig" | head -30',
-            cwd
+            cwd,
          );
          expect(result).toHaveLength(0);
       });
@@ -632,7 +632,7 @@ describe("formatBashExternalDirectoryAskPrompt", () => {
          "cat /etc/hosts",
          ["/etc/hosts"],
          "/projects/my-app",
-         "my-agent"
+         "my-agent",
       );
       expect(result).toContain("my-agent");
    });
@@ -641,7 +641,7 @@ describe("formatBashExternalDirectoryAskPrompt", () => {
       const result = formatBashExternalDirectoryAskPrompt(
          "diff /etc/hosts /var/log/syslog",
          ["/etc/hosts", "/var/log/syslog"],
-         "/projects/my-app"
+         "/projects/my-app",
       );
       expect(result).toContain("/etc/hosts");
       expect(result).toContain("/var/log/syslog");
@@ -654,7 +654,7 @@ describe("bash external-directory denial messages (centralized)", () => {
          kind: "bash_external_directory",
          command: "cat /etc/hosts",
          externalPaths: ["/etc/hosts"],
-         cwd: "/projects/my-app"
+         cwd: "/projects/my-app",
       });
       expect(result).toContain("cat /etc/hosts");
       expect(result).toContain("/etc/hosts");

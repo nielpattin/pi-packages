@@ -13,7 +13,7 @@ function getSearchStatement(db: Database): PreparedStatement {
          .join(", ");
 
       stmt = db.prepare(
-         `SELECT ${selectColumns} FROM memories_fts INNER JOIN memories ON memories.id = memories_fts.rowid WHERE memories.project_path = ? AND memories.status IN ('active', 'permanent') AND (memories.expires_at IS NULL OR memories.expires_at > ?) AND memories_fts MATCH ? ORDER BY bm25(memories_fts), memories.updated_at DESC, memories.id ASC LIMIT ?`
+         `SELECT ${selectColumns} FROM memories_fts INNER JOIN memories ON memories.id = memories_fts.rowid WHERE memories.project_path = ? AND memories.status IN ('active', 'permanent') AND (memories.expires_at IS NULL OR memories.expires_at > ?) AND memories_fts MATCH ? ORDER BY bm25(memories_fts), memories.updated_at DESC, memories.id ASC LIMIT ?`,
       );
       searchStatements.set(db, stmt);
    }
@@ -38,7 +38,7 @@ export function searchMemoriesFTS(
    db: Database,
    projectPath: string,
    query: string,
-   limit = DEFAULT_SEARCH_LIMIT
+   limit = DEFAULT_SEARCH_LIMIT,
 ): Memory[] {
    const trimmedQuery = query.trim();
    if (trimmedQuery.length === 0 || limit <= 0) {

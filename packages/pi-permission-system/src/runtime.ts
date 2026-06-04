@@ -10,7 +10,7 @@ import {
    getLegacyGlobalPolicyPath,
    getLegacyProjectPolicyPath,
    getProjectConfigPath,
-   REVIEW_LOG_FILENAME
+   REVIEW_LOG_FILENAME,
 } from "./config-paths";
 import { buildResolvedConfigLogEntry } from "./config-reporter";
 import {
@@ -18,7 +18,7 @@ import {
    EXTENSION_ROOT,
    ensurePermissionSystemLogsDirectory,
    normalizePermissionSystemConfig,
-   type PermissionSystemExtensionConfig
+   type PermissionSystemExtensionConfig,
 } from "./extension-config";
 import { computeExtensionPaths, type ExtensionPaths } from "./extension-paths";
 
@@ -82,7 +82,7 @@ export function derivePiProjectPaths(cwd: string | undefined | null): {
    }
    return {
       projectGlobalConfigPath: getProjectConfigPath(cwd),
-      projectAgentsDir: posix.join(cwd, ".pi", "agent", "agents")
+      projectAgentsDir: posix.join(cwd, ".pi", "agent", "agents"),
    };
 }
 
@@ -95,7 +95,7 @@ export function createPermissionManagerForCwd(agentDir: string, cwd: string | un
    return new PermissionManager({
       globalConfigPath: getGlobalConfigPath(agentDir),
       projectGlobalConfigPath: projectPaths?.projectGlobalConfigPath,
-      projectAgentsDir: projectPaths?.projectAgentsDir
+      projectAgentsDir: projectPaths?.projectAgentsDir,
    });
 }
 
@@ -129,7 +129,7 @@ export function refreshExtensionConfig(runtime: ExtensionRuntime, ctx?: Extensio
       warning: warning ?? null,
       debugLog: runtimeConfig.debugLog,
       permissionReviewLog: runtimeConfig.permissionReviewLog,
-      yoloMode: runtimeConfig.yoloMode
+      yoloMode: runtimeConfig.yoloMode,
    });
 }
 
@@ -140,7 +140,7 @@ export function refreshExtensionConfig(runtime: ExtensionRuntime, ctx?: Extensio
 export function saveExtensionConfig(
    runtime: ExtensionRuntime,
    next: PermissionSystemExtensionConfig,
-   ctx: ExtensionCommandContext
+   ctx: ExtensionCommandContext,
 ): void {
    const normalized = normalizePermissionSystemConfig(next);
    const globalPath = getGlobalConfigPath(runtime.agentDir);
@@ -150,7 +150,7 @@ export function saveExtensionConfig(
       ...existing.config,
       debugLog: normalized.debugLog,
       permissionReviewLog: normalized.permissionReviewLog,
-      yoloMode: normalized.yoloMode
+      yoloMode: normalized.yoloMode,
    };
 
    const tmpPath = `${globalPath}.tmp`;
@@ -178,7 +178,7 @@ export function saveExtensionConfig(
    runtime.writeDebugLog("config.saved", {
       debugLog: normalized.debugLog,
       permissionReviewLog: normalized.permissionReviewLog,
-      yoloMode: normalized.yoloMode
+      yoloMode: normalized.yoloMode,
    });
 }
 
@@ -200,7 +200,7 @@ export function logResolvedConfigPaths(runtime: ExtensionRuntime): void {
       policyPaths,
       legacyGlobalPolicyDetected,
       legacyProjectPolicyDetected,
-      legacyExtensionConfigDetected
+      legacyExtensionConfigDetected,
    });
    runtime.writeReviewLog("config.resolved", entry as unknown as Record<string, unknown>);
    runtime.writeDebugLog("config.resolved", entry as unknown as Record<string, unknown>);
@@ -233,7 +233,7 @@ export function createExtensionRuntime(options?: { agentDir?: string }): Extensi
       sessionRules: new SessionRules(),
       // Logging methods are replaced below after the logger is constructed.
       writeDebugLog: () => {},
-      writeReviewLog: () => {}
+      writeReviewLog: () => {},
    };
 
    const reportedLoggingWarnings = new Set<string>();
@@ -242,7 +242,7 @@ export function createExtensionRuntime(options?: { agentDir?: string }): Extensi
       getConfig: () => runtime.config,
       debugLogPath: posix.join(paths.globalLogsDir, DEBUG_LOG_FILENAME),
       reviewLogPath: posix.join(paths.globalLogsDir, REVIEW_LOG_FILENAME),
-      ensureLogsDirectory: () => ensurePermissionSystemLogsDirectory(paths.globalLogsDir)
+      ensureLogsDirectory: () => ensurePermissionSystemLogsDirectory(paths.globalLogsDir),
    });
 
    const reportLoggingWarning = (message: string): void => {

@@ -5,7 +5,7 @@ import {
    clearIndexedMessages,
    getLastIndexedOrdinal,
    indexMessagesAfterOrdinal,
-   indexSingleMessage
+   indexSingleMessage,
 } from "./message-index";
 
 /**
@@ -108,7 +108,7 @@ function logIndexingError(sessionId: string, action: string, error: unknown): vo
    }
    sessionLog(
       sessionId,
-      `message FTS async ${action} failed: ${error instanceof Error ? error.message : String(error)}`
+      `message FTS async ${action} failed: ${error instanceof Error ? error.message : String(error)}`,
    );
    log(`[message-index-async] ${action} failed for ${sessionId}:`, error);
 }
@@ -156,7 +156,7 @@ export function scheduleIncrementalIndex(
    db: Database,
    sessionId: string,
    messageId: string,
-   readSingleMessage: ReadSingleMessage
+   readSingleMessage: ReadSingleMessage,
 ): void {
    const key = `${sessionId}\u0000${messageId}`;
    if (incrementalTimers.has(key) || pendingIncrementalKeys.has(key)) {

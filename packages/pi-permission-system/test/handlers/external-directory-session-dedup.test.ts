@@ -36,14 +36,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn()
+         input: vi.fn(),
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn()
+         addEntry: vi.fn(),
       },
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionContext;
 }
 
@@ -71,7 +71,7 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
 
                if (pathValue && allRules.length > 0) {
                   const match = allRules.findLast(
-                     (r) => r.surface === "external_directory" && wildcardMatch(r.pattern, pathValue)
+                     (r) => r.surface === "external_directory" && wildcardMatch(r.pattern, pathValue),
                   );
                   if (match) {
                      return {
@@ -79,7 +79,7 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
                         toolName: surface,
                         source: "session",
                         origin: "session",
-                        matchedPattern: match.pattern
+                        matchedPattern: match.pattern,
                      };
                   }
                }
@@ -89,7 +89,7 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
                   state: "ask",
                   toolName: surface,
                   source: "special",
-                  origin: "global"
+                  origin: "global",
                };
             }
 
@@ -98,9 +98,9 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
                state: "allow",
                toolName: surface,
                source: "tool",
-               origin: "builtin"
+               origin: "builtin",
             };
-         }
+         },
       );
 
    const approveSessionRule = vi.fn().mockImplementation((surface: string, pattern: string) => {
@@ -109,7 +109,7 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
          pattern,
          action: "allow",
          layer: "session",
-         origin: "session"
+         origin: "session",
       });
    });
 
@@ -128,21 +128,21 @@ function makeStatefulSession(overrides: Partial<Record<keyof PermissionSession, 
       getInfrastructureReadPaths: vi.fn().mockReturnValue([]),
       canPrompt: vi.fn().mockReturnValue(true),
       prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved_for_session" }),
-      ...overrides
+      ...overrides,
    } as unknown as PermissionSession;
 }
 
 function makeEvents() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined)
+      on: vi.fn().mockReturnValue(() => undefined),
    };
 }
 
 function makeToolRegistry(): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "write" }, { name: "edit" }, { name: "bash" }]),
-      setActive: vi.fn()
+      setActive: vi.fn(),
    };
 }
 
@@ -161,7 +161,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "read",
-            input: { path: externalPath }
+            input: { path: externalPath },
          };
          const result1 = await handler.handleToolCall(event1, ctx);
          expect(result1).toEqual({});
@@ -172,7 +172,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "read",
-            input: { path: externalPath }
+            input: { path: externalPath },
          };
          const result2 = await handler.handleToolCall(event2, ctx);
          expect(result2).toEqual({});
@@ -189,7 +189,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "read",
-            input: { path: "/outside/project/a.txt" }
+            input: { path: "/outside/project/a.txt" },
          };
          await handler.handleToolCall(event1, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);
@@ -199,7 +199,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "read",
-            input: { path: "/outside/project/b.txt" }
+            input: { path: "/outside/project/b.txt" },
          };
          await handler.handleToolCall(event2, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);
@@ -215,7 +215,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "read",
-            input: { path: "/outside/alpha/file.txt" }
+            input: { path: "/outside/alpha/file.txt" },
          };
          await handler.handleToolCall(event1, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);
@@ -225,7 +225,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "read",
-            input: { path: "/outside/beta/file.txt" }
+            input: { path: "/outside/beta/file.txt" },
          };
          await handler.handleToolCall(event2, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(2);
@@ -233,7 +233,7 @@ describe("external-directory session dedup", () => {
 
       it("re-prompts when user approved once (not for session)", async () => {
          const session = makeStatefulSession({
-            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
+            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
          });
          const handler = new PermissionGateHandler(session, makeEvents(), makeToolRegistry());
          const ctx = makeCtx();
@@ -244,7 +244,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "read",
-            input: { path: externalPath }
+            input: { path: externalPath },
          };
          await handler.handleToolCall(event1, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);
@@ -254,7 +254,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "read",
-            input: { path: externalPath }
+            input: { path: externalPath },
          };
          await handler.handleToolCall(event2, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(2);
@@ -272,7 +272,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "bash",
-            input: { command: "echo hello > /tmp/out.txt" }
+            input: { command: "echo hello > /tmp/out.txt" },
          };
          const result1 = await handler.handleToolCall(event1, ctx);
          expect(result1).toEqual({});
@@ -283,7 +283,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "bash",
-            input: { command: "cat /tmp/out.txt" }
+            input: { command: "cat /tmp/out.txt" },
          };
          const result2 = await handler.handleToolCall(event2, ctx);
          expect(result2).toEqual({});
@@ -300,7 +300,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-1",
             toolName: "bash",
-            input: { command: "echo hello > /tmp/out.txt" }
+            input: { command: "echo hello > /tmp/out.txt" },
          };
          await handler.handleToolCall(event1, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);
@@ -310,7 +310,7 @@ describe("external-directory session dedup", () => {
             type: "tool_call",
             toolCallId: "tc-2",
             toolName: "read",
-            input: { path: "/tmp/out.txt" }
+            input: { path: "/tmp/out.txt" },
          };
          await handler.handleToolCall(event2, ctx);
          expect(session.prompt).toHaveBeenCalledTimes(1);

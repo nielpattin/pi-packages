@@ -9,7 +9,7 @@ import {
    getLegacyGlobalPolicyPath,
    getLegacyProjectPolicyPath,
    getProjectConfigPath,
-   REVIEW_LOG_FILENAME
+   REVIEW_LOG_FILENAME,
 } from "#src/config-paths";
 
 describe("config-paths", () => {

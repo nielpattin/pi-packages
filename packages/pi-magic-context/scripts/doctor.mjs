@@ -82,7 +82,7 @@ if (embedding.provider === "local") {
    pass("Embedding provider is openai-compatible", embedding.model || "model missing");
    check(
       "Embedding endpoint configured",
-      typeof embedding.endpoint === "string" && embedding.endpoint.trim().length > 0
+      typeof embedding.endpoint === "string" && embedding.endpoint.trim().length > 0,
    );
    check("Embedding model configured", typeof embedding.model === "string" && embedding.model.trim().length > 0);
 } else if (embedding.provider === "off") {
@@ -176,7 +176,7 @@ function normalizeEmbeddingConfig(value) {
       return {
          provider,
          endpoint: typeof input.endpoint === "string" ? input.endpoint.trim() : "",
-         model: typeof input.model === "string" ? input.model.trim() : ""
+         model: typeof input.model === "string" ? input.model.trim() : "",
       };
    }
    return { provider };
@@ -232,7 +232,7 @@ async function prewarmLocalEmbeddingModel(model) {
       check(
          "Embedding model prewarm",
          data instanceof Float32Array && data.length > 0,
-         `${model}, ${data?.length ?? 0} dims`
+         `${model}, ${data?.length ?? 0} dims`,
       );
    } catch (error) {
       fail("Embedding model prewarm", error instanceof Error ? error.message : String(error));

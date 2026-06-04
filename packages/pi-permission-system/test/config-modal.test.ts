@@ -6,12 +6,12 @@ import { registerPermissionSystemCommand } from "#src/config-modal";
 import {
    DEFAULT_EXTENSION_CONFIG,
    normalizePermissionSystemConfig,
-   type PermissionSystemExtensionConfig
+   type PermissionSystemExtensionConfig,
 } from "#src/extension-config";
 import type { Rule } from "#src/rule";
 
 vi.mock("@earendil-works/pi-coding-agent", () => ({
-   getSettingsListTheme: () => ({})
+   getSettingsListTheme: () => ({}),
 }));
 
 vi.mock("@earendil-works/pi-tui", () => ({
@@ -22,7 +22,7 @@ vi.mock("@earendil-works/pi-tui", () => ({
          return [];
       }
       invalidate(): void {}
-   }
+   },
 }));
 
 type Notification = { message: string; level: "info" | "warning" | "error" };
@@ -53,11 +53,11 @@ function createCommandContext(hasUI: boolean): {
             async custom<T>(_renderer: (...args: unknown[]) => unknown, _options?: unknown): Promise<T> {
                customCalls += 1;
                return undefined as T;
-            }
-         }
+            },
+         },
       },
       notifications,
-      getCustomCalls: () => customCalls
+      getCustomCalls: () => customCalls,
    };
 }
 
@@ -76,13 +76,13 @@ test("permission-system command completions expose top-level config actions", ()
          setConfig: (next: PermissionSystemExtensionConfig) => {
             config = next;
          },
-         getConfigPath: () => configPath
+         getConfigPath: () => configPath,
       };
 
       let definition: {
          description: string;
          getArgumentCompletions?: (
-            argumentPrefix: string
+            argumentPrefix: string,
          ) => Array<{ value: string; label: string; description?: string }> | null;
          handler: (args: string, ctx: CommandContextStub) => Promise<void>;
       } | null = null;
@@ -91,9 +91,9 @@ test("permission-system command completions expose top-level config actions", ()
          {
             registerCommand(_name: string, nextDefinition: typeof definition) {
                definition = nextDefinition;
-            }
+            },
          } as never,
-         controller
+         controller,
       );
 
       expect(definition!.getArgumentCompletions).toBeTypeOf("function");
@@ -118,7 +118,7 @@ test("permission-system command handlers manage config summary, persistence, and
    let config: PermissionSystemExtensionConfig = {
       debugLog: true,
       permissionReviewLog: false,
-      yoloMode: true
+      yoloMode: true,
    };
 
    try {
@@ -128,21 +128,21 @@ test("permission-system command handlers manage config summary, persistence, and
          getConfig: () => config,
          setConfig: (next: PermissionSystemExtensionConfig) => {
             const currentConfig = normalizePermissionSystemConfig(
-               JSON.parse(readFileSync(configPath, "utf-8")) as unknown
+               JSON.parse(readFileSync(configPath, "utf-8")) as unknown,
             );
             const normalized = normalizePermissionSystemConfig(next);
             writeFileSync(configPath, `${JSON.stringify(normalized, null, 2)}\n`, "utf-8");
             config = normalizePermissionSystemConfig(JSON.parse(readFileSync(configPath, "utf-8")) as unknown);
             expect(config).not.toEqual(currentConfig);
          },
-         getConfigPath: () => configPath
+         getConfigPath: () => configPath,
       };
 
       let registeredName = "";
       let definition: {
          description: string;
          getArgumentCompletions?: (
-            argumentPrefix: string
+            argumentPrefix: string,
          ) => Array<{ value: string; label: string; description?: string }> | null;
          handler: (args: string, ctx: CommandContextStub) => Promise<void>;
       } | null = null;
@@ -152,9 +152,9 @@ test("permission-system command handlers manage config summary, persistence, and
             registerCommand(name: string, nextDefinition: typeof definition) {
                registeredName = name;
                definition = nextDefinition;
-            }
+            },
          } as never,
-         controller
+         controller,
       );
 
       expect(registeredName).toBe("permission-system");
@@ -185,7 +185,7 @@ test("permission-system command handlers manage config summary, persistence, and
       const headlessCtx = createCommandContext(false);
       await definition!.handler("", headlessCtx.ctx);
       expect(lastNotification(headlessCtx.notifications).message).toBe(
-         "/permission-system requires interactive TUI mode."
+         "/permission-system requires interactive TUI mode.",
       );
 
       const modalCtx = createCommandContext(true);
@@ -204,22 +204,22 @@ test("show output includes rule origins when getComposedRules is provided", asyn
          pattern: "*",
          action: "allow",
          layer: "config",
-         origin: "global"
+         origin: "global",
       },
       {
          surface: "bash",
          pattern: "rm *",
          action: "deny",
          layer: "config",
-         origin: "project"
-      }
+         origin: "project",
+      },
    ];
 
    const controller = {
       getConfig: () => config,
       setConfig: () => {},
       getConfigPath: () => "/fake/config.json",
-      getComposedRules: () => composedRules
+      getComposedRules: () => composedRules,
    };
 
    let definition: {
@@ -230,9 +230,9 @@ test("show output includes rule origins when getComposedRules is provided", asyn
       {
          registerCommand(_name: string, nextDef: typeof definition) {
             definition = nextDef;
-         }
+         },
       } as never,
-      controller
+      controller,
    );
 
    const ctx = createCommandContext(true);
@@ -251,7 +251,7 @@ test("show output omits rule summary when getComposedRules is not provided", asy
    const controller = {
       getConfig: () => config,
       setConfig: () => {},
-      getConfigPath: () => "/fake/config.json"
+      getConfigPath: () => "/fake/config.json",
       // no getComposedRules
    };
 
@@ -263,9 +263,9 @@ test("show output omits rule summary when getComposedRules is not provided", asy
       {
          registerCommand(_name: string, nextDef: typeof definition) {
             definition = nextDef;
-         }
+         },
       } as never,
-      controller
+      controller,
    );
 
    const ctx = createCommandContext(true);

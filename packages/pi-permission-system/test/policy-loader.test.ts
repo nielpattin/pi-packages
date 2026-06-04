@@ -17,7 +17,7 @@ function makeLoader(
    options: {
       globalConfig?: Record<string, unknown>;
       mcpServerNames?: readonly string[];
-   } = {}
+   } = {},
 ) {
    const agentsDir = join(baseDir, "agents");
    mkdirSync(agentsDir, { recursive: true });
@@ -28,7 +28,7 @@ function makeLoader(
    return new FilePolicyLoader({
       globalConfigPath,
       agentsDir,
-      mcpServerNames: options.mcpServerNames ? [...options.mcpServerNames] : undefined
+      mcpServerNames: options.mcpServerNames ? [...options.mcpServerNames] : undefined,
    });
 }
 
@@ -41,7 +41,7 @@ describe("FilePolicyLoader.loadGlobalConfig", () => {
       const baseDir = makeTempDir();
       try {
          const loader = makeLoader(baseDir, {
-            globalConfig: { permission: { "*": "allow", read: "ask" } }
+            globalConfig: { permission: { "*": "allow", read: "ask" } },
          });
          const config = loader.loadGlobalConfig();
          expect(config.permission).toEqual({ "*": "allow", read: "ask" });
@@ -53,7 +53,7 @@ describe("FilePolicyLoader.loadGlobalConfig", () => {
    it("returns empty ScopeConfig when config file is missing", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
-         agentsDir: "/nonexistent/agents"
+         agentsDir: "/nonexistent/agents",
       });
       const config = loader.loadGlobalConfig();
       expect(config.permission).toBeUndefined();
@@ -63,7 +63,7 @@ describe("FilePolicyLoader.loadGlobalConfig", () => {
       const baseDir = makeTempDir();
       try {
          const loader = makeLoader(baseDir, {
-            globalConfig: { debugLog: true }
+            globalConfig: { debugLog: true },
          });
          const config = loader.loadGlobalConfig();
          expect(config.permission).toBeUndefined();
@@ -81,7 +81,7 @@ describe("FilePolicyLoader.loadProjectConfig", () => {
    it("returns empty ScopeConfig when no project path is configured", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
-         agentsDir: "/nonexistent/agents"
+         agentsDir: "/nonexistent/agents",
       });
       const config = loader.loadProjectConfig();
       expect(config).toEqual({});
@@ -95,7 +95,7 @@ describe("FilePolicyLoader.loadProjectConfig", () => {
          const loader = new FilePolicyLoader({
             globalConfigPath: "/nonexistent/config.json",
             agentsDir: "/nonexistent/agents",
-            projectGlobalConfigPath: projectConfigPath
+            projectGlobalConfigPath: projectConfigPath,
          });
          const config = loader.loadProjectConfig();
          expect(config.permission).toEqual({ bash: "allow" });
@@ -128,7 +128,7 @@ describe("FilePolicyLoader.loadAgentConfig", () => {
          writeFileSync(join(agentsDir, "coder.md"), `---\npermission:\n  bash: allow\n---\n# Coder agent\n`);
          const loader = new FilePolicyLoader({
             globalConfigPath: join(baseDir, "config.json"),
-            agentsDir
+            agentsDir,
          });
          writeFileSync(join(baseDir, "config.json"), "{}");
          const config = loader.loadAgentConfig("coder");
@@ -169,7 +169,7 @@ describe("FilePolicyLoader.getConfigIssues", () => {
    it("returns empty array before any loads", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
-         agentsDir: "/nonexistent/agents"
+         agentsDir: "/nonexistent/agents",
       });
       expect(loader.getConfigIssues()).toEqual([]);
    });
@@ -178,7 +178,7 @@ describe("FilePolicyLoader.getConfigIssues", () => {
       const baseDir = makeTempDir();
       try {
          const loader = makeLoader(baseDir, {
-            globalConfig: { permission: { "*": "ask" } }
+            globalConfig: { permission: { "*": "ask" } },
          });
          loader.loadGlobalConfig();
          expect(loader.getConfigIssues()).toEqual([]);
@@ -226,7 +226,7 @@ describe("FilePolicyLoader.getCacheStamp", () => {
    it("returns a string stamp", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
-         agentsDir: "/nonexistent/agents"
+         agentsDir: "/nonexistent/agents",
       });
       const stamp = loader.getCacheStamp();
       expect(typeof stamp).toBe("string");
@@ -268,7 +268,7 @@ describe("FilePolicyLoader.getCacheStamp", () => {
 
          const loader = new FilePolicyLoader({
             globalConfigPath: join(baseDir, "config.json"),
-            agentsDir
+            agentsDir,
          });
 
          const stampWithout = loader.getCacheStamp();
@@ -290,7 +290,7 @@ describe("FilePolicyLoader mtime caching", () => {
       const baseDir = makeTempDir();
       try {
          const loader = makeLoader(baseDir, {
-            globalConfig: { permission: { "*": "allow" } }
+            globalConfig: { permission: { "*": "allow" } },
          });
          const first = loader.loadGlobalConfig();
          const second = loader.loadGlobalConfig();
@@ -342,18 +342,18 @@ describe("FilePolicyLoader agent frontmatter", () => {
          writeFileSync(join(baseDir, "config.json"), "{}");
          writeFileSync(
             join(agentsDir, "coder.md"),
-            ["---", "permission:", "  bash:", '    "git *": allow', '    "rm *": deny', "---", "# Coder"].join("\n")
+            ["---", "permission:", "  bash:", '    "git *": allow', '    "rm *": deny', "---", "# Coder"].join("\n"),
          );
 
          const loader = new FilePolicyLoader({
             globalConfigPath: join(baseDir, "config.json"),
-            agentsDir
+            agentsDir,
          });
          const config = loader.loadAgentConfig("coder");
          expect(config.permission).toBeDefined();
          expect(config.permission?.bash).toEqual({
             "git *": "allow",
-            "rm *": "deny"
+            "rm *": "deny",
          });
       } finally {
          rmSync(baseDir, { recursive: true, force: true });
@@ -370,7 +370,7 @@ describe("FilePolicyLoader agent frontmatter", () => {
 
          const loader = new FilePolicyLoader({
             globalConfigPath: join(baseDir, "config.json"),
-            agentsDir
+            agentsDir,
          });
          expect(loader.loadAgentConfig("plain")).toEqual({});
       } finally {
@@ -391,7 +391,7 @@ describe("FilePolicyLoader agent frontmatter", () => {
          const loader = new FilePolicyLoader({
             globalConfigPath: join(baseDir, "config.json"),
             agentsDir,
-            projectAgentsDir
+            projectAgentsDir,
          });
          const config = loader.loadProjectAgentConfig("coder");
          expect(config.permission).toEqual({ write: "allow" });
@@ -410,7 +410,7 @@ describe("FilePolicyLoader.getConfiguredMcpServerNames", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
          agentsDir: "/nonexistent/agents",
-         mcpServerNames: ["exa", "research"]
+         mcpServerNames: ["exa", "research"],
       });
       expect(loader.getConfiguredMcpServerNames()).toEqual(expect.arrayContaining(["exa", "research"]));
    });
@@ -419,7 +419,7 @@ describe("FilePolicyLoader.getConfiguredMcpServerNames", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
          agentsDir: "/nonexistent/agents",
-         mcpServerNames: [" exa ", "exa", "research"]
+         mcpServerNames: [" exa ", "exa", "research"],
       });
       const names = loader.getConfiguredMcpServerNames();
       expect(names.filter((n) => n === "exa")).toHaveLength(1);
@@ -434,7 +434,7 @@ describe("FilePolicyLoader.getConfiguredMcpServerNames", () => {
          const loader = new FilePolicyLoader({
             globalConfigPath: "/nonexistent/config.json",
             agentsDir: "/nonexistent/agents",
-            globalMcpConfigPath: mcpConfigPath
+            globalMcpConfigPath: mcpConfigPath,
          });
          const names = loader.getConfiguredMcpServerNames();
          expect(names).toEqual(expect.arrayContaining(["exa", "research"]));
@@ -447,7 +447,7 @@ describe("FilePolicyLoader.getConfiguredMcpServerNames", () => {
       const loader = new FilePolicyLoader({
          globalConfigPath: "/nonexistent/config.json",
          agentsDir: "/nonexistent/agents",
-         globalMcpConfigPath: "/nonexistent/mcp.json"
+         globalMcpConfigPath: "/nonexistent/mcp.json",
       });
       expect(loader.getConfiguredMcpServerNames()).toEqual([]);
    });
@@ -461,7 +461,7 @@ describe("FilePolicyLoader.getConfiguredMcpServerNames", () => {
          const loader = new FilePolicyLoader({
             globalConfigPath: "/nonexistent/config.json",
             agentsDir: "/nonexistent/agents",
-            globalMcpConfigPath: mcpConfigPath
+            globalMcpConfigPath: mcpConfigPath,
          });
          const first = loader.getConfiguredMcpServerNames();
          const second = loader.getConfiguredMcpServerNames();

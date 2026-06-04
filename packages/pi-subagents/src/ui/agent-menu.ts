@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment -- Pi SDK types are not fully exported; see upstream Pi SDK for type improvements */
 import { wrapTextWithAnsi } from "@earendil-works/pi-tui";
-import type { AgentTypeRegistry } from "#src/config/agent-types";
+import { AgentTypeRegistry } from "#src/config/agent-types";
 import type { ParentSnapshot } from "#src/lifecycle/parent-snapshot";
 import { type ModelRegistry, resolveModel } from "#src/session/model-resolver";
 import { getModelLabelFromConfig } from "#src/tools/helpers";
@@ -22,7 +22,7 @@ export interface AgentMenuManager {
       parentSnapshot: ParentSnapshot,
       type: string,
       prompt: string,
-      opts: { description: string; maxTurns: number }
+      opts: { description: string; maxTurns: number },
    ) => Promise<Agent>;
 }
 
@@ -74,7 +74,7 @@ export class AgentsMenuHandler {
       private readonly settings: AgentMenuSettings,
       fileOps: AgentFileOps,
       personalAgentsDir: string,
-      projectAgentsDir: string
+      projectAgentsDir: string,
    ) {
       this.editor = new AgentConfigEditor(fileOps, registry, personalAgentsDir, projectAgentsDir);
       this.wizard = new AgentCreationWizard(fileOps, manager, registry, personalAgentsDir, projectAgentsDir);
@@ -83,7 +83,7 @@ export class AgentsMenuHandler {
    async handle({
       ui,
       modelRegistry,
-      parentSnapshot
+      parentSnapshot,
    }: {
       ui: MenuUI;
       modelRegistry: ModelRegistry;
@@ -105,7 +105,7 @@ export class AgentsMenuHandler {
    private async showAgentsMenu(
       ui: MenuUI,
       modelRegistry: ModelRegistry,
-      parentSnapshot: ParentSnapshot
+      parentSnapshot: ParentSnapshot,
    ): Promise<void> {
       this.registry.reload();
       const allNames = this.registry.getAllTypes();
@@ -188,7 +188,7 @@ export class AgentsMenuHandler {
       const legendParts: string[] = [];
       if (hasCustom) legendParts.push("• = project  ◦ = global");
       if (hasDisabled) legendParts.push("✕ = disabled");
-      const legend = legendParts.length ? `\n${legendParts.join("  ")}` : "";
+      const legend = legendParts.length ? "\n" + legendParts.join("  ") : "";
 
       const options = entries.map(({ prefix, desc }) => `${prefix.padEnd(maxPrefix)} — ${desc}`);
       if (legend) options.push(legend);
@@ -250,7 +250,7 @@ export class AgentsMenuHandler {
                theme,
                done,
                registry: this.registry,
-               wrapText: wrapTextWithAnsi
+               wrapText: wrapTextWithAnsi,
             });
          },
          {
@@ -258,9 +258,9 @@ export class AgentsMenuHandler {
             overlayOptions: {
                anchor: "center",
                width: "90%",
-               maxHeight: `${VIEWPORT_HEIGHT_PCT}%`
-            }
-         }
+               maxHeight: `${VIEWPORT_HEIGHT_PCT}%`,
+            },
+         },
       );
    }
 
@@ -268,7 +268,7 @@ export class AgentsMenuHandler {
       const choice = await ui.select("Settings", [
          `Max concurrency (current: ${this.settings.maxConcurrent})`,
          `Default max turns (current: ${this.settings.defaultMaxTurns ?? "unlimited"})`,
-         `Grace turns (current: ${this.settings.graceTurns})`
+         `Grace turns (current: ${this.settings.graceTurns})`,
       ]);
       if (!choice) return;
 
@@ -286,7 +286,7 @@ export class AgentsMenuHandler {
       } else if (choice.startsWith("Default max turns")) {
          const val = await ui.input(
             "Default max turns before wrap-up (0 = unlimited)",
-            String(this.settings.defaultMaxTurns ?? 0)
+            String(this.settings.defaultMaxTurns ?? 0),
          );
          if (val) {
             const n = parseInt(val, 10);

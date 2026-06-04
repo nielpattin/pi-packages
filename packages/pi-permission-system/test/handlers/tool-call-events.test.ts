@@ -17,7 +17,7 @@ import type { PermissionCheckResult } from "#src/types";
 function makeEvents() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined)
+      on: vi.fn().mockReturnValue(() => undefined),
    };
 }
 
@@ -29,14 +29,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn()
+         input: vi.fn(),
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn()
+         addEntry: vi.fn(),
       },
-      ...overrides
+      ...overrides,
    } as unknown as ExtensionContext;
 }
 
@@ -46,13 +46,13 @@ function makeToolCallEvent(toolName: string, extraFields: Record<string, unknown
       toolCallId: "tc-1",
       name: toolName,
       input: {},
-      ...extraFields
+      ...extraFields,
    };
 }
 
 function makeCheckResult(
    state: "allow" | "deny" | "ask",
-   overrides: Partial<PermissionCheckResult> = {}
+   overrides: Partial<PermissionCheckResult> = {},
 ): PermissionCheckResult {
    return {
       state,
@@ -60,7 +60,7 @@ function makeCheckResult(
       source: "tool",
       origin: "builtin",
       matchedPattern: "*",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -78,7 +78,7 @@ function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>
       getInfrastructureReadPaths: vi.fn().mockReturnValue([]),
       canPrompt: vi.fn().mockReturnValue(true),
       prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
-      ...overrides
+      ...overrides,
    } as unknown as PermissionSession;
 }
 
@@ -86,7 +86,7 @@ function makeToolRegistry(overrides: Partial<ToolRegistry> = {}): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([{ name: "read" }, { name: "bash" }]),
       setActive: vi.fn(),
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -121,10 +121,10 @@ describe("handleToolCall decision events — policy_allow", () => {
             checkPermission: vi.fn().mockReturnValue(
                makeCheckResult("allow", {
                   origin: "global",
-                  matchedPattern: "*"
-               })
-            )
-         }
+                  matchedPattern: "*",
+               }),
+            ),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -136,7 +136,7 @@ describe("handleToolCall decision events — policy_allow", () => {
          result: "allow",
          resolution: "policy_allow",
          origin: "global",
-         matchedPattern: "*"
+         matchedPattern: "*",
       });
    });
 });
@@ -150,10 +150,10 @@ describe("handleToolCall decision events — policy_deny", () => {
             checkPermission: vi.fn().mockReturnValue(
                makeCheckResult("deny", {
                   origin: "project",
-                  matchedPattern: "read"
-               })
-            )
-         }
+                  matchedPattern: "read",
+               }),
+            ),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -163,7 +163,7 @@ describe("handleToolCall decision events — policy_deny", () => {
       expect(decisions[0]).toMatchObject({
          surface: "read",
          result: "deny",
-         resolution: "policy_deny"
+         resolution: "policy_deny",
       });
    });
 });
@@ -177,10 +177,10 @@ describe("handleToolCall decision events — session_approved", () => {
             checkPermission: vi.fn().mockReturnValue(
                makeCheckResult("allow", {
                   source: "session",
-                  matchedPattern: "git *"
-               })
-            )
-         }
+                  matchedPattern: "git *",
+               }),
+            ),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("bash", { input: { command: "git status" } }), makeCtx());
@@ -190,7 +190,7 @@ describe("handleToolCall decision events — session_approved", () => {
       expect(decisions[0]).toMatchObject({
          surface: "bash",
          result: "allow",
-         resolution: "session_approved"
+         resolution: "session_approved",
       });
    });
 });
@@ -202,8 +202,8 @@ describe("handleToolCall decision events — user_approved", () => {
       const { handler, events } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask")),
-            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
-         }
+            prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -212,7 +212,7 @@ describe("handleToolCall decision events — user_approved", () => {
       expect(decisions).toHaveLength(1);
       expect(decisions[0]).toMatchObject({
          result: "allow",
-         resolution: "user_approved"
+         resolution: "user_approved",
       });
    });
 
@@ -222,9 +222,9 @@ describe("handleToolCall decision events — user_approved", () => {
             checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask")),
             prompt: vi.fn().mockResolvedValue({
                approved: true,
-               state: "approved_for_session"
-            })
-         }
+               state: "approved_for_session",
+            }),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -233,7 +233,7 @@ describe("handleToolCall decision events — user_approved", () => {
       expect(decisions).toHaveLength(1);
       expect(decisions[0]).toMatchObject({
          result: "allow",
-         resolution: "user_approved_for_session"
+         resolution: "user_approved_for_session",
       });
    });
 });
@@ -245,8 +245,8 @@ describe("handleToolCall decision events — user_denied", () => {
       const { handler, events } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask")),
-            prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" })
-         }
+            prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" }),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -255,7 +255,7 @@ describe("handleToolCall decision events — user_denied", () => {
       expect(decisions).toHaveLength(1);
       expect(decisions[0]).toMatchObject({
          result: "deny",
-         resolution: "user_denied"
+         resolution: "user_denied",
       });
    });
 });
@@ -267,8 +267,8 @@ describe("handleToolCall decision events — confirmation_unavailable", () => {
       const { handler, events } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask")),
-            canPrompt: vi.fn().mockReturnValue(false)
-         }
+            canPrompt: vi.fn().mockReturnValue(false),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx({ hasUI: false }));
@@ -277,7 +277,7 @@ describe("handleToolCall decision events — confirmation_unavailable", () => {
       expect(decisions).toHaveLength(1);
       expect(decisions[0]).toMatchObject({
          result: "deny",
-         resolution: "confirmation_unavailable"
+         resolution: "confirmation_unavailable",
       });
    });
 });
@@ -290,12 +290,12 @@ describe("handleToolCall decision events — infrastructure_auto_allowed", () =>
       const { handler, events } = makeHandler({
          session: {
             checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow")),
-            getInfrastructureDirs: vi.fn().mockReturnValue([infraDir])
-         }
+            getInfrastructureDirs: vi.fn().mockReturnValue([infraDir]),
+         },
       });
 
       const event = makeToolCallEvent("read", {
-         input: { path: `${infraDir}/some-file.json` }
+         input: { path: `${infraDir}/some-file.json` },
       });
       await handler.handleToolCall(event, makeCtx());
 
@@ -304,7 +304,7 @@ describe("handleToolCall decision events — infrastructure_auto_allowed", () =>
       expect(infraEvents).toHaveLength(1);
       expect(infraEvents[0]).toMatchObject({
          result: "allow",
-         resolution: "infrastructure_auto_allowed"
+         resolution: "infrastructure_auto_allowed",
       });
    });
 });
@@ -319,9 +319,9 @@ describe("handleToolCall decision events — auto_approved", () => {
             prompt: vi.fn().mockResolvedValue({
                approved: true,
                state: "approved",
-               autoApproved: true
-            })
-         }
+               autoApproved: true,
+            }),
+         },
       });
 
       await handler.handleToolCall(makeToolCallEvent("read"), makeCtx());
@@ -330,7 +330,7 @@ describe("handleToolCall decision events — auto_approved", () => {
       expect(decisions).toHaveLength(1);
       expect(decisions[0]).toMatchObject({
          result: "allow",
-         resolution: "auto_approved"
+         resolution: "auto_approved",
       });
    });
 });

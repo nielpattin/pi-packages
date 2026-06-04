@@ -5,7 +5,7 @@ const mockHomedir = vi.hoisted(() => vi.fn(() => "/home/testuser"));
 
 vi.mock("node:os", () => ({
    homedir: mockHomedir,
-   default: { homedir: mockHomedir }
+   default: { homedir: mockHomedir },
 }));
 
 const FAKE_HOME = "/home/testuser";
@@ -15,7 +15,7 @@ import {
    compileWildcardPatternEntries,
    findCompiledWildcardMatch,
    findCompiledWildcardMatchForNames,
-   wildcardMatch
+   wildcardMatch,
 } from "#src/wildcard-matcher";
 
 afterEach(() => {
@@ -40,7 +40,7 @@ describe("compileWildcardPatternEntries", () => {
       const entries: [string, string][] = [
          ["read", "allow"],
          ["write", "deny"],
-         ["bash *", "ask"]
+         ["bash *", "ask"],
       ];
       const result = compileWildcardPatternEntries(entries);
       expect(result).toHaveLength(3);
@@ -87,7 +87,7 @@ describe("findCompiledWildcardMatch", () => {
    test("last-match-wins precedence: later pattern overrides earlier", () => {
       const patterns = compileWildcardPatternEntries([
          ["git *", "allow"],
-         ["git push *", "deny"]
+         ["git push *", "deny"],
       ]);
       const result = findCompiledWildcardMatch(patterns, "git push origin main");
       expect(result).not.toBeNull();
@@ -98,7 +98,7 @@ describe("findCompiledWildcardMatch", () => {
    test("last-match-wins: specific deny before broad allow matches the later one", () => {
       const patterns = compileWildcardPatternEntries([
          ["*", "deny"],
-         ["git status", "allow"]
+         ["git status", "allow"],
       ]);
       const result = findCompiledWildcardMatch(patterns, "git status");
       expect(result).not.toBeNull();
@@ -114,7 +114,7 @@ describe("findCompiledWildcardMatch", () => {
    test("regex special characters in pattern are escaped", () => {
       const patterns = compileWildcardPatternEntries([
          ["tool.name", "allow"],
-         ["tool+extra", "deny"]
+         ["tool+extra", "deny"],
       ]);
       // "tool.name" should not match "toolXname" (dot is escaped)
       expect(findCompiledWildcardMatch(patterns, "toolXname")).toBeNull();
@@ -140,7 +140,7 @@ describe("findCompiledWildcardMatchForNames", () => {
    test("matches first name that has a pattern match", () => {
       const patterns = compileWildcardPatternEntries([
          ["read", "allow"],
-         ["write", "deny"]
+         ["write", "deny"],
       ]);
       const result = findCompiledWildcardMatchForNames(patterns, ["grep", "write"]);
       expect(result).not.toBeNull();
@@ -164,7 +164,7 @@ describe("findCompiledWildcardMatchForNames", () => {
    test("multi-name lookup: returns match for first matching name in order", () => {
       const patterns = compileWildcardPatternEntries([
          ["read", "allow"],
-         ["write", "deny"]
+         ["write", "deny"],
       ]);
       // "read" comes before "write" in names array, so "read" should match first
       const result = findCompiledWildcardMatchForNames(patterns, ["read", "write"]);

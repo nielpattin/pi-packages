@@ -22,7 +22,7 @@ export interface WizardManager {
       parentSnapshot: ParentSnapshot,
       type: string,
       prompt: string,
-      opts: { description: string; maxTurns: number }
+      opts: { description: string; maxTurns: number },
    ) => Promise<Agent>;
 }
 
@@ -39,13 +39,13 @@ export class AgentCreationWizard {
       private readonly manager: WizardManager,
       private readonly registry: WizardRegistry,
       private readonly personalAgentsDir: string,
-      private readonly projectAgentsDir: string
+      private readonly projectAgentsDir: string,
    ) {}
 
    async showCreateWizard(ui: MenuUI, parentSnapshot: ParentSnapshot): Promise<void> {
       const location = await ui.select("Choose location", [
          "Project (.pi/agents/)",
-         `Personal (${this.personalAgentsDir})`
+         `Personal (${this.personalAgentsDir})`,
       ]);
       if (!location) return;
 
@@ -116,7 +116,7 @@ Write the file using the write tool. Only write the file, nothing else.`;
 
       const record = await this.manager.spawnAndWait(parentSnapshot, "general-purpose", generatePrompt, {
          description: `Generate ${name} agent`,
-         maxTurns: 5
+         maxTurns: 5,
       });
 
       if (record.status === "error") {
@@ -144,7 +144,7 @@ Write the file using the write tool. Only write the file, nothing else.`;
          "all",
          "none",
          "read-only (read, bash, grep, find, ls)",
-         "custom..."
+         "custom...",
       ]);
       if (!toolChoice) return;
 
@@ -180,7 +180,7 @@ Write the file using the write tool. Only write the file, nothing else.`;
          "low",
          "medium",
          "high",
-         "xhigh"
+         "xhigh",
       ]);
       if (!thinkingChoice) return;
 

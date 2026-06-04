@@ -25,13 +25,13 @@ export function getEmbeddingProviderIdentity(config: EmbeddingConfig): string {
               provider: "openai-compatible",
               model: config.model.trim(),
               endpoint: normalizeEndpoint(config.endpoint),
-              apiKeyPresent: Boolean(config.api_key?.trim())
+              apiKeyPresent: Boolean(config.api_key?.trim()),
            }
          : {
               provider: "local",
               model: config.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL,
               endpoint: "",
-              apiKeyPresent: false
+              apiKeyPresent: false,
            };
 
    return `embedding-provider:${computeNormalizedHash(JSON.stringify(identityInput))}`;

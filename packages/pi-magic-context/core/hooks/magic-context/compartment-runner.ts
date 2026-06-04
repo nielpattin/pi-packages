@@ -2,7 +2,7 @@ import {
    acquireCompartmentLease,
    COMPARTMENT_LEASE_RENEWAL_MS,
    releaseCompartmentLease,
-   renewCompartmentLease
+   renewCompartmentLease,
 } from "../../features/magic-context/compartment-lease";
 import { updateSessionMeta } from "../../features/magic-context/storage-meta";
 import { sessionLog } from "../../shared/logger";
@@ -53,7 +53,7 @@ export function markActiveCompartmentRunPublished(sessionId: string): void {
 export function registerActiveCompartmentRun(sessionId: string, promise: Promise<void>): ActiveCompartmentRun {
    const activeRun: ActiveCompartmentRun = {
       promise: Promise.resolve(),
-      published: false
+      published: false,
    };
    const wrapped = promise.finally(() => {
       // Only clear if this is still the current entry (another run may have
@@ -73,7 +73,7 @@ function withPublishedCallback(deps: CompartmentRunnerDeps): CompartmentRunnerDe
       onCompartmentStatePublished: (sid) => {
          markActiveCompartmentRunPublished(sid);
          deps.onCompartmentStatePublished?.(sid);
-      }
+      },
    };
 }
 
@@ -146,14 +146,14 @@ export interface ExecuteContextRecompResult {
 
 export async function executeContextRecompWithResult(
    deps: CompartmentRunnerDeps,
-   options: ExecuteContextRecompOptions = {}
+   options: ExecuteContextRecompOptions = {},
 ): Promise<ExecuteContextRecompResult> {
    const { sessionId } = deps;
    if (activeRuns.has(sessionId)) {
       return {
          message:
             "## Magic Recomp\n\nHistorian is already running for this session. Wait for it to finish, then try `/ctx-recomp` again.",
-         published: false
+         published: false,
       };
    }
 
@@ -164,7 +164,7 @@ export async function executeContextRecompWithResult(
       return {
          message:
             "## Magic Recomp\n\nAnother process is already mutating compartment state for this session. Wait for it to finish, then try `/ctx-recomp` again.",
-         published: false
+         published: false,
       };
    }
    const renewal = startLeaseRenewal(deps, holderId);
@@ -182,7 +182,7 @@ export async function executeContextRecompWithResult(
       const message = await promise;
       return {
          message,
-         published: activeRuns.get(sessionId)?.published === true
+         published: activeRuns.get(sessionId)?.published === true,
       };
    } finally {
       clearInterval(renewal);
@@ -195,7 +195,7 @@ export async function executeContextRecompWithResult(
 
 export async function executeContextRecomp(
    deps: CompartmentRunnerDeps,
-   options: ExecuteContextRecompOptions = {}
+   options: ExecuteContextRecompOptions = {},
 ): Promise<string> {
    return (await executeContextRecompWithResult(deps, options)).message;
 }

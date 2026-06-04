@@ -14,20 +14,20 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: { command: "cat /outside/project/file.ts" },
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides
+      ...overrides,
    };
 }
 
 function makeCheckResult(
    state: "allow" | "deny" | "ask",
-   overrides: Partial<PermissionCheckResult> = {}
+   overrides: Partial<PermissionCheckResult> = {},
 ): PermissionCheckResult {
    return {
       state,
       toolName: "external_directory",
       source: "special",
       origin: "builtin",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -38,7 +38,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ toolName: "read" }),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(result).toBeNull();
    });
@@ -47,7 +47,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ cwd: undefined }),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(result).toBeNull();
    });
@@ -56,7 +56,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "ls -la" } }),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(result).toBeNull();
    });
@@ -70,7 +70,7 @@ describe("describeBashExternalDirectoryGate", () => {
       expect(bypass.action).toBe("allow");
       expect(bypass.log).toMatchObject({
          event: "permission_request.session_approved",
-         details: expect.objectContaining({ resolution: "session_approved" })
+         details: expect.objectContaining({ resolution: "session_approved" }),
       });
    });
 
@@ -79,7 +79,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "diff /outside/a.ts /outside/b.ts" } }),
          checkPermission,
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(isGateDescriptor(result)).toBe(true);
       const desc = result as GateDescriptor;
@@ -121,7 +121,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc(),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       const desc = result as GateDescriptor;
       expect(desc.surface).toBe("external_directory");
@@ -131,7 +131,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc(),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       const desc = result as GateDescriptor;
       expect(desc.decision.surface).toBe("external_directory");
@@ -141,13 +141,13 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "cat /outside/file.ts" } }),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       const desc = result as GateDescriptor;
       expect(desc.denialContext).toMatchObject({
          kind: "bash_external_directory",
          command: "cat /outside/file.ts",
-         cwd: "/test/project"
+         cwd: "/test/project",
       });
    });
 
@@ -155,7 +155,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ agentName: "agent-1", toolCallId: "tc-5" }),
          vi.fn().mockReturnValue(makeCheckResult("ask")),
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       const desc = result as GateDescriptor;
       expect(desc.promptDetails).toMatchObject({
@@ -163,7 +163,7 @@ describe("describeBashExternalDirectoryGate", () => {
          agentName: "agent-1",
          toolCallId: "tc-5",
          toolName: "bash",
-         command: "cat /outside/project/file.ts"
+         command: "cat /outside/project/file.ts",
       });
    });
 
@@ -176,7 +176,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "diff /outside/a.ts /outside/b.ts" } }),
          checkPermission,
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(isGateDescriptor(result)).toBe(true);
       const desc = result as GateDescriptor;
@@ -194,7 +194,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "diff /outside/a.ts /outside/b.ts" } }),
          checkPermission,
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(isGateDescriptor(result)).toBe(true);
       const desc = result as GateDescriptor;
@@ -214,7 +214,7 @@ describe("describeBashExternalDirectoryGate", () => {
       const result = await describeBashExternalDirectoryGate(
          makeTcc({ input: { command: "diff /outside/a.ts /outside/b.ts" } }),
          checkPermission,
-         vi.fn().mockReturnValue([])
+         vi.fn().mockReturnValue([]),
       );
       expect(isGateDescriptor(result)).toBe(true);
       const desc = result as GateDescriptor;

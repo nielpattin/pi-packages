@@ -17,7 +17,7 @@ import {
    formatSessionTokens,
    getDisplayName,
    getPromptModeLabel,
-   type Theme
+   type Theme,
 } from "#src/ui/display";
 import { formatMessage, formatStreamingIndicator } from "#src/ui/message-formatters";
 
@@ -116,7 +116,7 @@ export class ConversationViewer implements Component {
          return s + " ".repeat(Math.max(0, len - vis));
       };
       const row = (content: string) =>
-         `${th.fg("border", "│")} ${truncateToWidth(pad(content, innerW), innerW)} ${th.fg("border", "│")}`;
+         th.fg("border", "│") + " " + truncateToWidth(pad(content, innerW), innerW) + " " + th.fg("border", "│");
       const hrTop = th.fg("border", `╭${"─".repeat(width - 2)}╮`);
       const hrBot = th.fg("border", `╰${"─".repeat(width - 2)}╯`);
       const hrMid = row(th.fg("dim", "─".repeat(innerW)));
@@ -147,8 +147,8 @@ export class ConversationViewer implements Component {
 
       lines.push(
          row(
-            `${statusIcon} ${th.bold(name)}${modeTag}  ${th.fg("muted", this.record.description)} ${th.fg("dim", "·")} ${th.fg("dim", headerParts.join(" · "))}`
-         )
+            `${statusIcon} ${th.bold(name)}${modeTag}  ${th.fg("muted", this.record.description)} ${th.fg("dim", "·")} ${th.fg("dim", headerParts.join(" · "))}`,
+         ),
       );
       const invocationLine = this.invocationLine();
       if (invocationLine) lines.push(row(invocationLine));

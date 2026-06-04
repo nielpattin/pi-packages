@@ -46,7 +46,7 @@ describe("createSessionRunner", () => {
 
       await runner.run({} as never, "general-purpose", "test", {
          context: {},
-         onSessionCreated
+         onSessionCreated,
       });
 
       expect(onSessionCreated).toHaveBeenCalledOnce();
@@ -58,7 +58,7 @@ describe("createSessionRunner", () => {
       const runner = createSessionRunner(session);
 
       const result = await runner.run({} as never, "general-purpose", "test", {
-         context: {}
+         context: {},
       });
 
       expect(result.responseText).toBe("done");
@@ -97,7 +97,7 @@ describe("createMockWorktrees", () => {
       const wt = createMockWorktrees({ cleanupResult: { hasChanges: true, branch: "pi-agent-x" } });
       expect(wt.cleanup({ path: "/tmp/wt", branch: "pi-agent-x" }, "desc")).toEqual({
          hasChanges: true,
-         branch: "pi-agent-x"
+         branch: "pi-agent-x",
       });
    });
 

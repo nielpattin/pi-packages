@@ -6,11 +6,11 @@ import { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
 import { STUB_SNAPSHOT } from "#test/helpers/stub-ctx";
 
 const mockBuildParentSnapshot = vi.hoisted(() =>
-   vi.fn<(ctx: SessionContext, inheritContext?: boolean) => ParentSnapshot>()
+   vi.fn<(ctx: SessionContext, inheritContext?: boolean) => ParentSnapshot>(),
 );
 
 vi.mock("#src/lifecycle/parent-snapshot", () => ({
-   buildParentSnapshot: mockBuildParentSnapshot
+   buildParentSnapshot: mockBuildParentSnapshot,
 }));
 
 function makeSessionCtx(overrides?: Partial<SessionContext>): SessionContext {
@@ -22,9 +22,9 @@ function makeSessionCtx(overrides?: Partial<SessionContext>): SessionContext {
       sessionManager: {
          getSessionFile: () => "/sessions/test.jsonl",
          getSessionId: () => "test-session-id",
-         getBranch: () => []
+         getBranch: () => [],
       },
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -34,7 +34,7 @@ function createWidgetStub(): WidgetLike {
       onTurnStart: vi.fn(),
       markFinished: vi.fn(),
       update: vi.fn(),
-      ensureTimer: vi.fn()
+      ensureTimer: vi.fn(),
    };
 }
 
@@ -166,8 +166,8 @@ describe("SubagentRuntime context query methods", () => {
          sessionManager: {
             getSessionFile: () => "/sessions/parent.jsonl",
             getSessionId: () => "session-42",
-            getBranch: () => []
-         }
+            getBranch: () => [],
+         },
       });
       runtime.setSessionContext(ctx);
       const info = runtime.getSessionInfo();
@@ -181,8 +181,8 @@ describe("SubagentRuntime context query methods", () => {
          sessionManager: {
             getSessionFile: () => undefined,
             getSessionId: () => "session-99",
-            getBranch: () => []
-         }
+            getBranch: () => [],
+         },
       });
       runtime.setSessionContext(ctx);
       const info = runtime.getSessionInfo();

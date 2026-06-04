@@ -47,7 +47,7 @@ function migrateLegacyEnabledForAgent(args: {
       if (disable !== true && enabled === false) {
          agent.disable = true;
          args.warnings.push(
-            'Migrated "dreamer.enabled=false" → "dreamer.disable=true" in-memory (run doctor to persist). This now also disables manual /ctx-dream; for manual-only remove disable and set schedule="".'
+            'Migrated "dreamer.enabled=false" → "dreamer.disable=true" in-memory (run doctor to persist). This now also disables manual /ctx-dream; for manual-only remove disable and set schedule="".',
          );
       }
       // enabled=true is a no-op alias for the new default (disable=false); strip silently.
@@ -58,7 +58,7 @@ function migrateLegacyEnabledForAgent(args: {
    if (disable !== true && enabled === false) {
       agent.disable = true;
       args.warnings.push(
-         'Migrated "sidekick.enabled=false" → "sidekick.disable=true" in-memory (run doctor to persist).'
+         'Migrated "sidekick.enabled=false" → "sidekick.disable=true" in-memory (run doctor to persist).',
       );
    }
    // enabled=true is a no-op alias for the new default; strip silently.
@@ -67,7 +67,7 @@ function migrateLegacyEnabledForAgent(args: {
 
 export function migrateLegacyAgentEnabledInMemory(
    rawConfig: Record<string, unknown>,
-   warnings: string[]
+   warnings: string[],
 ): Record<string, unknown> {
    const shouldPatch = ["dreamer", "sidekick", "historian"].some((key) => {
       const agent = rawConfig[key];

@@ -223,7 +223,7 @@ export function createToolDropTarget(
    compositeKey: string,
    thinkingParts: ThinkingLikePart[],
    index: ToolCallIndex,
-   batch: ToolMutationBatch
+   batch: ToolMutationBatch,
 ): {
    setContent: (content: string) => boolean;
    drop: () => ToolDropResult;
@@ -277,6 +277,6 @@ export function createToolDropTarget(
          return changed;
       },
       drop,
-      truncate
+      truncate,
    };
 }

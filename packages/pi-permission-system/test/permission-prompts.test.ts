@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, test, vi } from "vitest";
 
 // Mock tool-input-preview collaborator before importing the module under test.
 vi.mock("../src/tool-input-preview.js", () => ({
-   formatToolInputForPrompt: vi.fn(() => "mocked preview")
+   formatToolInputForPrompt: vi.fn(() => "mocked preview"),
 }));
 
 import {
@@ -10,7 +10,7 @@ import {
    formatMissingToolNameReason,
    formatSkillAskPrompt,
    formatSkillPathAskPrompt,
-   formatUnknownToolReason
+   formatUnknownToolReason,
 } from "#src/permission-prompts";
 import type { SkillPromptEntry } from "#src/skill-prompt-sanitizer";
 import { formatToolInputForPrompt } from "#src/tool-input-preview";
@@ -32,7 +32,7 @@ function toolResult(toolName: string, overrides: Partial<PermissionCheckResult> 
       state: "ask",
       source: "tool",
       origin: "builtin",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -43,7 +43,7 @@ function mcpResult(target: string, overrides: Partial<PermissionCheckResult> = {
       state: "ask",
       source: "tool",
       origin: "builtin",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -54,7 +54,7 @@ function skillEntry(name: string): SkillPromptEntry {
       location: `/skills/${name}/SKILL.md`,
       state: "ask",
       normalizedLocation: `/skills/${name}/SKILL.md`,
-      normalizedBaseDir: `/skills/${name}`
+      normalizedBaseDir: `/skills/${name}`,
    };
 }
 
@@ -99,14 +99,14 @@ describe("formatUnknownToolReason", () => {
 describe("formatAskPrompt", () => {
    test("uses 'Current agent' when no agent name given", () => {
       const result = formatAskPrompt(toolResult("read"), undefined, {
-         path: "/src"
+         path: "/src",
       });
       expect(result).toContain("Current agent");
    });
 
    test("uses agent name when provided", () => {
       const result = formatAskPrompt(toolResult("read"), "my-agent", {
-         path: "/src"
+         path: "/src",
       });
       expect(result).toContain("Agent 'my-agent'");
    });
@@ -138,10 +138,10 @@ describe("formatAskPrompt", () => {
    test("calls formatToolInputForPrompt for non-bash non-mcp tools", () => {
       mockedFormatToolInput.mockReturnValue("for '/src/foo.ts'");
       const result = formatAskPrompt(toolResult("read"), undefined, {
-         path: "/src/foo.ts"
+         path: "/src/foo.ts",
       });
       expect(mockedFormatToolInput).toHaveBeenCalledWith("read", {
-         path: "/src/foo.ts"
+         path: "/src/foo.ts",
       });
       expect(result).toContain("for '/src/foo.ts'");
       expect(result).toContain("Allow this call?");

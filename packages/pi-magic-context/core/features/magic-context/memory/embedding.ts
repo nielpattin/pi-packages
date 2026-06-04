@@ -20,12 +20,12 @@ export {
    registerProjectEmbeddingAndMaybeWipe,
    registerProjectInObservationMode,
    sweepAllRegisteredProjects,
-   unregisterProjectEmbedding
+   unregisterProjectEmbedding,
 } from "../project-embedding-registry";
 
 const DEFAULT_EMBEDDING_CONFIG: EmbeddingConfig = {
    provider: "local",
-   model: DEFAULT_LOCAL_EMBEDDING_MODEL
+   model: DEFAULT_LOCAL_EMBEDDING_MODEL,
 };
 
 let embeddingConfig: EmbeddingConfig = DEFAULT_EMBEDDING_CONFIG;
@@ -51,7 +51,7 @@ function getLoadUnembeddedMemoriesStatement(db: Database): PreparedStatement {
    let stmt = loadUnembeddedMemoriesStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT m.id AS id, m.content AS content FROM memories m LEFT JOIN memory_embeddings me ON m.id = me.memory_id WHERE m.project_path = ? AND m.status = 'active' AND me.memory_id IS NULL LIMIT ?"
+         "SELECT m.id AS id, m.content AS content FROM memories m LEFT JOIN memory_embeddings me ON m.id = me.memory_id WHERE m.project_path = ? AND m.status = 'active' AND me.memory_id IS NULL LIMIT ?",
       );
       loadUnembeddedMemoriesStatements.set(db, stmt);
    }
@@ -63,7 +63,7 @@ function resolveEmbeddingConfig(config?: EmbeddingConfig): EmbeddingConfig {
    if (!config || config.provider === "local") {
       return {
          provider: "local",
-         model: config?.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL
+         model: config?.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL,
       };
    }
 
@@ -73,7 +73,7 @@ function resolveEmbeddingConfig(config?: EmbeddingConfig): EmbeddingConfig {
          provider: "openai-compatible",
          model: config.model.trim(),
          endpoint: config.endpoint.trim(),
-         ...(apiKey ? { api_key: apiKey } : {})
+         ...(apiKey ? { api_key: apiKey } : {}),
       };
    }
 
@@ -93,7 +93,7 @@ function createProvider(config: EmbeddingConfig): EmbeddingProvider | null {
       return new OpenAICompatibleEmbeddingProvider({
          endpoint: config.endpoint,
          model: config.model,
-         apiKey: config.api_key
+         apiKey: config.api_key,
       });
    }
 
@@ -177,7 +177,7 @@ export async function embedUnembeddedMemories(
    db: Database,
    projectPath: string,
    config: EmbeddingConfig,
-   batchSize = 10
+   batchSize = 10,
 ): Promise<number> {
    return embedUnembeddedMemoriesWithConfig(db, projectPath, config, batchSize);
 }
@@ -220,7 +220,7 @@ let sweepInProgress = false;
 export async function embedAllUnembeddedMemories(
    db: Database,
    config: EmbeddingConfig,
-   batchSize = 10
+   batchSize = 10,
 ): Promise<number> {
    if (sweepInProgress) {
       log("[magic-context] embedding sweep already in progress, skipping this tick");
@@ -245,7 +245,7 @@ export async function embedAllUnembeddedMemories(
                  AND m.id NOT IN (SELECT memory_id FROM memory_embeddings)
                  GROUP BY m.project_path
                  ORDER BY latest DESC
-                 LIMIT 20`
+                 LIMIT 20`,
          )
          .all() as Array<{ project_path: string; latest: number }>;
 
@@ -261,7 +261,7 @@ export async function embedAllUnembeddedMemories(
                consecutiveEmpty += 1;
                if (consecutiveEmpty >= SWEEP_MAX_CONSECUTIVE_EMPTY) {
                   log(
-                     `[magic-context] embedding sweep: ${SWEEP_MAX_CONSECUTIVE_EMPTY} consecutive empty batches, stopping (total=${total})`
+                     `[magic-context] embedding sweep: ${SWEEP_MAX_CONSECUTIVE_EMPTY} consecutive empty batches, stopping (total=${total})`,
                   );
                   break outer;
                }
@@ -276,7 +276,7 @@ export async function embedAllUnembeddedMemories(
 
          if (Date.now() >= deadline) {
             log(
-               `[magic-context] embedding sweep: wall-clock deadline reached after ${((Date.now() - startedAt) / 1000).toFixed(1)}s (total=${total})`
+               `[magic-context] embedding sweep: wall-clock deadline reached after ${((Date.now() - startedAt) / 1000).toFixed(1)}s (total=${total})`,
             );
             break;
          }
@@ -297,7 +297,7 @@ async function embedUnembeddedMemoriesWithConfig(
    db: Database,
    projectPath: string,
    config: EmbeddingConfig,
-   batchSize = 10
+   batchSize = 10,
 ): Promise<number> {
    const normalizedBatchSize = Math.max(1, Math.floor(batchSize));
    const resolvedConfig = resolveEmbeddingConfig(config);

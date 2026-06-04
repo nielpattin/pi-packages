@@ -8,11 +8,11 @@ const mockProcessForwardedPermissionRequests = vi.hoisted(() => vi.fn());
 const mockIsSubagentExecutionContext = vi.hoisted(() => vi.fn());
 
 vi.mock("../src/forwarded-permissions/polling", () => ({
-   processForwardedPermissionRequests: mockProcessForwardedPermissionRequests
+   processForwardedPermissionRequests: mockProcessForwardedPermissionRequests,
 }));
 
 vi.mock("../src/subagent-context", () => ({
-   isSubagentExecutionContext: mockIsSubagentExecutionContext
+   isSubagentExecutionContext: mockIsSubagentExecutionContext,
 }));
 
 // ── Helpers ───────────────────────────────────────────────────────────────
@@ -21,9 +21,9 @@ function makeCtx(overrides: { hasUI?: boolean; sessionId?: string } = {}) {
    return {
       hasUI: overrides.hasUI ?? true,
       sessionManager: {
-         getSessionId: vi.fn().mockReturnValue(overrides.sessionId ?? "sess-1")
+         getSessionId: vi.fn().mockReturnValue(overrides.sessionId ?? "sess-1"),
       },
-      cwd: "/project"
+      cwd: "/project",
    } as unknown as import("@earendil-works/pi-coding-agent").ExtensionContext;
 }
 
@@ -34,7 +34,7 @@ function makeForwardingDeps() {
       logger: { writeReviewLog: vi.fn(), writeDebugLog: vi.fn() },
       writeReviewLog: vi.fn(),
       requestPermissionDecisionFromUi: vi.fn(),
-      shouldAutoApprove: vi.fn().mockReturnValue(false)
+      shouldAutoApprove: vi.fn().mockReturnValue(false),
    } as unknown as import("../src/forwarded-permissions/polling").PermissionForwardingDeps;
 }
 
@@ -164,7 +164,7 @@ describe("ForwardingManager", () => {
          mockProcessForwardedPermissionRequests.mockReturnValue(
             new Promise<void>((resolve) => {
                resolveProcess = resolve;
-            })
+            }),
          );
 
          const manager = makeManager();

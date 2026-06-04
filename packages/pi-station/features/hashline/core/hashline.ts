@@ -158,13 +158,13 @@ function parseAnchorRef(ref: string): Anchor {
    const hash = match[2]!;
    if (hash.length !== 2) {
       throw new Error(
-         `[E_BAD_REF] Invalid line reference "${ref}": hash must be exactly 2 characters from ${NIBBLE_STR}.`
+         `[E_BAD_REF] Invalid line reference "${ref}": hash must be exactly 2 characters from ${NIBBLE_STR}.`,
       );
    }
 
    if (!HASH_ALPHABET_RE.test(hash)) {
       throw new Error(
-         `[E_BAD_REF] Invalid line reference "${ref}": hash uses invalid characters, hashes use alphabet ${NIBBLE_STR} only.`
+         `[E_BAD_REF] Invalid line reference "${ref}": hash uses invalid characters, hashes use alphabet ${NIBBLE_STR} only.`,
       );
    }
 
@@ -172,7 +172,7 @@ function parseAnchorRef(ref: string): Anchor {
    return {
       line,
       hash,
-      ...(textHint !== undefined ? { textHint } : {})
+      ...(textHint !== undefined ? { textHint } : {}),
    };
 }
 
@@ -181,7 +181,7 @@ function parseAnchorRef(ref: string): Anchor {
 function formatMismatchError(
    mismatches: HashMismatch[],
    fileLines: string[],
-   retryLines: ReadonlySet<number> = new Set<number>()
+   retryLines: ReadonlySet<number> = new Set<number>(),
 ): string {
    const retryLineSet = new Set<number>(retryLines);
    for (const m of mismatches) {
@@ -203,7 +203,7 @@ function formatMismatchError(
    const lineNumberWidth = String(maxDisplayLine).length;
    const out: string[] = [
       `[E_STALE_ANCHOR] ${mismatches.length} stale anchor${mismatches.length > 1 ? "s" : ""}. Retry with the >>> LINE#HASH lines below; keep both endpoints for range replaces.`,
-      ""
+      "",
    ];
 
    let prev = -1;
@@ -231,7 +231,7 @@ function assertNoDisplayPrefixes(lines: string[]): void {
       if (!line.length) continue;
       if (HASHLINE_PREFIX_RE.test(line) || HASHLINE_PREFIX_PLUS_RE.test(line) || DIFF_MINUS_RE.test(line)) {
          throw new Error(
-            `[E_INVALID_PATCH] "lines" must contain literal file content, not rendered "LINE#HASH:" or diff "+/-" prefixes. Offending line: ${JSON.stringify(line)}`
+            `[E_INVALID_PATCH] "lines" must contain literal file content, not rendered "LINE#HASH:" or diff "+/-" prefixes. Offending line: ${JSON.stringify(line)}`,
          );
       }
    }
@@ -277,7 +277,7 @@ export function resolveEditAnchors(edits: HashlineToolEdit[]): HashlineEdit[] {
       const op = edit.op;
       if (op !== "replace" && op !== "append" && op !== "prepend" && op !== "replace_text") {
          throw new Error(
-            `[E_BAD_OP] Unknown edit op "${op}". Expected "replace", "append", "prepend", or "replace_text".`
+            `[E_BAD_OP] Unknown edit op "${op}". Expected "replace", "append", "prepend", or "replace_text".`,
          );
       }
 
@@ -291,7 +291,7 @@ export function resolveEditAnchors(edits: HashlineToolEdit[]): HashlineEdit[] {
                op: "replace",
                pos: parseAnchorRef(edit.pos),
                ...(edit.end ? { end: parseAnchorRef(edit.end) } : {}),
-               lines: hashlineParseText(edit.lines ?? null)
+               lines: hashlineParseText(edit.lines ?? null),
             });
             break;
          }
@@ -303,7 +303,7 @@ export function resolveEditAnchors(edits: HashlineToolEdit[]): HashlineEdit[] {
             result.push({
                op: "append",
                ...(edit.pos ? { pos: parseAnchorRef(edit.pos) } : {}),
-               lines: hashlineParseText(edit.lines ?? null)
+               lines: hashlineParseText(edit.lines ?? null),
             });
             break;
          }
@@ -315,7 +315,7 @@ export function resolveEditAnchors(edits: HashlineToolEdit[]): HashlineEdit[] {
             result.push({
                op: "prepend",
                ...(edit.pos ? { pos: parseAnchorRef(edit.pos) } : {}),
-               lines: hashlineParseText(edit.lines ?? null)
+               lines: hashlineParseText(edit.lines ?? null),
             });
             break;
          }
@@ -329,7 +329,7 @@ export function resolveEditAnchors(edits: HashlineToolEdit[]): HashlineEdit[] {
             result.push({
                op: "replace_text",
                oldText,
-               newText
+               newText,
             });
             break;
          }
@@ -365,7 +365,7 @@ function maybeWarnSuspiciousUnicodeEscapePlaceholder(edits: HashlineEdit[], warn
       }
       if (edit.lines.some((line) => /\\uDDDD/i.test(line))) {
          warnings.push(
-            "Detected literal \\uDDDD in edit content; no autocorrection applied. Verify whether this should be a real Unicode escape or plain text."
+            "Detected literal \\uDDDD in edit content; no autocorrection applied. Verify whether this should be a real Unicode escape or plain text.",
          );
       }
    }
@@ -404,7 +404,7 @@ function buildLineIndex(content: string): LineIndex {
    return {
       fileLines,
       lineStarts,
-      hasTerminalNewline: content.endsWith("\n")
+      hasTerminalNewline: content.endsWith("\n"),
    };
 }
 
@@ -431,10 +431,10 @@ function describeEdit(edit: HashlineEdit): string {
 function throwEditConflict(
    left: { index: number; label: string },
    right: { index: number; label: string },
-   reason: string
+   reason: string,
 ): never {
    throw new Error(
-      `[E_EDIT_CONFLICT] Conflicting edits in a single request: edit ${left.index} (${left.label}) and edit ${right.index} (${right.label}) ${reason}. Merge them into one non-overlapping change or split the request.`
+      `[E_EDIT_CONFLICT] Conflicting edits in a single request: edit ${left.index} (${left.label}) and edit ${right.index} (${right.label}) ${reason}. Merge them into one non-overlapping change or split the request.`,
    );
 }
 
@@ -445,32 +445,32 @@ function cloneHashlineEdit(edit: HashlineEdit): HashlineEdit {
             op: "replace",
             pos: { ...edit.pos },
             ...(edit.end ? { end: { ...edit.end } } : {}),
-            lines: [...edit.lines]
+            lines: [...edit.lines],
          };
       case "append":
          return {
             op: "append",
             ...(edit.pos ? { pos: { ...edit.pos } } : {}),
-            lines: [...edit.lines]
+            lines: [...edit.lines],
          };
       case "prepend":
          return {
             op: "prepend",
             ...(edit.pos ? { pos: { ...edit.pos } } : {}),
-            lines: [...edit.lines]
+            lines: [...edit.lines],
          };
       case "replace_text":
          return {
             op: "replace_text",
             oldText: edit.oldText,
-            newText: edit.newText
+            newText: edit.newText,
          };
    }
 }
 
 function computeInsertionBoundary(
    edit: Extract<HashlineEdit, { op: "append" | "prepend" }>,
-   lineIndex: LineIndex
+   lineIndex: LineIndex,
 ): number {
    switch (edit.op) {
       case "append": {
@@ -506,7 +506,7 @@ function findExactUniqueTextMatch(content: string, oldText: string): { start: nu
    for (let index = 1; index < matches.length; index++) {
       if (matches[index]! - matches[index - 1]! < oldText.length) {
          throw new Error(
-            "[E_MULTI_MATCH] replace_text found overlapping exact matches; re-read and use hashline edits."
+            "[E_MULTI_MATCH] replace_text found overlapping exact matches; re-read and use hashline edits.",
          );
       }
    }
@@ -517,14 +517,14 @@ function findExactUniqueTextMatch(content: string, oldText: string): { start: nu
 
    if (matches.length > 1) {
       throw new Error(
-         "[E_MULTI_MATCH] replace_text found multiple exact matches in the current file. Re-read and use hashline edits."
+         "[E_MULTI_MATCH] replace_text found multiple exact matches in the current file. Re-read and use hashline edits.",
       );
    }
 
    const start = matches[0]!;
    return {
       start,
-      end: start + oldText.length
+      end: start + oldText.length,
    };
 }
 
@@ -533,7 +533,7 @@ function resolveEditToSpan(
    index: number,
    content: string,
    lineIndex: LineIndex,
-   noopEdits: NoopEdit[]
+   noopEdits: NoopEdit[],
 ): ResolvedEditSpan | null {
    const { fileLines, lineStarts, hasTerminalNewline } = lineIndex;
 
@@ -549,7 +549,7 @@ function resolveEditToSpan(
             noopEdits.push({
                editIndex: index,
                loc: `${edit.pos.line}#${edit.pos.hash}`,
-               currentContent: originalLines.join("\n")
+               currentContent: originalLines.join("\n"),
             });
             return null;
          }
@@ -561,7 +561,7 @@ function resolveEditToSpan(
                label: describeEdit(edit),
                start: lineStarts[startLine - 1]!,
                end: lineStarts[endLine - 1]! + fileLines[endLine - 1]!.length,
-               replacement: edit.lines.join("\n")
+               replacement: edit.lines.join("\n"),
             };
          }
 
@@ -572,7 +572,7 @@ function resolveEditToSpan(
                label: describeEdit(edit),
                start: 0,
                end: content.length,
-               replacement: ""
+               replacement: "",
             };
          }
 
@@ -583,7 +583,7 @@ function resolveEditToSpan(
                label: describeEdit(edit),
                start: lineStarts[startLine - 1]!,
                end: lineStarts[endLine]!,
-               replacement: ""
+               replacement: "",
             };
          }
 
@@ -593,7 +593,7 @@ function resolveEditToSpan(
             label: describeEdit(edit),
             start: Math.max(0, lineStarts[startLine - 1]! - 1),
             end: lineStarts[endLine - 1]! + fileLines[endLine - 1]!.length,
-            replacement: ""
+            replacement: "",
          };
       }
       case "append": {
@@ -601,7 +601,7 @@ function resolveEditToSpan(
             noopEdits.push({
                editIndex: index,
                loc: edit.pos ? `${edit.pos.line}#${edit.pos.hash}` : "EOF",
-               currentContent: edit.pos ? (fileLines[edit.pos.line - 1] ?? "") : ""
+               currentContent: edit.pos ? (fileLines[edit.pos.line - 1] ?? "") : "",
             });
             return null;
          }
@@ -616,7 +616,7 @@ function resolveEditToSpan(
                end: 0,
                replacement: insertedText,
                boundary: computeInsertionBoundary(edit, lineIndex),
-               insertMode: "append-empty-origin"
+               insertMode: "append-empty-origin",
             };
          }
 
@@ -628,7 +628,7 @@ function resolveEditToSpan(
                start: content.length,
                end: content.length,
                replacement: hasTerminalNewline ? `${insertedText}\n` : `\n${insertedText}`,
-               boundary: computeInsertionBoundary(edit, lineIndex)
+               boundary: computeInsertionBoundary(edit, lineIndex),
             };
          }
 
@@ -644,7 +644,7 @@ function resolveEditToSpan(
                ? content.length
                : lineStarts[edit.pos.line - 1]! + fileLines[edit.pos.line - 1]!.length,
             replacement: isSentinelAppend ? `${insertedText}\n` : `\n${insertedText}`,
-            boundary: computeInsertionBoundary(edit, lineIndex)
+            boundary: computeInsertionBoundary(edit, lineIndex),
          };
       }
       case "prepend": {
@@ -652,7 +652,7 @@ function resolveEditToSpan(
             noopEdits.push({
                editIndex: index,
                loc: edit.pos ? `${edit.pos.line}#${edit.pos.hash}` : "BOF",
-               currentContent: edit.pos ? (fileLines[edit.pos.line - 1] ?? "") : ""
+               currentContent: edit.pos ? (fileLines[edit.pos.line - 1] ?? "") : "",
             });
             return null;
          }
@@ -667,7 +667,7 @@ function resolveEditToSpan(
             end: start,
             replacement: content.length === 0 ? insertedText : `${insertedText}\n`,
             boundary: computeInsertionBoundary(edit, lineIndex),
-            ...(content.length === 0 ? { insertMode: "prepend-empty-origin" as const } : {})
+            ...(content.length === 0 ? { insertMode: "prepend-empty-origin" as const } : {}),
          };
       }
       case "replace_text": {
@@ -676,7 +676,7 @@ function resolveEditToSpan(
             noopEdits.push({
                editIndex: index,
                loc: `replace_text "${previewText(edit.oldText)}"`,
-               currentContent: edit.oldText
+               currentContent: edit.oldText,
             });
             return null;
          }
@@ -687,7 +687,7 @@ function resolveEditToSpan(
             label: describeEdit(edit),
             start: match.start,
             end: match.end,
-            replacement: edit.newText
+            replacement: edit.newText,
          };
       }
    }
@@ -719,7 +719,7 @@ function assertNoConflictingSpans(spans: ResolvedEditSpan[]): void {
             throwEditConflict(
                left,
                right,
-               "cannot be applied together because one inserts inside a replaced original range"
+               "cannot be applied together because one inserts inside a replaced original range",
             );
          }
       }
@@ -729,7 +729,7 @@ function assertNoConflictingSpans(spans: ResolvedEditSpan[]): void {
 export function applyHashlineEdits(
    content: string,
    edits: HashlineEdit[],
-   signal?: AbortSignal
+   signal?: AbortSignal,
 ): {
    content: string;
    firstChangedLine: number | undefined;
@@ -751,7 +751,7 @@ export function applyHashlineEdits(
    function validate(ref: Anchor): boolean {
       if (ref.line < 1 || ref.line > lineIndex.fileLines.length) {
          throw new Error(
-            `[E_RANGE_OOB] Line ${ref.line} does not exist (file has ${lineIndex.fileLines.length} lines)`
+            `[E_RANGE_OOB] Line ${ref.line} does not exist (file has ${lineIndex.fileLines.length} lines)`,
          );
       }
       const line = lineIndex.fileLines[ref.line - 1]!;
@@ -764,7 +764,7 @@ export function applyHashlineEdits(
             if (!acceptedFuzzyRefs.has(key)) {
                acceptedFuzzyRefs.add(key);
                warnings.push(
-                  `Accepted fuzzy anchor validation at line ${ref.line}: exact hash mismatched, but the copied line content still matched after whitespace/Unicode normalization.`
+                  `Accepted fuzzy anchor validation at line ${ref.line}: exact hash mismatched, but the copied line content still matched after whitespace/Unicode normalization.`,
                );
             }
             return true;
@@ -805,7 +805,7 @@ export function applyHashlineEdits(
                replacementLastLine === nextLine.trim()
             ) {
                warnings.push(
-                  `Potential boundary duplication after ${describeEdit(edit)}: the replacement ends with a line that matches the next surviving line after trim.`
+                  `Potential boundary duplication after ${describeEdit(edit)}: the replacement ends with a line that matches the next surviving line after trim.`,
                );
             }
             break;
@@ -814,7 +814,7 @@ export function applyHashlineEdits(
             if (edit.pos && !validate(edit.pos)) continue;
             if (edit.lines.length === 0) {
                throw new Error(
-                  "[E_BAD_OP] Append with empty lines payload. Provide content to insert or remove the edit."
+                  "[E_BAD_OP] Append with empty lines payload. Provide content to insert or remove the edit.",
                );
             }
             break;
@@ -823,7 +823,7 @@ export function applyHashlineEdits(
             if (edit.pos && !validate(edit.pos)) continue;
             if (edit.lines.length === 0) {
                throw new Error(
-                  "[E_BAD_OP] Prepend with empty lines payload. Provide content to insert or remove the edit."
+                  "[E_BAD_OP] Prepend with empty lines payload. Provide content to insert or remove the edit.",
                );
             }
             break;
@@ -895,7 +895,7 @@ export function applyHashlineEdits(
       firstChangedLine: changedRange?.firstChangedLine,
       lastChangedLine: changedRange?.lastChangedLine,
       ...(warnings.length ? { warnings } : {}),
-      ...(noopEdits.length ? { noopEdits } : {})
+      ...(noopEdits.length ? { noopEdits } : {}),
    };
 }
 
@@ -922,7 +922,7 @@ export function computeAffectedLineRange(params: {
       lastChangedLine,
       resultLineCount,
       contextLines = ANCHOR_CONTEXT_LINES,
-      maxOutputLines = ANCHOR_MAX_OUTPUT_LINES
+      maxOutputLines = ANCHOR_MAX_OUTPUT_LINES,
    } = params;
 
    if (firstChangedLine === undefined || lastChangedLine === undefined) {
@@ -969,7 +969,7 @@ export function formatHashlineRegion(lines: string[], startLine: number): string
  */
 export function computeLegacyEditLineRange(
    original: string,
-   result: string
+   result: string,
 ): { firstChangedLine: number; lastChangedLine: number } | null {
    if (original === result) return null;
 
@@ -984,14 +984,14 @@ export function computeLegacyEditLineRange(
    if (original.length === 0) {
       return {
          firstChangedLine: 1,
-         lastChangedLine: countVisibleLines(result)
+         lastChangedLine: countVisibleLines(result),
       };
    }
 
    if (result.startsWith(original) && original.endsWith("\n")) {
       return {
          firstChangedLine: countVisibleLines(original) + 1,
-         lastChangedLine: countVisibleLines(result)
+         lastChangedLine: countVisibleLines(result),
       };
    }
 

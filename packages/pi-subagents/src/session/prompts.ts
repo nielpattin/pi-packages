@@ -32,7 +32,7 @@ export function buildAgentPrompt(
    cwd: string,
    env: EnvInfo,
    parentSystemPrompt?: string,
-   extras?: PromptExtras
+   extras?: PromptExtras,
 ): string {
    const activeAgentTag = `<active_agent name="${config.name}"/>\n\n`;
 
@@ -48,7 +48,7 @@ Platform: ${env.platform}`;
          extraSections.push(`\n# Preloaded Skill: ${skill.name}\n${skill.content}`);
       }
    }
-   const extrasSuffix = extraSections.length > 0 ? `\n\n${extraSections.join("\n")}` : "";
+   const extrasSuffix = extraSections.length > 0 ? "\n\n" + extraSections.join("\n") : "";
 
    if (config.promptMode === "append") {
       const identity = parentSystemPrompt ?? genericBase;
@@ -76,7 +76,9 @@ You are operating as a sub-agent invoked to handle a specific task.
       // with the parent session, maximising KV cache hits. The <active_agent>
       // tag and env block vary per call and are placed after the cached prefix.
       const guidanceSuffix = config.guidance?.trim() ? `\n\n${config.guidance.trim()}` : "";
-      return `${identity}\n\n${bridge}\n\n${activeAgentTag}${envBlock}${customSection}${guidanceSuffix}${extrasSuffix}`;
+      return (
+         identity + "\n\n" + bridge + "\n\n" + activeAgentTag + envBlock + customSection + guidanceSuffix + extrasSuffix
+      );
    }
 
    // "replace" mode — env header + the config's full system prompt
@@ -86,7 +88,7 @@ You have been invoked to handle a specific task autonomously.
 ${envBlock}`;
 
    const guidanceSuffix = config.guidance?.trim() ? `\n\n${config.guidance.trim()}` : "";
-   return `${activeAgentTag + replaceHeader}\n\n${config.systemPrompt}${guidanceSuffix}${extrasSuffix}`;
+   return activeAgentTag + replaceHeader + "\n\n" + config.systemPrompt + guidanceSuffix + extrasSuffix;
 }
 
 /** Fallback base prompt when parent system prompt is unavailable in append mode. */

@@ -18,7 +18,7 @@ export function getIncrementDepthStatement(db: Database): PreparedStatement {
    let stmt = incrementDepthStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO compression_depth (session_id, message_ordinal, depth, harness) VALUES (?, ?, 1, ?) ON CONFLICT(session_id, message_ordinal) DO UPDATE SET depth = depth + 1"
+         "INSERT INTO compression_depth (session_id, message_ordinal, depth, harness) VALUES (?, ?, 1, ?) ON CONFLICT(session_id, message_ordinal) DO UPDATE SET depth = depth + 1",
       );
       incrementDepthStatements.set(db, stmt);
    }
@@ -29,7 +29,7 @@ function getTotalDepthStatement(db: Database): PreparedStatement {
    let stmt = totalDepthStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT COALESCE(SUM(depth), 0) AS total_depth FROM compression_depth WHERE session_id = ? AND message_ordinal BETWEEN ? AND ?"
+         "SELECT COALESCE(SUM(depth), 0) AS total_depth FROM compression_depth WHERE session_id = ? AND message_ordinal BETWEEN ? AND ?",
       );
       totalDepthStatements.set(db, stmt);
    }
@@ -58,7 +58,7 @@ export function incrementCompressionDepth(
    db: Database,
    sessionId: string,
    startOrdinal: number,
-   endOrdinal: number
+   endOrdinal: number,
 ): void {
    if (endOrdinal < startOrdinal) {
       return;
@@ -76,7 +76,7 @@ export function getAverageCompressionDepth(
    db: Database,
    sessionId: string,
    startOrdinal: number,
-   endOrdinal: number
+   endOrdinal: number,
 ): number {
    if (endOrdinal < startOrdinal) {
       return 0;
@@ -107,7 +107,7 @@ export function clearCompressionDepthRange(
    db: Database,
    sessionId: string,
    startOrdinal: number,
-   endOrdinal: number
+   endOrdinal: number,
 ): void {
    if (endOrdinal < startOrdinal) {
       return;
@@ -115,6 +115,6 @@ export function clearCompressionDepthRange(
    db.prepare("DELETE FROM compression_depth WHERE session_id = ? AND message_ordinal BETWEEN ? AND ?").run(
       sessionId,
       startOrdinal,
-      endOrdinal
+      endOrdinal,
    );
 }

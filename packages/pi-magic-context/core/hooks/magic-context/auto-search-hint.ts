@@ -82,7 +82,7 @@ function renderFragment(result: UnifiedSearchResult, charCap: number): string {
  */
 export function buildAutoSearchHint(
    results: UnifiedSearchResult[],
-   options: AutoSearchHintOptions = {}
+   options: AutoSearchHintOptions = {},
 ): string | null {
    const maxFragments = Math.max(1, options.maxFragments ?? MAX_FRAGMENTS);
    const fragmentCharCap = Math.max(20, options.fragmentCharCap ?? FRAGMENT_CHAR_CAP);

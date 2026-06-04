@@ -69,7 +69,7 @@ export function substituteConfigVariables(input: SubstituteInput): SubstituteRes
             .filter(Boolean)
             .join(" and ");
          warnings.push(
-            `Project-level config no longer supports ${tokenTypes} tokens for security reasons; leaving tokens literal. Move secret expansion to user-level config.`
+            `Project-level config no longer supports ${tokenTypes} tokens for security reasons; leaving tokens literal. Move secret expansion to user-level config.`,
          );
       }
       return { text, warnings };
@@ -85,7 +85,7 @@ export function substituteConfigVariables(input: SubstituteInput): SubstituteRes
       const value = varName ? process.env[varName] : undefined;
       if (value === undefined || value === "") {
          warnings.push(
-            `Environment variable ${varName} is not set (referenced via {env:${varName}}); using empty string`
+            `Environment variable ${varName} is not set (referenced via {env:${varName}}); using empty string`,
          );
          return "";
       }

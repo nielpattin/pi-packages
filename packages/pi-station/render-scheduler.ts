@@ -23,6 +23,6 @@ export function createRenderScheduler(render: () => void, defaultDelayMs: number
             timer = null;
             render();
          }, delayMs);
-      }
+      },
    };
 }

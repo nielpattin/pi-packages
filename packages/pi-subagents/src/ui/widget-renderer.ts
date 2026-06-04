@@ -18,7 +18,7 @@ import {
    getDisplayName,
    getPromptModeLabel,
    SPINNER,
-   type Theme
+   type Theme,
 } from "#src/ui/display";
 
 // ── Data interfaces ──────────────────────────────────────────────────────────
@@ -53,7 +53,7 @@ export function renderFinishedLine(
    agent: WidgetAgent,
    activity: WidgetActivity | undefined,
    registry: AgentConfigLookup,
-   theme: Theme
+   theme: Theme,
 ): string {
    const name = getDisplayName(agent.type, registry);
    const modeLabel = getPromptModeLabel(agent.type, registry);
@@ -95,7 +95,7 @@ export function renderRunningLines(
    activity: WidgetActivity | undefined,
    registry: AgentConfigLookup,
    spinnerFrame: number,
-   theme: Theme
+   theme: Theme,
 ): [header: string, activity: string] {
    const name = getDisplayName(agent.type, registry);
    const modeLabel = getPromptModeLabel(agent.type, registry);
@@ -136,7 +136,7 @@ interface AgentCategories {
 /** Partition agents into rendering buckets. */
 function categorizeAgents(
    agents: readonly WidgetAgent[],
-   shouldShowFinished: (agentId: string, status: string) => boolean
+   shouldShowFinished: (agentId: string, status: string) => boolean,
 ): AgentCategories {
    return {
       running: agents.filter((a) => a.status === "running"),
@@ -146,8 +146,8 @@ function categorizeAgents(
             a.status !== "running" &&
             a.status !== "queued" &&
             a.completedAt != null &&
-            shouldShowFinished(a.id, a.status)
-      )
+            shouldShowFinished(a.id, a.status),
+      ),
    };
 }
 
@@ -164,12 +164,14 @@ function buildSections(
    registry: AgentConfigLookup,
    spinnerFrame: number,
    theme: Theme,
-   truncate: (line: string) => string
+   truncate: (line: string) => string,
 ): WidgetSections {
    const finishedLines: string[] = [];
    for (const a of categories.finished) {
       finishedLines.push(
-         truncate(`${theme.fg("dim", "\u251C\u2500")} ${renderFinishedLine(a, activityMap.get(a.id), registry, theme)}`)
+         truncate(
+            theme.fg("dim", "\u251C\u2500") + " " + renderFinishedLine(a, activityMap.get(a.id), registry, theme),
+         ),
       );
    }
 
@@ -177,8 +179,8 @@ function buildSections(
    for (const a of categories.running) {
       const [header, act] = renderRunningLines(a, activityMap.get(a.id), registry, spinnerFrame, theme);
       runningLines.push([
-         truncate(`${theme.fg("dim", "\u251C\u2500")} ${header}`),
-         truncate(theme.fg("dim", "\u2502  ") + act)
+         truncate(theme.fg("dim", "\u251C\u2500") + ` ${header}`),
+         truncate(theme.fg("dim", "\u2502  ") + act),
       ]);
    }
 
@@ -186,7 +188,7 @@ function buildSections(
       categories.queued.length > 0
          ? truncate(
               theme.fg("dim", "\u251C\u2500") +
-                 ` ${theme.fg("muted", "\u25E6")} ${theme.fg("dim", `${categories.queued.length} queued`)}`
+                 ` ${theme.fg("muted", "\u25E6")} ${theme.fg("dim", `${categories.queued.length} queued`)}`,
            )
          : undefined;
 
@@ -226,7 +228,7 @@ function assembleOverflow(
    sections: WidgetSections,
    maxBody: number,
    truncate: (line: string) => string,
-   theme: Theme
+   theme: Theme,
 ): string[] {
    const { finishedLines, runningLines, queuedLine } = sections;
    const lines: string[] = [heading];
@@ -264,8 +266,8 @@ function assembleOverflow(
    lines.push(
       truncate(
          theme.fg("dim", "\u2514\u2500") +
-            ` ${theme.fg("dim", `+${hiddenRunning + hiddenFinished} more (${overflowText})`)}`
-      )
+            ` ${theme.fg("dim", `+${hiddenRunning + hiddenFinished} more (${overflowText})`)}`,
+      ),
    );
    return lines;
 }
@@ -299,13 +301,13 @@ export function renderWidgetLines(params: {
       registry,
       spinnerFrame,
       theme,
-      truncate
+      truncate,
    );
 
    // Assemble with overflow cap (heading takes 1 line).
    const maxBody = MAX_WIDGET_LINES - 1;
    const totalBody = finishedLines.length + runningLines.length * 2 + (queuedLine ? 1 : 0);
-   const heading = truncate(`${theme.fg(headingColor, headingIcon)} ${theme.fg(headingColor, "Agents")}`);
+   const heading = truncate(theme.fg(headingColor, headingIcon) + " " + theme.fg(headingColor, "Agents"));
 
    if (totalBody <= maxBody) {
       return assembleWithinBudget(heading, { finishedLines, runningLines, queuedLine });

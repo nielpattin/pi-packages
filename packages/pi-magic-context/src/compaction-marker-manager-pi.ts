@@ -20,14 +20,14 @@ export interface ApplyDeferredPiCompactionMarkerDeps {
       firstKeptEntryId: string,
       tokensBefore: number,
       details?: unknown,
-      fromHook?: boolean
+      fromHook?: boolean,
    ) => string | undefined;
 }
 
 export function applyDeferredPiCompactionMarker(
    deps: ApplyDeferredPiCompactionMarkerDeps,
    sessionId: string,
-   pending: PendingPiCompactionMarker
+   pending: PendingPiCompactionMarker,
 ): PiMarkerUpdateOutcome {
    try {
       const matches = getCompartmentsByEndMessageId(deps.db, sessionId, pending.endMessageId);
@@ -35,7 +35,7 @@ export function applyDeferredPiCompactionMarker(
          if (matches.length > 1) {
             sessionLog(
                sessionId,
-               `Pi compaction-marker drain: ${matches.length} compartments share endMessageId=${pending.endMessageId}; treating as stale`
+               `Pi compaction-marker drain: ${matches.length} compartments share endMessageId=${pending.endMessageId}; treating as stale`,
             );
          }
          return { kind: "stale-skip", reason: "compartment-removed" };
@@ -64,19 +64,19 @@ export function applyDeferredPiCompactionMarker(
          pending.tokensBefore,
          {
             source: "magic-context",
-            lastCompactedOrdinal: pending.ordinal
+            lastCompactedOrdinal: pending.ordinal,
          },
-         true
+         true,
       );
       if (typeof compactionId !== "string" || compactionId.length === 0) {
          return {
             kind: "retryable-failure",
-            error: new Error("Pi appendCompaction returned no compaction id")
+            error: new Error("Pi appendCompaction returned no compaction id"),
          };
       }
       sessionLog(
          sessionId,
-         `Pi compaction-marker drain: applied compactionId=${compactionId} firstKept=${pending.firstKeptEntryId} endMessageId=${pending.endMessageId} ordinal=${pending.ordinal} tokensBefore=${pending.tokensBefore}`
+         `Pi compaction-marker drain: applied compactionId=${compactionId} firstKept=${pending.firstKeptEntryId} endMessageId=${pending.endMessageId} ordinal=${pending.ordinal} tokensBefore=${pending.tokensBefore}`,
       );
       return { kind: "applied", firstKeptEntryId: pending.firstKeptEntryId };
    } catch (err) {

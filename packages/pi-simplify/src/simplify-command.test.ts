@@ -29,7 +29,7 @@ describe(parseArgs, () => {
       expect(parseArgs("src/a.ts src/b.ts")).toStrictEqual({
          files: ["src/a.ts", "src/b.ts"],
          ref: "HEAD",
-         staged: false
+         staged: false,
       });
    });
 
@@ -37,7 +37,7 @@ describe(parseArgs, () => {
       expect(parseArgs("--staged src/a.ts")).toStrictEqual({
          files: ["src/a.ts"],
          ref: "HEAD",
-         staged: true
+         staged: true,
       });
    });
 
@@ -45,7 +45,7 @@ describe(parseArgs, () => {
       expect(parseArgs("--ref=develop src/foo.ts")).toStrictEqual({
          files: ["src/foo.ts"],
          ref: "develop",
-         staged: false
+         staged: false,
       });
    });
 });
@@ -69,14 +69,14 @@ describe(handleSimplifyCommand, () => {
             }
             return Promise.resolve({ code: 1, stderr: "", stdout: "" });
          }),
-         sendUserMessage: vi.fn()
+         sendUserMessage: vi.fn(),
       } as unknown as Parameters<typeof handleSimplifyCommand>[2];
 
       const ctx = {
          cwd: "/project",
          ui: {
-            notify: vi.fn()
-         }
+            notify: vi.fn(),
+         },
       } as unknown as Parameters<typeof handleSimplifyCommand>[1];
 
       return { ctx, pi };
@@ -120,21 +120,21 @@ describe(handleSimplifyCommand, () => {
             Promise.resolve({
                code: 0,
                stderr: "",
-               stdout: "M\tsrc/staged.ts\n"
-            })
+               stdout: "M\tsrc/staged.ts\n",
+            }),
          ),
-         sendUserMessage: vi.fn()
+         sendUserMessage: vi.fn(),
       } as unknown as Parameters<typeof handleSimplifyCommand>[2];
 
       const ctx = {
          cwd: "/project",
-         ui: { notify: vi.fn() }
+         ui: { notify: vi.fn() },
       } as unknown as Parameters<typeof handleSimplifyCommand>[1];
 
       await handleSimplifyCommand("--staged", ctx, pi);
 
       expect(pi.exec).toHaveBeenCalledWith("git", ["diff", "--name-status", "--cached"], {
-         cwd: "/project"
+         cwd: "/project",
       });
    });
 });

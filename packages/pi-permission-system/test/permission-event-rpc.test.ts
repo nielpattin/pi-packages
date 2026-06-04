@@ -6,7 +6,7 @@ import type { PermissionsCheckReplyData, PermissionsRpcReply } from "#src/permis
 import {
    PERMISSIONS_PROTOCOL_VERSION,
    PERMISSIONS_RPC_CHECK_CHANNEL,
-   PERMISSIONS_RPC_PROMPT_CHANNEL
+   PERMISSIONS_RPC_PROMPT_CHANNEL,
 } from "#src/permission-events";
 
 // ── Helpers ────────────────────────────────────────────────────────────────
@@ -18,20 +18,20 @@ function makeCheckResult(state: "allow" | "deny" | "ask", overrides: Record<stri
       matchedPattern: "*",
       source: "bash" as const,
       origin: "global" as const,
-      ...overrides
+      ...overrides,
    };
 }
 
 function makeDeps(overrides: Partial<PermissionRpcDeps> = {}): PermissionRpcDeps {
    return {
       getPermissionManager: vi.fn().mockReturnValue({
-         checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow"))
+         checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow")),
       }),
       getSessionRules: vi.fn().mockReturnValue([]),
       getRuntimeContext: vi.fn().mockReturnValue(null),
       requestPermissionDecisionFromUi: vi.fn(),
       writeReviewLog: vi.fn(),
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -59,19 +59,19 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       const bus = createEventBus();
       const deps = makeDeps({
          getPermissionManager: vi.fn().mockReturnValue({
-            checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow"))
-         })
+            checkPermission: vi.fn().mockReturnValue(makeCheckResult("allow")),
+         }),
       });
       registerPermissionRpcHandlers(bus, deps);
 
       const replyPromise = waitForReply<PermissionsRpcReply<PermissionsCheckReplyData>>(
          bus,
-         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-allow`
+         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-allow`,
       );
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-allow",
          surface: "bash",
-         value: "git status"
+         value: "git status",
       });
 
       const reply = await replyPromise;
@@ -90,21 +90,21 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
             checkPermission: vi.fn().mockReturnValue(
                makeCheckResult("deny", {
                   origin: "project",
-                  matchedPattern: "rm *"
-               })
-            )
-         })
+                  matchedPattern: "rm *",
+               }),
+            ),
+         }),
       });
       registerPermissionRpcHandlers(bus, deps);
 
       const replyPromise = waitForReply<PermissionsRpcReply<PermissionsCheckReplyData>>(
          bus,
-         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-deny`
+         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-deny`,
       );
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-deny",
          surface: "bash",
-         value: "rm -rf /tmp"
+         value: "rm -rf /tmp",
       });
 
       const reply = await replyPromise;
@@ -119,19 +119,19 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       const bus = createEventBus();
       const deps = makeDeps({
          getPermissionManager: vi.fn().mockReturnValue({
-            checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask", { matchedPattern: undefined }))
-         })
+            checkPermission: vi.fn().mockReturnValue(makeCheckResult("ask", { matchedPattern: undefined })),
+         }),
       });
       registerPermissionRpcHandlers(bus, deps);
 
       const replyPromise = waitForReply<PermissionsRpcReply<PermissionsCheckReplyData>>(
          bus,
-         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-ask`
+         `${PERMISSIONS_RPC_CHECK_CHANNEL}:reply:req-ask`,
       );
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-ask",
          surface: "mcp",
-         value: "exa:search"
+         value: "exa:search",
       });
 
       const reply = await replyPromise;
@@ -145,7 +145,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       const checkPermission = vi.fn().mockReturnValue(makeCheckResult("allow"));
       const bus = createEventBus();
       const deps = makeDeps({
-         getPermissionManager: vi.fn().mockReturnValue({ checkPermission })
+         getPermissionManager: vi.fn().mockReturnValue({ checkPermission }),
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -154,7 +154,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
          requestId: "req-agent",
          surface: "bash",
          value: "git push",
-         agentName: "Worker"
+         agentName: "Worker",
       });
       await replyPromise;
 
@@ -167,14 +167,14 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
             surface: "bash",
             pattern: "git *",
             action: "allow" as const,
-            origin: "session" as const
-         }
+            origin: "session" as const,
+         },
       ];
       const checkPermission = vi.fn().mockReturnValue(makeCheckResult("allow"));
       const bus = createEventBus();
       const deps = makeDeps({
          getPermissionManager: vi.fn().mockReturnValue({ checkPermission }),
-         getSessionRules: vi.fn().mockReturnValue(sessionRules)
+         getSessionRules: vi.fn().mockReturnValue(sessionRules),
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -182,7 +182,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-session",
          surface: "bash",
-         value: "git status"
+         value: "git status",
       });
       await replyPromise;
 
@@ -200,7 +200,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {}); // missing requestId — should not crash
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-good",
-         surface: "bash"
+         surface: "bash",
       });
 
       const reply = await replyPromise;
@@ -211,14 +211,14 @@ describe("registerPermissionRpcHandlers — permissions:rpc:check", () => {
       const checkPermission = vi.fn().mockReturnValue(makeCheckResult("allow"));
       const bus = createEventBus();
       const deps = makeDeps({
-         getPermissionManager: vi.fn().mockReturnValue({ checkPermission })
+         getPermissionManager: vi.fn().mockReturnValue({ checkPermission }),
       });
       const handles = registerPermissionRpcHandlers(bus, deps);
       handles.unsubCheck();
 
       bus.emit(PERMISSIONS_RPC_CHECK_CHANNEL, {
          requestId: "req-unsub",
-         surface: "bash"
+         surface: "bash",
       });
 
       // Give async handlers a chance to fire
@@ -235,7 +235,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          select: vi.fn(),
          input: vi.fn(),
          notify: vi.fn(),
-         setStatus: vi.fn()
+         setStatus: vi.fn(),
       };
    }
 
@@ -245,8 +245,8 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          ui: makeUi(),
          cwd: "/test/project",
          sessionManager: {
-            getSessionDir: vi.fn().mockReturnValue("/sessions/test")
-         }
+            getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
+         },
       };
    }
 
@@ -256,7 +256,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
       const approvedDecision = { approved: true, state: "approved" as const };
       const deps = makeDeps({
          getRuntimeContext: vi.fn().mockReturnValue(ctx),
-         requestPermissionDecisionFromUi: vi.fn().mockResolvedValue(approvedDecision)
+         requestPermissionDecisionFromUi: vi.fn().mockResolvedValue(approvedDecision),
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -267,7 +267,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          requestId: "req-prompt-1",
          surface: "bash",
          value: "rm -rf /tmp",
-         message: "Allow rm -rf /tmp?"
+         message: "Allow rm -rf /tmp?",
       });
 
       const reply = await replyPromise;
@@ -285,7 +285,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
       const requestUi = vi.fn().mockResolvedValue({ approved: true, state: "approved" as const });
       const deps = makeDeps({
          getRuntimeContext: vi.fn().mockReturnValue(ctx),
-         requestPermissionDecisionFromUi: requestUi
+         requestPermissionDecisionFromUi: requestUi,
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -296,12 +296,12 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          value: "git push",
          message: "Allow git push?",
          agentName: "Worker",
-         sessionLabel: "Allow git *"
+         sessionLabel: "Allow git *",
       });
       await replyPromise;
 
       expect(requestUi).toHaveBeenCalledWith(ctx.ui, expect.stringContaining("Worker"), "Allow git push?", {
-         sessionLabel: "Allow git *"
+         sessionLabel: "Allow git *",
       });
    });
 
@@ -311,11 +311,11 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
       const deniedDecision = {
          approved: false,
          state: "denied_with_reason" as const,
-         denialReason: "Too risky"
+         denialReason: "Too risky",
       };
       const deps = makeDeps({
          getRuntimeContext: vi.fn().mockReturnValue(ctx),
-         requestPermissionDecisionFromUi: vi.fn().mockResolvedValue(deniedDecision)
+         requestPermissionDecisionFromUi: vi.fn().mockResolvedValue(deniedDecision),
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -326,7 +326,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          requestId: "req-denied",
          surface: "bash",
          value: "rm -rf /",
-         message: "Allow rm -rf /?"
+         message: "Allow rm -rf /?",
       });
 
       const reply = await replyPromise;
@@ -341,7 +341,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
    it("replies with no_ui error when context has no UI", async () => {
       const bus = createEventBus();
       const deps = makeDeps({
-         getRuntimeContext: vi.fn().mockReturnValue(null)
+         getRuntimeContext: vi.fn().mockReturnValue(null),
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -350,7 +350,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          requestId: "req-no-ui",
          surface: "bash",
          value: "git push",
-         message: "Allow git push?"
+         message: "Allow git push?",
       });
 
       const reply = await replyPromise;
@@ -361,19 +361,19 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
    it("replies with no_ui error when context hasUI is false", async () => {
       const bus = createEventBus();
       const deps = makeDeps({
-         getRuntimeContext: vi.fn().mockReturnValue({ hasUI: false, ui: makeUi() })
+         getRuntimeContext: vi.fn().mockReturnValue({ hasUI: false, ui: makeUi() }),
       });
       registerPermissionRpcHandlers(bus, deps);
 
       const replyPromise = waitForReply<PermissionsRpcReply>(
          bus,
-         `${PERMISSIONS_RPC_PROMPT_CHANNEL}:reply:req-headless`
+         `${PERMISSIONS_RPC_PROMPT_CHANNEL}:reply:req-headless`,
       );
       bus.emit(PERMISSIONS_RPC_PROMPT_CHANNEL, {
          requestId: "req-headless",
          surface: "bash",
          value: "git push",
-         message: "Allow git push?"
+         message: "Allow git push?",
       });
 
       const reply = await replyPromise;
@@ -388,7 +388,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
       const deps = makeDeps({
          getRuntimeContext: vi.fn().mockReturnValue(ctx),
          requestPermissionDecisionFromUi: vi.fn().mockResolvedValue({ approved: true, state: "approved" as const }),
-         writeReviewLog
+         writeReviewLog,
       });
       registerPermissionRpcHandlers(bus, deps);
 
@@ -398,7 +398,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          surface: "bash",
          value: "git push",
          message: "Allow git push?",
-         agentName: "Worker"
+         agentName: "Worker",
       });
       await replyPromise;
 
@@ -409,8 +409,8 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
             surface: "bash",
             value: "git push",
             agentName: "Worker",
-            approved: true
-         })
+            approved: true,
+         }),
       );
    });
 
@@ -420,7 +420,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
       const ctx = makeCtxWithUi();
       const deps = makeDeps({
          getRuntimeContext: vi.fn().mockReturnValue(ctx),
-         requestPermissionDecisionFromUi: requestUi
+         requestPermissionDecisionFromUi: requestUi,
       });
       const handles = registerPermissionRpcHandlers(bus, deps);
       handles.unsubPrompt();
@@ -429,7 +429,7 @@ describe("registerPermissionRpcHandlers — permissions:rpc:prompt", () => {
          requestId: "req-unsub-prompt",
          surface: "bash",
          value: "git push",
-         message: "Allow?"
+         message: "Allow?",
       });
 
       await new Promise((resolve) => setTimeout(resolve, 10));

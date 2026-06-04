@@ -22,7 +22,7 @@ function makeDeps() {
       manager: makeMenuManager(),
       registry: testRegistry,
       personalAgentsDir: "/home/.pi/agents",
-      projectAgentsDir: "/project/.pi/agents"
+      projectAgentsDir: "/project/.pi/agents",
    };
 }
 
@@ -37,7 +37,7 @@ function makeWizard(deps: ReturnType<typeof makeDeps>) {
       deps.manager,
       deps.registry,
       deps.personalAgentsDir,
-      deps.projectAgentsDir
+      deps.projectAgentsDir,
    );
 }
 
@@ -88,7 +88,7 @@ describe("AgentCreationWizard", () => {
             STUB_SNAPSHOT,
             "general-purpose",
             expect.stringContaining("code-reviewer"),
-            expect.objectContaining({ maxTurns: 5 })
+            expect.objectContaining({ maxTurns: 5 }),
          );
          expect(deps.fileOps.ensureDir).toHaveBeenCalledWith("/project/.pi/agents");
          expect(ui.notify).toHaveBeenCalledWith(`Created ${projectAgentPath("code-reviewer")}`, "info");
@@ -121,7 +121,7 @@ describe("AgentCreationWizard", () => {
 
          expect(ui.notify).toHaveBeenCalledWith(
             "Agent generation completed but file was not created. Check the agent output.",
-            "warning"
+            "warning",
          );
       });
 
@@ -160,7 +160,7 @@ describe("AgentCreationWizard", () => {
             "Manual configuration",
             "all", // tools
             "inherit (parent model)", // model
-            "inherit" // thinking
+            "inherit", // thinking
          ]);
          ui.input = vi
             .fn()
@@ -173,11 +173,11 @@ describe("AgentCreationWizard", () => {
 
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("my-agent"),
-            expect.stringContaining("description: A test agent")
+            expect.stringContaining("description: A test agent"),
          );
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("my-agent"),
-            expect.stringContaining("You are a test agent.")
+            expect.stringContaining("You are a test agent."),
          );
          expect(testRegistry.reload).toHaveBeenCalled();
       });
@@ -193,7 +193,7 @@ describe("AgentCreationWizard", () => {
 
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("fast-agent"),
-            expect.stringContaining("model: anthropic/claude-haiku-4-5-20251001")
+            expect.stringContaining("model: anthropic/claude-haiku-4-5-20251001"),
          );
       });
 
@@ -204,7 +204,7 @@ describe("AgentCreationWizard", () => {
             "Manual configuration",
             "all",
             "inherit (parent model)",
-            "high"
+            "high",
          ]);
          ui.input = vi.fn().mockResolvedValueOnce("thinker").mockResolvedValueOnce("Deep thinker");
          ui.editor = vi.fn().mockResolvedValue("prompt");
@@ -214,7 +214,7 @@ describe("AgentCreationWizard", () => {
 
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("thinker"),
-            expect.stringContaining("thinking: high")
+            expect.stringContaining("thinking: high"),
          );
       });
 
@@ -225,7 +225,7 @@ describe("AgentCreationWizard", () => {
             "Manual configuration",
             "read-only (read, bash, grep, find, ls)",
             "inherit (parent model)",
-            "inherit"
+            "inherit",
          ]);
          ui.input = vi.fn().mockResolvedValueOnce("reader").mockResolvedValueOnce("Read-only agent");
          ui.editor = vi.fn().mockResolvedValue("prompt");
@@ -235,7 +235,7 @@ describe("AgentCreationWizard", () => {
 
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("reader"),
-            expect.stringContaining("tools: read, bash, grep, find, ls")
+            expect.stringContaining("tools: read, bash, grep, find, ls"),
          );
       });
 
@@ -247,7 +247,7 @@ describe("AgentCreationWizard", () => {
             "Manual configuration",
             "all",
             "inherit (parent model)",
-            "inherit"
+            "inherit",
          ]);
          ui.input = vi.fn().mockResolvedValueOnce("existing").mockResolvedValueOnce("desc");
          ui.editor = vi.fn().mockResolvedValue("prompt");
@@ -278,7 +278,7 @@ describe("AgentCreationWizard", () => {
             "Manual configuration",
             "all",
             "inherit (parent model)",
-            "inherit"
+            "inherit",
          ]);
          ui.input = vi.fn().mockResolvedValueOnce("personal-agent").mockResolvedValueOnce("Personal agent");
          ui.editor = vi.fn().mockResolvedValue("prompt");
@@ -288,7 +288,7 @@ describe("AgentCreationWizard", () => {
 
          expect(deps.fileOps.write).toHaveBeenCalledWith(
             personalAgentPath("personal-agent"),
-            expect.stringContaining("description: Personal agent")
+            expect.stringContaining("description: Personal agent"),
          );
       });
    });

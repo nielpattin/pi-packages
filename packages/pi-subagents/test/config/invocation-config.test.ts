@@ -14,7 +14,7 @@ function makeConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
       inheritContext: false,
       runInBackground: false,
       isolated: false,
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -28,7 +28,7 @@ describe("resolveAgentInvocationConfig", () => {
             inheritContext: false,
             runInBackground: false,
             isolated: false,
-            isolation: "worktree"
+            isolation: "worktree",
          }),
          {
             model: "provider/param-model",
@@ -37,8 +37,8 @@ describe("resolveAgentInvocationConfig", () => {
             inherit_context: true,
             run_in_background: true,
             isolated: true,
-            isolation: "worktree"
-         }
+            isolation: "worktree",
+         },
       );
 
       expect(resolved.modelInput).toBe("provider/config-model");
@@ -59,7 +59,7 @@ describe("resolveAgentInvocationConfig", () => {
          inherit_context: true,
          run_in_background: true,
          isolated: true,
-         isolation: "worktree"
+         isolation: "worktree",
       });
 
       expect(resolved.modelInput).toBe("provider/param-model");
@@ -77,13 +77,13 @@ describe("resolveAgentInvocationConfig", () => {
          makeConfig({
             inheritContext: undefined,
             runInBackground: undefined,
-            isolated: undefined
+            isolated: undefined,
          }),
          {
             inherit_context: true,
             run_in_background: true,
-            isolated: true
-         }
+            isolated: true,
+         },
       );
 
       expect(resolved.inheritContext).toBe(true);
@@ -96,9 +96,9 @@ describe("resolveAgentInvocationConfig", () => {
          makeConfig({
             inheritContext: undefined,
             runInBackground: undefined,
-            isolated: undefined
+            isolated: undefined,
          }),
-         {}
+         {},
       );
 
       expect(resolved.inheritContext).toBe(false);

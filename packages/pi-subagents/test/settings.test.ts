@@ -63,7 +63,7 @@ describe("settings persistence", () => {
       expect(loadSettings(globalDir, projectDir)).toEqual({
          maxConcurrent: 4, // project wins
          graceTurns: 10, // from global
-         defaultMaxTurns: 50 // from project only
+         defaultMaxTurns: 50, // from project only
       });
    });
 
@@ -71,7 +71,7 @@ describe("settings persistence", () => {
       const settings = {
          maxConcurrent: 7,
          defaultMaxTurns: 30,
-         graceTurns: 3
+         graceTurns: 3,
       };
       saveSettings(settings, projectDir);
       expect(loadSettings(globalDir, projectDir)).toEqual(settings);
@@ -161,7 +161,7 @@ describe("settings persistence", () => {
          writeProject({
             maxConcurrent: 4, // ok
             defaultMaxTurns: -5, // dropped
-            graceTurns: 3 // ok
+            graceTurns: 3, // ok
          });
          expect(loadSettings(globalDir, projectDir)).toEqual({ maxConcurrent: 4, graceTurns: 3 });
       });
@@ -171,7 +171,7 @@ describe("settings persistence", () => {
          expect(loadSettings(globalDir, projectDir)).toEqual({
             maxConcurrent: 1024,
             defaultMaxTurns: 10_000,
-            graceTurns: 1_000
+            graceTurns: 1_000,
          });
       });
 
@@ -236,14 +236,14 @@ describe("settings persistence", () => {
       it("returns info-level toast with the plain message on success", () => {
          expect(persistToastFor("Max concurrency set to 7", true)).toEqual({
             message: "Max concurrency set to 7",
-            level: "info"
+            level: "info",
          });
       });
 
       it("returns warning-level toast with session-only suffix on failure", () => {
          expect(persistToastFor("Max concurrency set to 7", false)).toEqual({
             message: "Max concurrency set to 7 (session only; failed to persist)",
-            level: "warning"
+            level: "warning",
          });
       });
    });
@@ -451,7 +451,7 @@ describe("SettingsManager", () => {
          sm.saveAndNotify("Grace turns set to 3");
          expect(emit).toHaveBeenCalledWith("subagents:settings_changed", {
             settings: { maxConcurrent: 4, defaultMaxTurns: 0, graceTurns: 3 },
-            persisted: true
+            persisted: true,
          });
       });
 
@@ -463,7 +463,7 @@ describe("SettingsManager", () => {
             const toast = sm.saveAndNotify("Max concurrency set to 5");
             expect(toast).toEqual({
                message: "Max concurrency set to 5 (session only; failed to persist)",
-               level: "warning"
+               level: "warning",
             });
          } finally {
             rmSync(filePosingAsCwd, { force: true });
@@ -479,7 +479,7 @@ describe("SettingsManager", () => {
             sm.saveAndNotify("something");
             expect(emit).toHaveBeenCalledWith("subagents:settings_changed", {
                settings: { maxConcurrent: 4, defaultMaxTurns: 0, graceTurns: 5 },
-               persisted: false
+               persisted: false,
             });
          } finally {
             rmSync(filePosingAsCwd, { force: true });
@@ -504,7 +504,7 @@ describe("SettingsManager", () => {
             emit: vi.fn(),
             cwd: projectDir,
             agentDir: "/nonexistent",
-            onMaxConcurrentChanged: onChanged
+            onMaxConcurrentChanged: onChanged,
          });
          const toast = sm.applyMaxConcurrent(8);
          expect(sm.maxConcurrent).toBe(8);
@@ -559,7 +559,7 @@ describe("SettingsManager", () => {
             emit: vi.fn(),
             cwd: projectDir,
             agentDir: "/nonexistent",
-            onMaxConcurrentChanged: onChanged
+            onMaxConcurrentChanged: onChanged,
          });
          sm.applyDefaultMaxTurns(5);
          expect(onChanged).not.toHaveBeenCalled();
@@ -597,7 +597,7 @@ describe("SettingsManager", () => {
             emit: vi.fn(),
             cwd: projectDir,
             agentDir: "/nonexistent",
-            onMaxConcurrentChanged: onChanged
+            onMaxConcurrentChanged: onChanged,
          });
          sm.applyGraceTurns(5);
          expect(onChanged).not.toHaveBeenCalled();
@@ -616,8 +616,8 @@ describe("SettingsManager", () => {
                   emit: vi.fn(),
                   cwd: "/tmp",
                   agentDir: "/nonexistent",
-                  onMaxConcurrentChanged: vi.fn()
-               })
+                  onMaxConcurrentChanged: vi.fn(),
+               }),
          ).not.toThrow();
       });
    });

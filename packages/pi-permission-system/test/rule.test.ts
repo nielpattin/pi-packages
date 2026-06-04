@@ -7,37 +7,37 @@ describe("evaluate", () => {
       surface: "bash",
       pattern: "git *",
       action: "allow",
-      origin: "global"
+      origin: "global",
    };
    const denyBashGitPush: Rule = {
       surface: "bash",
       pattern: "git push *",
       action: "deny",
-      origin: "global"
+      origin: "global",
    };
    const allowRead: Rule = {
       surface: "read",
       pattern: "*",
       action: "allow",
-      origin: "global"
+      origin: "global",
    };
    const askMcp: Rule = {
       surface: "mcp",
       pattern: "*",
       action: "ask",
-      origin: "global"
+      origin: "global",
    };
    const allowSkillLibrarian: Rule = {
       surface: "skill",
       pattern: "librarian",
       action: "allow",
-      origin: "global"
+      origin: "global",
    };
    const askSpecialExtDir: Rule = {
       surface: "special",
       pattern: "external_directory",
       action: "ask",
-      origin: "global"
+      origin: "global",
    };
 
    test("returns matching rule when a rule matches", () => {
@@ -90,13 +90,13 @@ describe("evaluate", () => {
          surface: "bash",
          pattern: "*",
          action: "deny",
-         origin: "global"
+         origin: "global",
       };
       const allowStatus: Rule = {
          surface: "bash",
          pattern: "git status",
          action: "allow",
-         origin: "global"
+         origin: "global",
       };
       const result = evaluate("bash", "git status", [denyAll, allowStatus]);
       expect(result).toEqual(allowStatus);
@@ -107,7 +107,7 @@ describe("evaluate", () => {
          surface: "*",
          pattern: "*",
          action: "allow",
-         origin: "global"
+         origin: "global",
       };
       expect(evaluate("bash", "anything", [universalAllow]).action).toBe("allow");
       expect(evaluate("mcp", "something", [universalAllow]).action).toBe("allow");
@@ -151,20 +151,20 @@ describe("evaluate", () => {
          pattern: "git *",
          action: "allow",
          layer: "config",
-         origin: "global"
+         origin: "global",
       };
       const withoutLayer: Rule = {
          surface: "bash",
          pattern: "git *",
          action: "allow",
-         origin: "global"
+         origin: "global",
       };
       const withDefault: Rule = {
          surface: "bash",
          pattern: "*",
          action: "ask",
          layer: "default",
-         origin: "builtin"
+         origin: "builtin",
       };
       // Both rules with and without layer field produce the same match.
       expect(evaluate("bash", "git status", [withLayer]).action).toBe("allow");
@@ -184,7 +184,7 @@ describe("evaluate", () => {
          pattern: "git *",
          action: "allow",
          layer: "config",
-         origin
+         origin,
       };
       const result = evaluate("bash", "git status", [rule]);
       expect(result.origin).toBe("project");
@@ -203,7 +203,7 @@ describe("evaluate", () => {
             pattern: "*",
             action: "allow",
             layer: "config",
-            origin
+            origin,
          };
          expect(evaluate("read", "*", [rule]).origin).toBe(origin);
       }
@@ -216,21 +216,21 @@ describe("evaluateFirst", () => {
       pattern: "*",
       action: "ask",
       layer: "default",
-      origin: "builtin"
+      origin: "builtin",
    };
    const allowBash: Rule = {
       surface: "bash",
       pattern: "git *",
       action: "allow",
       layer: "config",
-      origin: "global"
+      origin: "global",
    };
    const denyMcp: Rule = {
       surface: "mcp",
       pattern: "exa_search",
       action: "deny",
       layer: "config",
-      origin: "global"
+      origin: "global",
    };
 
    test("returns the first candidate that matches a non-default rule", () => {
@@ -263,7 +263,7 @@ describe("evaluateFirst", () => {
          pattern: "mcp",
          action: "allow",
          layer: "config",
-         origin: "global"
+         origin: "global",
       };
       const rules: Ruleset = [defaultRule, denyMcp, allowMcpCatchAll];
       const result = evaluateFirst("mcp", ["exa_search", "mcp"], rules);
@@ -300,21 +300,21 @@ describe("evaluateMostRestrictive", () => {
       pattern: "*.env",
       action: "deny",
       layer: "config",
-      origin: "global"
+      origin: "global",
    };
    const askSsh: Rule = {
       surface: "path",
       pattern: "/home/user/.ssh/*",
       action: "ask",
       layer: "config",
-      origin: "global"
+      origin: "global",
    };
    const allowAll: Rule = {
       surface: "path",
       pattern: "*",
       action: "allow",
       layer: "config",
-      origin: "global"
+      origin: "global",
    };
 
    test("deny short-circuits: returns immediately without evaluating remaining values", () => {

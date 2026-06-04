@@ -3,13 +3,13 @@ import { getCompartments } from "#core/features/magic-context/compartment-storag
 import {
    type ContextDatabase,
    clearPendingPiCompactionMarkerStateIf,
-   setPendingPiCompactionMarkerState
+   setPendingPiCompactionMarkerState,
 } from "#core/features/magic-context/storage";
 import { COMPARTMENT_AGENT_SYSTEM_PROMPT } from "#core/hooks/magic-context/compartment-prompt";
 import { executeContextRecompWithResult } from "#core/hooks/magic-context/compartment-runner";
 import {
    type PartialRecompRange,
-   snapRangeToCompartments
+   snapRangeToCompartments,
 } from "#core/hooks/magic-context/compartment-runner-partial-recomp";
 import type { RawMessageProvider } from "#core/hooks/magic-context/read-session-chunk";
 import { setRawMessageProvider } from "#core/hooks/magic-context/read-session-chunk";
@@ -19,7 +19,7 @@ import { applyDeferredPiCompactionMarker } from "../compaction-marker-manager-pi
 import {
    signalPiDeferredHistoryRefresh,
    signalPiHistoryRefresh,
-   signalPiPendingMaterialization
+   signalPiPendingMaterialization,
 } from "../context-handler";
 import { clearPiCompressorState } from "../pi-compressor-runner";
 import { buildPiCompactionSummary, findFirstKeptEntryId } from "../pi-historian-runner";
@@ -47,7 +47,7 @@ export function registerCtxRecompCommand(
       historianThinkingLevel?: string;
       memoryEnabled: boolean;
       autoPromote: boolean;
-   }
+   },
 ): void {
    pi.registerCommand("ctx-recomp", {
       description: "Rebuild Magic Context compartments from raw Pi session history",
@@ -57,7 +57,7 @@ export function registerCtxRecompCommand(
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: "## Magic Recomp\n\nNo active Pi session is available.",
-               level: "error"
+               level: "error",
             });
             return;
          }
@@ -66,7 +66,7 @@ export function registerCtxRecompCommand(
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: "## Magic Recomp\n\n/ctx-recomp is unavailable because `historian.model` is not configured.",
-               level: "error"
+               level: "error",
             });
             return;
          }
@@ -76,7 +76,7 @@ export function registerCtxRecompCommand(
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: `## Magic Recomp — Invalid Arguments\n\n${parsed.message}`,
-               level: "error"
+               level: "error",
             });
             return;
          }
@@ -96,7 +96,7 @@ export function registerCtxRecompCommand(
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: warning.text,
-               level: warning.confirmable ? "warning" : "error"
+               level: warning.confirmable ? "warning" : "error",
             });
             return;
          }
@@ -108,17 +108,17 @@ export function registerCtxRecompCommand(
                parsed.kind === "partial"
                   ? `## Magic Recomp\n\nPartial recomp started for range ${parsed.range.start}-${parsed.range.end}.`
                   : "## Magic Recomp\n\nHistorian recomp started. Rebuilding compartments and facts from raw Pi session history now.",
-            level: "info"
+            level: "info",
          });
 
          const provider = {
-            readMessages: () => readPiSessionMessages(ctx)
+            readMessages: () => readPiSessionMessages(ctx),
          } satisfies RawMessageProvider;
          const unregister = setRawMessageProvider(sessionId, provider);
          setMagicContextRecompActive(sessionId, true);
          updateStatusLine(ctx, {
             db: deps.db,
-            projectIdentity: ctx.cwd
+            projectIdentity: ctx.cwd,
          });
          try {
             const result = await executeContextRecompWithResult(
@@ -135,9 +135,9 @@ export function registerCtxRecompCommand(
                         sendCtxStatusMessage(pi, {
                            title: "/ctx-recomp",
                            text,
-                           level: inferLevel(text)
+                           level: inferLevel(text),
                         });
-                     }
+                     },
                   }) as never,
                   db: deps.db,
                   sessionId,
@@ -145,14 +145,14 @@ export function registerCtxRecompCommand(
                   directory: ctx.cwd,
                   historianTimeoutMs: deps.historianTimeoutMs,
                   memoryEnabled: deps.memoryEnabled,
-                  autoPromote: deps.autoPromote
+                  autoPromote: deps.autoPromote,
                },
-               parsed.kind === "partial" ? { range: parsed.range } : {}
+               parsed.kind === "partial" ? { range: parsed.range } : {},
             );
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: result.message,
-               level: inferLevel(result.message)
+               level: inferLevel(result.message),
             });
             if (!result.published) {
                return;
@@ -182,17 +182,17 @@ export function registerCtxRecompCommand(
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",
                text: `## Magic Recomp — Failed\n\n${describeError(error).brief}`,
-               level: "error"
+               level: "error",
             });
          } finally {
             setMagicContextRecompActive(sessionId, false);
             updateStatusLine(ctx, {
                db: deps.db,
-               projectIdentity: ctx.cwd
+               projectIdentity: ctx.cwd,
             });
             unregister();
          }
-      }
+      },
    });
 }
 
@@ -219,14 +219,14 @@ function queueAndApplyPiRecompMarker(args: { db: ContextDatabase; sessionId: str
       ordinal: last.endMessage,
       tokensBefore: 0,
       summary: buildPiCompactionSummary(compartments),
-      publishedAt: Date.now()
+      publishedAt: Date.now(),
    };
 
    setPendingPiCompactionMarkerState(args.db, args.sessionId, pending);
    const outcome = applyDeferredPiCompactionMarker(
       { db: args.db, appendCompaction, readBranchEntries },
       args.sessionId,
-      pending
+      pending,
    );
    if (outcome.kind === "retryable-failure") {
       signalPiDeferredHistoryRefresh(args.sessionId);
@@ -238,14 +238,14 @@ function queueAndApplyPiRecompMarker(args: { db: ContextDatabase; sessionId: str
 }
 
 function resolvePiAppendCompaction(
-   ctx: unknown
+   ctx: unknown,
 ):
    | ((
         summary: string,
         firstKeptEntryId: string,
         tokensBefore: number,
         details?: unknown,
-        fromHook?: boolean
+        fromHook?: boolean,
      ) => string | undefined)
    | undefined {
    const sm = (ctx as { sessionManager?: unknown })?.sessionManager as
@@ -255,7 +255,7 @@ function resolvePiAppendCompaction(
               firstKeptEntryId: string,
               tokensBefore: number,
               details?: unknown,
-              fromHook?: boolean
+              fromHook?: boolean,
            ) => string | undefined;
         }
       | undefined;
@@ -277,7 +277,7 @@ function resolvePiReadBranchEntries(ctx: unknown): (() => unknown[]) | undefined
 }
 
 function parseRecompArgs(
-   raw: string
+   raw: string,
 ): { kind: "full" } | { kind: "partial"; range: PartialRecompRange } | { kind: "error"; message: string } {
    const trimmed = raw.trim();
    if (trimmed.length === 0) return { kind: "full" };
@@ -286,7 +286,7 @@ function parseRecompArgs(
       return {
          kind: "error",
          message:
-            "Usage:\n- `/ctx-recomp` — full rebuild from message 1 to the protected tail\n- `/ctx-recomp <start>-<end>` — partial rebuild of a message range"
+            "Usage:\n- `/ctx-recomp` — full rebuild from message 1 to the protected tail\n- `/ctx-recomp <start>-<end>` — partial rebuild of a message range",
       };
    }
    const start = Number.parseInt(match[1], 10);
@@ -295,7 +295,7 @@ function parseRecompArgs(
    if (end < start)
       return {
          kind: "error",
-         message: `End must be >= start (got ${start}-${end}).`
+         message: `End must be >= start (got ${start}-${end}).`,
       };
    return { kind: "partial", range: { start, end } };
 }
@@ -303,7 +303,7 @@ function parseRecompArgs(
 function buildConfirmationWarning(
    db: ContextDatabase,
    sessionId: string,
-   parsed: { kind: "full" } | { kind: "partial"; range: PartialRecompRange }
+   parsed: { kind: "full" } | { kind: "partial"; range: PartialRecompRange },
 ): { text: string; confirmable: boolean } {
    const compartments = getCompartments(db, sessionId);
    if (parsed.kind === "partial") {
@@ -311,7 +311,7 @@ function buildConfirmationWarning(
       if ("error" in snap)
          return {
             text: `## Magic Recomp — Failed\n\n${snap.error}`,
-            confirmable: false
+            confirmable: false,
          };
       return {
          confirmable: true,
@@ -324,8 +324,8 @@ function buildConfirmationWarning(
             `Preserved outside range: ${snap.priorCompartments.length + snap.tailCompartments.length} compartment(s).`,
             "Facts will not be re-extracted.",
             "",
-            `**To confirm, run \`/ctx-recomp ${parsed.range.start}-${parsed.range.end}\` again within 60 seconds.**`
-         ].join("\n")
+            `**To confirm, run \`/ctx-recomp ${parsed.range.start}-${parsed.range.end}\` again within 60 seconds.**`,
+         ].join("\n"),
       };
    }
 
@@ -339,8 +339,8 @@ function buildConfirmationWarning(
          "",
          "This operation may take a long time and will consume historian-model tokens.",
          "",
-         "**To confirm, run `/ctx-recomp` again within 60 seconds.**"
-      ].join("\n")
+         "**To confirm, run `/ctx-recomp` again within 60 seconds.**",
+      ].join("\n"),
    };
 }
 
@@ -375,7 +375,7 @@ function createPiRecompClient(args: {
          cwd: args.directory,
          thinkingLevel: args.thinkingLevel,
          accountingSessionId: args.accountingSessionId,
-         accountingSubagent: "recomp"
+         accountingSubagent: "recomp",
       });
       if (!result.ok) {
          throw new Error(`Pi recomp historian failed (${result.reason}): ${result.error}`);
@@ -394,13 +394,13 @@ function createPiRecompClient(args: {
          prompt,
          promptAsync: prompt,
          messages: async (input: unknown) => ({
-            data: sessions.get(readPathId(input)) ?? []
+            data: sessions.get(readPathId(input)) ?? [],
          }),
          delete: async (input: unknown) => {
             sessions.delete(readPathId(input));
             return {};
-         }
-      }
+         },
+      },
    };
 }
 
@@ -429,7 +429,7 @@ function makeMessage(role: "assistant", text: string): unknown {
       info: { role, time: { created: Date.now() } },
       parts: [{ type: "text", text }],
       role,
-      content: [{ type: "text", text }]
+      content: [{ type: "text", text }],
    };
 }
 

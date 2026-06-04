@@ -10,12 +10,12 @@ export default defineConfig({
                branches: 50,
                functions: 70,
                lines: 60,
-               statements: 60
-            }
-         }
+               statements: 60,
+            },
+         },
       },
       environment: "node",
       globals: true,
-      include: ["packages/pi-*/**/*.test.ts"]
-   }
+      include: ["packages/pi-*/**/*.test.ts"],
+   },
 });

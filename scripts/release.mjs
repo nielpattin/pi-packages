@@ -54,12 +54,12 @@ function run(command, args, opts = {}) {
            cwd: opts.cwd ?? ROOT,
            encoding: "utf8",
            shell: true,
-           stdio: opts.silent ? "pipe" : "inherit"
+           stdio: opts.silent ? "pipe" : "inherit",
         })
       : spawnSync(command, args, {
            cwd: opts.cwd ?? ROOT,
            encoding: "utf8",
-           stdio: opts.silent ? "pipe" : "inherit"
+           stdio: opts.silent ? "pipe" : "inherit",
         });
    if (result.status !== 0 && !opts.ignoreError) {
       console.error(`Command failed: ${[command, ...args].join(" ")}`);
@@ -94,8 +94,8 @@ function stageChangedFiles() {
          output
             .split("\n")
             .map((line) => line.trim())
-            .filter(Boolean)
-      )
+            .filter(Boolean),
+      ),
    ];
    if (paths.length === 0) {
       return;

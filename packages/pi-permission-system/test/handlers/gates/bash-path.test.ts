@@ -5,7 +5,7 @@ vi.mock("node:os", () => {
    const homedir = vi.fn(() => "/mock/home");
    return {
       homedir,
-      default: { homedir }
+      default: { homedir },
    };
 });
 
@@ -29,7 +29,7 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: { command: "cat .env" },
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -39,7 +39,7 @@ function makeCheckResult(overrides: Partial<PermissionCheckResult> = {}): Permis
       state: "allow",
       source: "special",
       origin: "global",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -47,7 +47,7 @@ type CheckPermissionFn = (
    surface: string,
    input: unknown,
    agentName?: string,
-   sessionRules?: Rule[]
+   sessionRules?: Rule[],
 ) => PermissionCheckResult;
 
 // ── tests ──────────────────────────────────────────────────────────────────
@@ -59,7 +59,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ toolName: "read", input: { path: ".env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).toBeNull();
    });
@@ -70,7 +70,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "echo hello" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).toBeNull();
    });
@@ -81,7 +81,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).toBeNull();
    });
@@ -90,14 +90,14 @@ describe("describeBashPathGate", () => {
       const checkPermission = vi.fn<CheckPermissionFn>().mockReturnValue(
          makeCheckResult({
             state: "deny",
-            matchedPattern: "*.env"
-         })
+            matchedPattern: "*.env",
+         }),
       );
       const getSessionRuleset = vi.fn<() => Rule[]>().mockReturnValue([]);
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);
@@ -114,7 +114,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);
@@ -130,12 +130,12 @@ describe("describeBashPathGate", () => {
       const result = (await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       )) as GateDescriptor;
       expect(result.denialContext).toMatchObject({
          kind: "bash_path",
          command: "cat .env",
-         pathValue: ".env"
+         pathValue: ".env",
       });
       expect(result.promptDetails.message).toContain(".env");
    });
@@ -148,7 +148,7 @@ describe("describeBashPathGate", () => {
       const result = (await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       )) as GateDescriptor;
       expect(result.decision.surface).toBe("path");
    });
@@ -163,13 +163,13 @@ describe("describeBashPathGate", () => {
             pattern: "*",
             action: "allow",
             layer: "session",
-            origin: "session"
-         }
+            origin: "session",
+         },
       ]);
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateBypass(result)).toBe(true);
@@ -195,7 +195,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat src/foo.ts .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);
@@ -214,7 +214,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cp .env README.md" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);
@@ -235,7 +235,7 @@ describe("describeBashPathGate", () => {
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "echo test > .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);
@@ -248,14 +248,14 @@ describe("describeBashPathGate", () => {
             state: "ask",
             matchedPattern: undefined,
             source: "special",
-            origin: "builtin"
-         })
+            origin: "builtin",
+         }),
       );
       const getSessionRuleset = vi.fn<() => Rule[]>().mockReturnValue([]);
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).toBeNull();
    });
@@ -266,7 +266,7 @@ describe("describeBashPathGate", () => {
          if (record.path === ".env") {
             return makeCheckResult({
                state: "deny",
-               matchedPattern: "*.env"
+               matchedPattern: "*.env",
             });
          }
          // Other tokens match only the universal default
@@ -274,14 +274,14 @@ describe("describeBashPathGate", () => {
             state: "ask",
             matchedPattern: undefined,
             source: "special",
-            origin: "builtin"
+            origin: "builtin",
          });
       });
       const getSessionRuleset = vi.fn<() => Rule[]>().mockReturnValue([]);
       const result = await describeBashPathGate(
          makeTcc({ input: { command: "cat src/foo.ts .env" } }),
          checkPermission,
-         getSessionRuleset
+         getSessionRuleset,
       );
       expect(result).not.toBeNull();
       expect(isGateDescriptor(result)).toBe(true);

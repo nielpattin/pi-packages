@@ -83,7 +83,7 @@ export function parseModelSuggestion(error: unknown): ModelSuggestionInfo | null
             return {
                providerID: typeof data.providerID === "string" ? data.providerID : "",
                modelID: typeof data.modelID === "string" ? data.modelID : "",
-               suggestion: suggestions[0]
+               suggestion: suggestions[0],
             };
          }
       }
@@ -108,7 +108,7 @@ export function parseModelSuggestion(error: unknown): ModelSuggestionInfo | null
    return {
       providerID: modelMatch[1].trim(),
       modelID: modelMatch[2].trim(),
-      suggestion: suggestionMatch[1].trim()
+      suggestion: suggestionMatch[1].trim(),
    };
 }
 
@@ -116,7 +116,7 @@ async function promptWithTimeout(
    client: Client,
    args: PromptArgs,
    timeoutMs: number,
-   signal?: AbortSignal
+   signal?: AbortSignal,
 ): Promise<void> {
    // Bail immediately if the caller's signal is already aborted (e.g.
    // lease loss before this attempt was scheduled). Per spec
@@ -137,7 +137,7 @@ async function promptWithTimeout(
    try {
       await client.session.prompt({
          ...args,
-         signal: controller.signal
+         signal: controller.signal,
       } as Parameters<typeof client.session.prompt>[0]);
    } catch (error) {
       if (signal?.aborted) {
@@ -203,7 +203,7 @@ async function attemptOnce(
    timeoutMs: number,
    signal: AbortSignal | undefined,
    callContext: string,
-   label: string
+   label: string,
 ): Promise<void> {
    try {
       await promptWithTimeout(client, args, timeoutMs, signal);
@@ -222,7 +222,7 @@ async function attemptOnce(
 
       log(`[${callContext}] ${label}: model not found, retrying with suggestion`, {
          original: `${suggestion.providerID}/${suggestion.modelID}`,
-         suggested: suggestion.suggestion
+         suggested: suggestion.suggestion,
       });
 
       await promptWithTimeout(
@@ -233,12 +233,12 @@ async function attemptOnce(
                ...args.body,
                model: {
                   providerID: suggestion.providerID,
-                  modelID: suggestion.suggestion
-               }
-            }
+                  modelID: suggestion.suggestion,
+               },
+            },
          },
          timeoutMs,
-         signal
+         signal,
       );
    }
 }
@@ -260,7 +260,7 @@ async function attemptOnce(
 export async function promptSyncWithModelSuggestionRetry(
    client: Client,
    args: PromptArgs,
-   options: PromptRetryOptions = {}
+   options: PromptRetryOptions = {},
 ): Promise<void> {
    const timeoutMs = options.timeoutMs ?? 300_000;
    const callContext = options.callContext ?? "subagent";
@@ -290,7 +290,7 @@ export async function promptSyncWithModelSuggestionRetry(
       }
 
       log(
-         `[${callContext}] primary (${explicitPrimaryLabel}) failed: ${shortErr(error)}; trying ${fallbacks.length} fallback(s)`
+         `[${callContext}] primary (${explicitPrimaryLabel}) failed: ${shortErr(error)}; trying ${fallbacks.length} fallback(s)`,
       );
    }
 
@@ -305,7 +305,7 @@ export async function promptSyncWithModelSuggestionRetry(
       const label = `${parsed.providerID}/${parsed.modelID}`;
       const attemptArgs: PromptArgs = {
          ...args,
-         body: { ...args.body, model: parsed }
+         body: { ...args.body, model: parsed },
       };
 
       try {
@@ -327,7 +327,7 @@ export async function promptSyncWithModelSuggestionRetry(
    // caller's report (e.g. /ctx-dream tasks_json) still surfaces a real
    // diagnostic.
    log(
-      `[${callContext}] all models exhausted; tried: ${[explicitPrimaryLabel, ...fallbacks].join(", ")}; last error: ${shortErr(lastError)}`
+      `[${callContext}] all models exhausted; tried: ${[explicitPrimaryLabel, ...fallbacks].join(", ")}; last error: ${shortErr(lastError)}`,
    );
    throw lastError ?? new Error("All fallback models failed");
 }

@@ -6,7 +6,7 @@ import type {
    SegmentContext,
    SemanticColor,
    StatusLineSegment,
-   StatusLineSegmentId
+   StatusLineSegmentId,
 } from "./types.ts";
 import { normalizeCompactExtensionStatus, normalizeExtensionStatusValue } from "./station-config.ts";
 import { applyColor, fg, rainbow } from "./theme.ts";
@@ -89,7 +89,7 @@ const modelSegment: StatusLineSegment = {
       }
 
       return { content: color(ctx, "context", content), visible: true };
-   }
+   },
 };
 
 const shellModeSegment: StatusLineSegment = {
@@ -108,7 +108,7 @@ const shellModeSegment: StatusLineSegment = {
       }
 
       return { content: color(ctx, "shellMode", parts.join(SEP_DOT)), visible: true };
-   }
+   },
 };
 
 const pathSegment: StatusLineSegment = {
@@ -158,7 +158,7 @@ const pathSegment: StatusLineSegment = {
 
       const content = withIcon(icons.folder, pwd);
       return { content: color(ctx, "path", content), visible: true };
-   }
+   },
 };
 
 const gitSegment: StatusLineSegment = {
@@ -212,7 +212,7 @@ const gitSegment: StatusLineSegment = {
       }
 
       return { content, visible: true };
-   }
+   },
 };
 
 const thinkingSegment: StatusLineSegment = {
@@ -226,7 +226,7 @@ const thinkingSegment: StatusLineSegment = {
          medium: "med",
          minimal: "min",
          off: "off",
-         xhigh: "xhigh"
+         xhigh: "xhigh",
       };
       const label = levelText[level] || level;
       const content = label;
@@ -246,7 +246,7 @@ const thinkingSegment: StatusLineSegment = {
       }
 
       return { content: color(ctx, "thinking", content), visible: true };
-   }
+   },
 };
 
 const subagentsSegment: StatusLineSegment = {
@@ -256,7 +256,7 @@ const subagentsSegment: StatusLineSegment = {
       // This would require extension state management
       // For now, return not visible
       return { content: "", visible: false };
-   }
+   },
 };
 
 const tokenInSegment: StatusLineSegment = {
@@ -270,7 +270,7 @@ const tokenInSegment: StatusLineSegment = {
 
       const content = withIcon(icons.input, formatTokens(input));
       return { content: color(ctx, "tokens", content), visible: true };
-   }
+   },
 };
 
 const tokenOutSegment: StatusLineSegment = {
@@ -284,7 +284,7 @@ const tokenOutSegment: StatusLineSegment = {
 
       const content = withIcon(icons.output, formatTokens(output));
       return { content: color(ctx, "tokens", content), visible: true };
-   }
+   },
 };
 
 const tokenTotalSegment: StatusLineSegment = {
@@ -299,7 +299,7 @@ const tokenTotalSegment: StatusLineSegment = {
 
       const content = withIcon(icons.tokens, formatTokens(total));
       return { content: color(ctx, "tokens", content), visible: true };
-   }
+   },
 };
 
 const costSegment: StatusLineSegment = {
@@ -309,7 +309,7 @@ const costSegment: StatusLineSegment = {
          return { content: "", visible: false };
       }
       return { content: color(ctx, "context", "(auto)"), visible: true };
-   }
+   },
 };
 
 const contextPctSegment: StatusLineSegment = {
@@ -337,7 +337,7 @@ const contextPctSegment: StatusLineSegment = {
       }
 
       return { content, visible: true };
-   }
+   },
 };
 
 const contextTotalSegment: StatusLineSegment = {
@@ -355,9 +355,9 @@ const contextTotalSegment: StatusLineSegment = {
 
       return {
          content: color(ctx, "context", withIcon(icons.context, formatTokens(window))),
-         visible: true
+         visible: true,
       };
-   }
+   },
 };
 
 const timeSpentSegment: StatusLineSegment = {
@@ -370,7 +370,7 @@ const timeSpentSegment: StatusLineSegment = {
       }
 
       return { content: withIcon(icons.time, formatDuration(elapsed)), visible: true };
-   }
+   },
 };
 
 const timeSegment: StatusLineSegment = {
@@ -395,7 +395,7 @@ const timeSegment: StatusLineSegment = {
       timeStr += suffix;
 
       return { content: withIcon(icons.time, timeStr), visible: true };
-   }
+   },
 };
 
 const sessionSegment: StatusLineSegment = {
@@ -406,7 +406,7 @@ const sessionSegment: StatusLineSegment = {
       const display = sessionId?.slice(0, 8) || "new";
 
       return { content: withIcon(icons.session, display), visible: true };
-   }
+   },
 };
 
 const hostnameSegment: StatusLineSegment = {
@@ -415,7 +415,7 @@ const hostnameSegment: StatusLineSegment = {
       const icons = getIcons();
       const name = osHostname().split(".")[0];
       return { content: withIcon(icons.host, name), visible: true };
-   }
+   },
 };
 
 const cacheReadSegment: StatusLineSegment = {
@@ -429,7 +429,7 @@ const cacheReadSegment: StatusLineSegment = {
       const costStr = cost ? ` | ${formatCost(cost)}` : "";
       const content = `C:${formatTokens(cacheRead)}${costStr}`;
       return { content: color(ctx, "context", content), visible: true };
-   }
+   },
 };
 
 const cacheWriteSegment: StatusLineSegment = {
@@ -444,7 +444,7 @@ const cacheWriteSegment: StatusLineSegment = {
       const parts = [icons.cache, icons.output, formatTokens(cacheWrite)].filter(Boolean);
       const content = parts.join(" ");
       return { content: color(ctx, "tokens", content), visible: true };
-   }
+   },
 };
 
 const extensionStatusesSegment: StatusLineSegment = {
@@ -483,7 +483,7 @@ const extensionStatusesSegment: StatusLineSegment = {
 
       const content = parts.join(` | `);
       return { content: color(ctx, "context", content), visible: true };
-   }
+   },
 };
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -498,7 +498,7 @@ const skillsSegment: StatusLineSegment = {
 
       const content = `Skills: ${loaded}/${installed}`;
       return { content: color(ctx, "context", content), visible: true };
-   }
+   },
 };
 
 const mcpSegment: StatusLineSegment = {
@@ -512,7 +512,7 @@ const mcpSegment: StatusLineSegment = {
       // Strip existing ANSI, re-apply context color to match skills
       const plain = mcpStatus.replace(/\x1b\[[0-9;]*[a-zA-Z]/g, "");
       return { content: color(ctx, "context", plain), visible: true };
-   }
+   },
 };
 
 // Segment Registry
@@ -539,7 +539,7 @@ export const SEGMENTS: Record<BuiltinStatusLineSegmentId, StatusLineSegment> = {
    time_spent: timeSpentSegment,
    token_in: tokenInSegment,
    token_out: tokenOutSegment,
-   token_total: tokenTotalSegment
+   token_total: tokenTotalSegment,
 };
 
 function renderCustomSegment(id: `custom:${string}`, ctx: SegmentContext): RenderedSegment {

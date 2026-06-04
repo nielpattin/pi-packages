@@ -24,7 +24,7 @@ import type {
    IsolationMode,
    ParentSessionInfo,
    SubagentType,
-   ThinkingLevel
+   ThinkingLevel,
 } from "#src/types";
 
 /** Observer interface for agent lifecycle notifications. */
@@ -138,7 +138,7 @@ export class AgentManager {
          },
          onCompacted: (agent, info) => {
             this.observer?.onAgentCompacted(agent, info);
-         }
+         },
       };
    }
 
@@ -170,7 +170,7 @@ export class AgentManager {
          observer: this.buildObserver(options),
          getRunConfig: this.getRunConfig,
          baseCwd: this.baseCwd,
-         getWorkspaceProvider: () => this._workspaceProvider
+         getWorkspaceProvider: () => this._workspaceProvider,
       });
       this.agents.set(id, record);
 
@@ -196,7 +196,7 @@ export class AgentManager {
       snapshot: ParentSnapshot,
       type: SubagentType,
       prompt: string,
-      options: Omit<AgentSpawnConfig, "isBackground">
+      options: Omit<AgentSpawnConfig, "isBackground">,
    ): Promise<Agent> {
       const id = this.spawn(snapshot, type, prompt, { ...options, isBackground: false });
       const record = this.agents.get(id)!;

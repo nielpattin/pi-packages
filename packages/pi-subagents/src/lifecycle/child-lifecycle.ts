@@ -82,6 +82,6 @@ export function createChildLifecyclePublisher(emit: LifecycleEmit): ChildLifecyc
       },
       disposed(event) {
          emit(SUBAGENT_CHILD_DISPOSED, event);
-      }
+      },
    };
 }

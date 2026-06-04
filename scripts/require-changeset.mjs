@@ -33,7 +33,7 @@ const packageChanges = files.filter((file) => {
    return true;
 });
 const changesets = files.filter(
-   (file) => file.startsWith(".changeset/") && file.endsWith(".md") && file !== ".changeset/README.md"
+   (file) => file.startsWith(".changeset/") && file.endsWith(".md") && file !== ".changeset/README.md",
 );
 
 if (packageChanges.length === 0) {

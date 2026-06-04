@@ -13,10 +13,13 @@ allowBuilds:
 minimumReleaseAgeExclude:
    - "@earendil-works/*"
    - "@mariozechner/*"
-   - "@biomejs/*"
+   - "@oxlint/*"
+   - "@oxfmt/*"
    - "@aws-sdk/*"
    - "@rolldown/*"
    - "@smithy/*"
+   - oxlint
+   - oxfmt
 
 # Supply chain security
 minimumReleaseAge: 7200 # 5 days (or 1440 for 1 day)

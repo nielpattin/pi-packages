@@ -79,7 +79,7 @@ describe("createToolDeps", () => {
       it("replaces the manager when overridden", () => {
          const customSpawn = vi.fn().mockReturnValue("custom-id");
          const deps = createToolDeps({
-            manager: { ...createToolDeps().manager, spawn: customSpawn }
+            manager: { ...createToolDeps().manager, spawn: customSpawn },
          });
          deps.manager.spawn(STUB_SNAPSHOT, "t", "p", { description: "test" });
          expect(customSpawn).toHaveBeenCalledOnce();

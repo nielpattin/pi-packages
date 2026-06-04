@@ -30,7 +30,7 @@ export function promoteSessionFactsToMemory(
    db: Database,
    sessionId: string,
    projectPath: string,
-   facts: SessionFact[]
+   facts: SessionFact[],
 ): void {
    for (const fact of facts) {
       if (!isPromotableCategory(fact.category)) {
@@ -52,7 +52,7 @@ export function promoteSessionFactsToMemory(
             content: fact.content,
             sourceSessionId: sessionId,
             sourceType: "historian",
-            expiresAt: resolveExpiresAt(fact.category)
+            expiresAt: resolveExpiresAt(fact.category),
          };
 
          const memory = insertMemory(db, memoryInput);
@@ -70,7 +70,7 @@ async function embedAndStoreMemory(
    sessionId: string,
    projectPath: string,
    memoryId: number,
-   content: string
+   content: string,
 ): Promise<void> {
    try {
       const result = await embedTextForProject(projectPath, content);

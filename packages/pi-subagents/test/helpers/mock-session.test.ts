@@ -60,7 +60,7 @@ describe("createMockSession", () => {
    it("accepts overrides that replace default fields", async () => {
       const err = new Error("fail");
       const session = createMockSession({
-         steer: vi.fn().mockRejectedValue(err)
+         steer: vi.fn().mockRejectedValue(err),
       });
       await expect(session.steer("x")).rejects.toThrow("fail");
    });

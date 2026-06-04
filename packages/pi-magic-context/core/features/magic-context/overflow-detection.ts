@@ -44,7 +44,7 @@ export const OVERFLOW_PATTERNS: ReadonlyArray<RegExp> = [
    /prompt too long; exceeded (?:max )?context length/i, // Ollama explicit overflow
    /too large for model with \d+ maximum context length/i, // Mistral
    /model_context_window_exceeded/i, // z.ai non-standard finish_reason
-   /context size has been exceeded/i // Lemonade / llama-cpp wrappers
+   /context size has been exceeded/i, // Lemonade / llama-cpp wrappers
 ];
 
 /**
@@ -65,7 +65,7 @@ const LIMIT_EXTRACTION_PATTERNS: ReadonlyArray<RegExp> = [
    // NOT N (the actual prompt size). Explicit pattern keeps the fallback below
    // from greedily matching N.
    /exceeds? the context length of (\d+)/i, // vLLM overflow
-   /max(?:imum)?.*context.*?(\d+)/i // generic fallback — lowest priority
+   /max(?:imum)?.*context.*?(\d+)/i, // generic fallback — lowest priority
 ];
 
 /** Minimum plausible context limit. Anything smaller is probably a match
@@ -150,7 +150,7 @@ export function detectOverflow(error: unknown): OverflowDetection {
    return {
       isOverflow: true,
       reportedLimit,
-      matchedPattern: matched?.source
+      matchedPattern: matched?.source,
    };
 }
 

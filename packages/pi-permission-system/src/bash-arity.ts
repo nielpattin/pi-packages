@@ -149,7 +149,7 @@ export const ARITY: Record<string, number> = {
    apt: 2,
    "apt-get": 2,
    yum: 2,
-   dnf: 2
+   dnf: 2,
 };
 
 /**

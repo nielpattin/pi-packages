@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 
 // Hoisted stub so the vi.mock factory can reference it.
 const { mockSpawnSync } = vi.hoisted(() => ({
-   mockSpawnSync: vi.fn()
+   mockSpawnSync: vi.fn(),
 }));
 
 // Mock node:child_process so tests that exercise the subprocess fallback path
@@ -11,7 +11,7 @@ const { mockSpawnSync } = vi.hoisted(() => ({
 // tests focused on the walk-up strategy continue to expect null.
 vi.mock("node:child_process", () => ({
    spawnSync: mockSpawnSync,
-   default: { spawnSync: mockSpawnSync }
+   default: { spawnSync: mockSpawnSync },
 }));
 
 import { discoverGlobalNodeModulesRoot } from "#src/node-modules-discovery";
@@ -96,19 +96,19 @@ describe("isPiInfrastructureRead", () => {
 
    test("allows 'find' tool for a path inside node_modules infra dir", () => {
       expect(isPiInfrastructureRead("find", "/opt/homebrew/lib/node_modules/pi-ask-user/skills", INFRA_DIRS, CWD)).toBe(
-         true
+         true,
       );
    });
 
    test("allows 'grep' tool for a path inside agentDir/git", () => {
       expect(isPiInfrastructureRead("grep", "/home/user/.pi/agent/git/some-package/README.md", INFRA_DIRS, CWD)).toBe(
-         true
+         true,
       );
    });
 
    test("allows 'ls' tool for a path inside node_modules infra dir", () => {
       expect(isPiInfrastructureRead("ls", "/opt/homebrew/lib/node_modules/pi-permission-system", INFRA_DIRS, CWD)).toBe(
-         true
+         true,
       );
    });
 
@@ -124,14 +124,14 @@ describe("isPiInfrastructureRead", () => {
             "edit",
             "/opt/homebrew/lib/node_modules/pi-ask-user/skills/ask-user/SKILL.md",
             INFRA_DIRS,
-            CWD
-         )
+            CWD,
+         ),
       ).toBe(false);
    });
 
    test("blocks 'bash' tool regardless of path", () => {
       expect(
-         isPiInfrastructureRead("bash", "/opt/homebrew/lib/node_modules/pi-ask-user/SKILL.md", INFRA_DIRS, CWD)
+         isPiInfrastructureRead("bash", "/opt/homebrew/lib/node_modules/pi-ask-user/SKILL.md", INFRA_DIRS, CWD),
       ).toBe(false);
    });
 
@@ -150,19 +150,19 @@ describe("isPiInfrastructureRead", () => {
 
    test("allows 'read' for a path inside project-local .pi/npm/", () => {
       expect(isPiInfrastructureRead("read", `${CWD}/.pi/npm/node_modules/some-skill/SKILL.md`, INFRA_DIRS, CWD)).toBe(
-         true
+         true,
       );
    });
 
    test("allows 'read' for a path inside project-local .pi/git/", () => {
       expect(isPiInfrastructureRead("read", `${CWD}/.pi/git/github.com/org/skill-repo/SKILL.md`, INFRA_DIRS, CWD)).toBe(
-         true
+         true,
       );
    });
 
    test("blocks 'write' for a path inside project-local .pi/npm/", () => {
       expect(isPiInfrastructureRead("write", `${CWD}/.pi/npm/node_modules/some-skill/SKILL.md`, INFRA_DIRS, CWD)).toBe(
-         false
+         false,
       );
    });
 
@@ -187,8 +187,8 @@ describe("isPiInfrastructureRead with glob patterns", () => {
             "read",
             "/opt/homebrew/Cellar/pi-coding-agent/0.74.0/libexec/lib/node_modules/@earendil-works/pi-coding-agent/SKILL.md",
             ["/opt/homebrew/*/@earendil-works/pi-coding-agent/*"],
-            CWD
-         )
+            CWD,
+         ),
       ).toBe(true);
    });
 
@@ -198,14 +198,14 @@ describe("isPiInfrastructureRead with glob patterns", () => {
             "read",
             "/opt/homebrew/Cellar/pi-coding-agent/0.74.0/libexec/lib/node_modules/@earendil-works/pi-coding-agent/SKILL.md",
             ["/opt/homebrew/**/@earendil-works/pi-coding-agent/**"],
-            CWD
-         )
+            CWD,
+         ),
       ).toBe(true);
    });
 
    test("glob entry does not match an unrelated path", () => {
       expect(
-         isPiInfrastructureRead("read", "/etc/passwd", ["/opt/homebrew/*/@earendil-works/pi-coding-agent/*"], CWD)
+         isPiInfrastructureRead("read", "/etc/passwd", ["/opt/homebrew/*/@earendil-works/pi-coding-agent/*"], CWD),
       ).toBe(false);
    });
 
@@ -225,8 +225,8 @@ describe("isPiInfrastructureRead with glob patterns", () => {
             "read",
             "/opt/homebrew/Cellar/pi-coding-agent/0.74.0/libexec/lib/node_modules/@earendil-works/pi-coding-agent/SKILL.md",
             dirs,
-            CWD
-         )
+            CWD,
+         ),
       ).toBe(true);
    });
 
@@ -241,8 +241,8 @@ describe("isPiInfrastructureRead with glob patterns", () => {
             "write",
             "/opt/homebrew/Cellar/pi-coding-agent/0.74.0/libexec/lib/node_modules/@earendil-works/pi-coding-agent/SKILL.md",
             ["/opt/homebrew/**/@earendil-works/pi-coding-agent/**"],
-            CWD
-         )
+            CWD,
+         ),
       ).toBe(false);
    });
 });

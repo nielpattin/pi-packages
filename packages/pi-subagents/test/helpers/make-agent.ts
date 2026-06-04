@@ -8,7 +8,7 @@ export function createTestAgent(
       lifetimeUsage?: { input: number; output: number; cacheWrite: number };
       /** Legacy shorthand: set compactionCount via incrementCompactions(). */
       compactionCount?: number;
-   } = {}
+   } = {},
 ): Agent {
    const { toolUses, lifetimeUsage, compactionCount, ...init } = overrides;
    const record = new Agent({
@@ -19,7 +19,7 @@ export function createTestAgent(
       result: "All done.",
       startedAt: 1000,
       completedAt: 2000,
-      ...init
+      ...init,
    });
    // Apply stat overrides via mutation methods
    if (toolUses !== undefined) {

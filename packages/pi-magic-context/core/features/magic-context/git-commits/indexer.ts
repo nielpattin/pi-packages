@@ -54,14 +54,14 @@ export async function indexCommitsForProject(
    db: Database,
    projectPath: string,
    directory: string,
-   options: IndexCommitsOptions
+   options: IndexCommitsOptions,
 ): Promise<IndexCommitsResult> {
    const result: IndexCommitsResult = {
       scanned: 0,
       inserted: 0,
       updated: 0,
       evicted: 0,
-      embedded: 0
+      embedded: 0,
    };
 
    if (indexInProgress.has(projectPath)) {
@@ -82,7 +82,7 @@ export async function indexCommitsForProject(
 
       const commits = await readGitCommits(directory, {
          sinceMs,
-         maxCommits: options.maxCommits
+         maxCommits: options.maxCommits,
       });
       result.scanned = commits.length;
 
@@ -90,13 +90,13 @@ export async function indexCommitsForProject(
          // No new commits. Still enforce the cap in case prior runs overflowed.
          result.evicted = enforceProjectCap(db, projectPath, options.maxCommits);
          log(
-            `[git-commits] no new commits for ${projectPath} (sinceMs=${sinceMs} latestIndexed=${latestIndexed ?? "none"} evicted=${result.evicted})`
+            `[git-commits] no new commits for ${projectPath} (sinceMs=${sinceMs} latestIndexed=${latestIndexed ?? "none"} evicted=${result.evicted})`,
          );
          return result;
       }
 
       log(
-         `[git-commits] read ${commits.length} commits for ${projectPath} (sinceMs=${sinceMs} latestIndexed=${latestIndexed ?? "none"})`
+         `[git-commits] read ${commits.length} commits for ${projectPath} (sinceMs=${sinceMs} latestIndexed=${latestIndexed ?? "none"})`,
       );
 
       const upsert = upsertCommits(db, projectPath, commits);
@@ -107,14 +107,14 @@ export async function indexCommitsForProject(
       const snapshot = getProjectEmbeddingSnapshot(projectPath);
       if (options.skipEmbed || !snapshot?.gitCommitEnabled) {
          log(
-            `[git-commits] indexed ${projectPath}: scanned=${result.scanned} inserted=${result.inserted} updated=${result.updated} evicted=${result.evicted} embedded=0 (embedding skipped: skipEmbed=${options.skipEmbed === true} gitCommitEnabled=${snapshot?.gitCommitEnabled === true})`
+            `[git-commits] indexed ${projectPath}: scanned=${result.scanned} inserted=${result.inserted} updated=${result.updated} evicted=${result.evicted} embedded=0 (embedding skipped: skipEmbed=${options.skipEmbed === true} gitCommitEnabled=${snapshot?.gitCommitEnabled === true})`,
          );
          return result;
       }
 
       result.embedded = await embedUnembeddedCommits(db, projectPath);
       log(
-         `[git-commits] indexed ${projectPath}: scanned=${result.scanned} inserted=${result.inserted} updated=${result.updated} evicted=${result.evicted} embedded=${result.embedded}`
+         `[git-commits] indexed ${projectPath}: scanned=${result.scanned} inserted=${result.inserted} updated=${result.updated} evicted=${result.evicted} embedded=${result.embedded}`,
       );
       return result;
    } finally {
@@ -150,7 +150,7 @@ export async function embedUnembeddedCommits(db: Database, projectPath: string):
          try {
             const result = await embedBatchForProject(
                projectPath,
-               rows.map((row) => row.message)
+               rows.map((row) => row.message),
             );
             if (!result) break;
 
@@ -164,7 +164,7 @@ export async function embedUnembeddedCommits(db: Database, projectPath: string):
             })();
          } catch (error) {
             log(
-               `[git-commits] embed batch failed for ${projectPath}: ${error instanceof Error ? error.message : String(error)}`
+               `[git-commits] embed batch failed for ${projectPath}: ${error instanceof Error ? error.message : String(error)}`,
             );
             break;
          }

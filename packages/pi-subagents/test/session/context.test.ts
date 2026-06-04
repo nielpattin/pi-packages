@@ -11,8 +11,8 @@ function makeCtx(entries: unknown[]): SessionContext {
       sessionManager: {
          getSessionFile: () => undefined,
          getSessionId: () => "test",
-         getBranch: () => entries
-      }
+         getBranch: () => entries,
+      },
    };
 }
 
@@ -29,8 +29,8 @@ describe("extractText", () => {
       expect(
          extractText([
             { type: "text", text: "first" },
-            { type: "text", text: "second" }
-         ])
+            { type: "text", text: "second" },
+         ]),
       ).toBe("first\nsecond");
    });
 
@@ -39,8 +39,8 @@ describe("extractText", () => {
          extractText([
             { type: "thinking", thinking: "..." },
             { type: "text", text: "visible" },
-            { type: "tool_use", name: "bash" }
-         ])
+            { type: "tool_use", name: "bash" },
+         ]),
       ).toBe("visible");
    });
 
@@ -69,16 +69,16 @@ describe("buildParentContext", () => {
          makeCtx([
             {
                type: "message",
-               message: { role: "user", content: [{ type: "text", text: "Hi there" }] }
-            }
-         ])
+               message: { role: "user", content: [{ type: "text", text: "Hi there" }] },
+            },
+         ]),
       );
       expect(result).toContain("[User]: Hi there");
    });
 
    it("formats an assistant message with string content", () => {
       const result = buildParentContext(
-         makeCtx([{ type: "message", message: { role: "assistant", content: "I can help" } }])
+         makeCtx([{ type: "message", message: { role: "assistant", content: "I can help" } }]),
       );
       expect(result).toContain("[Assistant]: I can help");
    });
@@ -88,9 +88,9 @@ describe("buildParentContext", () => {
          makeCtx([
             {
                type: "message",
-               message: { role: "assistant", content: [{ type: "text", text: "Sure!" }] }
-            }
-         ])
+               message: { role: "assistant", content: [{ type: "text", text: "Sure!" }] },
+            },
+         ]),
       );
       expect(result).toContain("[Assistant]: Sure!");
    });
@@ -102,7 +102,7 @@ describe("buildParentContext", () => {
 
    it("skips toolResult messages", () => {
       const result = buildParentContext(
-         makeCtx([{ type: "message", message: { role: "tool", content: "result data" } }])
+         makeCtx([{ type: "message", message: { role: "tool", content: "result data" } }]),
       );
       expect(result).toBe("");
    });
@@ -133,8 +133,8 @@ describe("buildParentContext", () => {
       const result = buildParentContext(
          makeCtx([
             { type: "message", message: { role: "user", content: "first" } },
-            { type: "message", message: { role: "assistant", content: "second" } }
-         ])
+            { type: "message", message: { role: "assistant", content: "second" } },
+         ]),
       );
       expect(result).toContain("[User]: first\n\n[Assistant]: second");
    });
@@ -144,8 +144,8 @@ describe("buildParentContext", () => {
          makeCtx([
             { type: "compaction", summary: "Earlier work" },
             { type: "message", message: { role: "user", content: "What next?" } },
-            { type: "other" }
-         ])
+            { type: "other" },
+         ]),
       );
       expect(result).toContain("[Summary]: Earlier work");
       expect(result).toContain("[User]: What next?");

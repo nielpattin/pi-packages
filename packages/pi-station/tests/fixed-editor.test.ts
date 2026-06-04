@@ -11,7 +11,7 @@ import {
    endSynchronizedOutput,
    moveCursor,
    resetScrollRegion,
-   setScrollRegion
+   setScrollRegion,
 } from "../features/fixed-editor/terminal-split.ts";
 
 class FakeTerminal {
@@ -44,7 +44,7 @@ test("fixed cluster keeps the editor visible above top status rows", () => {
       statusLines: ["status"],
       terminalRows: 6,
       topLines: ["top"],
-      width: 80
+      width: 80,
    });
 
    assert.deepEqual(rendered.lines, ["edit-a", "edit-b ", "edit-c", "top", "secondary"]);
@@ -56,7 +56,7 @@ test("fixed cluster caps oversized editor around the cursor", () => {
       editorLines: ["edit-a", "edit-b", `edit-c ${CURSOR_MARKER}`, "edit-d", "edit-e"],
       statusLines: ["status"],
       terminalRows: 4,
-      width: 80
+      width: 80,
    });
 
    assert.deepEqual(rendered.lines, ["edit-a", "edit-b", "edit-c "]);
@@ -71,10 +71,10 @@ test("fixed cluster caps selector-style editor replacements around the selected 
          "  option-b",
          "\x1b[38;5;39m→ \x1b[0m\x1b[38;5;39moption-c\x1b[0m",
          "  option-d",
-         "hint"
+         "hint",
       ],
       terminalRows: 4,
-      width: 80
+      width: 80,
    });
 
    assert.deepEqual(rendered.lines, ["  option-b", "\x1b[38;5;39m→ \x1b[0m\x1b[38;5;39moption-c\x1b[0m", "  option-d"]);
@@ -85,7 +85,7 @@ test("fixed cluster keeps tail status lines when compact", () => {
       editorLines: ["edit"],
       statusLines: ["above-widget", "station-status", "⠏ Shaolin Switchblade Sync..."],
       terminalRows: 3,
-      width: 80
+      width: 80,
    });
 
    assert.deepEqual(rendered.lines, ["⠏ Shaolin Switchblade Sync...", "edit"]);
@@ -97,12 +97,12 @@ test("terminal split can render a hidden status container in the fixed cluster",
       render() {
          return ["", this.text];
       },
-      text: "⠏ Shaolin Switchblade Sync..."
+      text: "⠏ Shaolin Switchblade Sync...",
    };
    const editor = {
       render() {
          return ["editor"];
-      }
+      },
    };
    const tui = {
       doRender() {
@@ -111,7 +111,7 @@ test("terminal split can render a hidden status container in the fixed cluster",
       render() {
          return ["chat"];
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
@@ -120,11 +120,11 @@ test("terminal split can render a hidden status container in the fixed cluster",
          cursor: null,
          lines: [
             ...compositor.renderHidden(status, width).filter((line) => visibleWidth(line) > 0),
-            ...compositor.renderHidden(editor, width)
-         ]
+            ...compositor.renderHidden(editor, width),
+         ],
       }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.hideRenderable(status);
@@ -165,7 +165,7 @@ test("terminal split reserves rows, hides root renderables, repaints, and cleans
    const hidden = {
       render(width: number) {
          return [`hidden:${width}`];
-      }
+      },
    };
    const tui = {
       cursorRow: 2,
@@ -176,17 +176,17 @@ test("terminal split reserves rows, hides root renderables, repaints, and cleans
       hardwareCursorRow: 2,
       previousViewportTop: 0,
       rendered: 0,
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       getShowHardwareCursor: () => false,
       renderCluster: (width) => ({
          cursor: null,
-         lines: [`cluster:${width}`, ...compositor.renderHidden(hidden, width)]
+         lines: [`cluster:${width}`, ...compositor.renderHidden(hidden, width)],
       }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.hideRenderable(hidden);
@@ -228,7 +228,7 @@ test("terminal split re-enables Kitty keyboard protocol in alternate screen", ()
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -252,7 +252,7 @@ test("terminal split re-enables modifyOtherKeys in alternate screen", () => {
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -275,7 +275,7 @@ test("terminal split restores main screen mode when Kitty activates after instal
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -294,7 +294,7 @@ test("terminal split restores main screen mode when modifyOtherKeys activates af
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -313,7 +313,7 @@ test("terminal split shutdown cleanup resets extended keyboard modes", () => {
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -338,16 +338,16 @@ test("terminal row reservation does not recurse when hidden editor render reads 
    const hidden = {
       render() {
          return [`rows:${terminal.rows}`];
-      }
+      },
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: (width) => ({
          cursor: null,
-         lines: compositor.renderHidden(hidden, width)
+         lines: compositor.renderHidden(hidden, width),
       }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.hideRenderable(hidden);
@@ -366,13 +366,13 @@ test("terminal split anchors diff writes to the visible viewport row", () => {
       cursorRow: 100,
       hardwareCursorRow: 100,
       previousViewportTop: 95,
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -392,13 +392,13 @@ test("terminal split does not repaint the fixed cluster over visible overlays", 
       },
       overlayStack: [{}],
       rendered: 0,
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -407,7 +407,7 @@ test("terminal split does not repaint the fixed cluster over visible overlays", 
 
    assert.deepEqual(terminal.writes, [
       "\x1b[?2026h\x1b[?1049h\x1b[?1007l\x1b[?1002h\x1b[?1006h\x1b[?2026l",
-      "overlay-frame"
+      "overlay-frame",
    ]);
 
    compositor.dispose();
@@ -421,13 +421,13 @@ test("terminal split disables mouse reporting while overlays are visible", () =>
          return ["root"];
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -452,13 +452,13 @@ test("terminal split strips OSC markers from root lines while overlays are visib
       render() {
          return [`\x1b]133;B\x07${"x".repeat(20)}\x1b]133;C\x07`];
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -485,7 +485,7 @@ test("terminal split keeps tabbed overlay composition within terminal width", ()
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -512,13 +512,13 @@ test("terminal split renders draggable chat scrollbar when chat overflows", () =
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -552,13 +552,13 @@ test("terminal split preserves the last visible chat column before the scrollbar
          return rootLines;
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -584,13 +584,13 @@ test("terminal split keeps chat scrollbar visible while holding a chat selection
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -618,13 +618,13 @@ test("terminal split chat selection drag does not jump to scrollbar", () => {
          return rootLines;
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -660,14 +660,14 @@ test("terminal split renders bash overlay in the root viewport", () => {
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a"] }),
       renderRootOverlay: () => bashLines,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -700,16 +700,16 @@ test("terminal split refreshes scroll bounds after fixed status rows appear", ()
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({
          cursor: null,
-         lines: statusVisible ? ["⠏ fixed status", "editor"] : ["editor"]
+         lines: statusVisible ? ["⠏ fixed status", "editor"] : ["editor"],
       }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -733,7 +733,7 @@ test("terminal split refreshes scroll bounds after fixed status rows appear", ()
       "line-6                                 █",
       "line-7                                 █",
       "line-8                                 █",
-      "line-9                                 \x1B[38;5;238m░\x1B[0m"
+      "line-9                                 \x1B[38;5;238m░\x1B[0m",
    ]);
 
    compositor.dispose();
@@ -756,14 +756,14 @@ test("terminal split handles modified SGR wheel packets", () => {
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -781,7 +781,7 @@ test("terminal split handles modified SGR wheel packets", () => {
       "line-8",
       "line-9",
       "line-10",
-      "line-11"
+      "line-11",
    ]);
 
    assert.deepEqual(inputListener?.("\x1b[<68;1;1M\x1b[<68;1;1M"), { consume: true });
@@ -796,7 +796,7 @@ test("terminal split handles modified SGR wheel packets", () => {
       "line-6",
       "line-7",
       "line-8",
-      "line-9"
+      "line-9",
    ]);
 
    assert.deepEqual(inputListener?.("\x1b[<69;1;1M"), { consume: true });
@@ -823,14 +823,14 @@ test("terminal split pauses mouse reporting on right click for the terminal cont
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       onCopySelection: (text) => copied.push(text),
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -868,7 +868,7 @@ test("terminal split selects visible chat text and copies it on drag release", (
       "golf seven",
       "hotel eight",
       "india nine",
-      "juliet ten"
+      "juliet ten",
    ];
    const tui = {
       addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
@@ -883,7 +883,7 @@ test("terminal split selects visible chat text and copies it on drag release", (
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
@@ -891,7 +891,7 @@ test("terminal split selects visible chat text and copies it on drag release", (
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -905,7 +905,7 @@ test("terminal split selects visible chat text and copies it on drag release", (
       "golf seven",
       "hotel eight",
       "india nine",
-      "juliet ten"
+      "juliet ten",
    ]);
 
    assert.deepEqual(inputListener?.("\x1b[<0;2;2M"), { consume: true });
@@ -913,7 +913,7 @@ test("terminal split selects visible chat text and copies it on drag release", (
    assert.deepEqual(tui.render(40).slice(1, 4), [
       "b\x1b[7mravo two\x1b[27m",
       "\x1b[7mcharlie three\x1b[27m",
-      "\x1b[7mdelta \x1b[27mfour"
+      "\x1b[7mdelta \x1b[27mfour",
    ]);
    assert.deepEqual(inputListener?.("\x1b[<0;7;4m"), { consume: true });
 
@@ -943,7 +943,7 @@ test("terminal split clears selected text on ctrl+c", () => {
       "golf seven",
       "hotel eight",
       "india nine",
-      "juliet ten"
+      "juliet ten",
    ];
    const tui = {
       addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
@@ -958,14 +958,14 @@ test("terminal split clears selected text on ctrl+c", () => {
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1004,7 +1004,7 @@ test("terminal split restores app-owned selection after context menu copy", () =
          "golf seven",
          "hotel eight",
          "india nine",
-         "juliet ten"
+         "juliet ten",
       ];
       const tui = {
          addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
@@ -1017,7 +1017,7 @@ test("terminal split restores app-owned selection after context menu copy", () =
             return rootLines;
          },
          requestRender() {},
-         terminal
+         terminal,
       };
 
       const compositor = new TerminalSplitCompositor({
@@ -1026,7 +1026,7 @@ test("terminal split restores app-owned selection after context menu copy", () =
          },
          renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
          terminal,
-         tui
+         tui,
       });
 
       compositor.install();
@@ -1077,7 +1077,7 @@ test("terminal split selection does not expose OSC control sequences as text", (
       "golf",
       "hotel",
       "india",
-      "\x1b]133;B\x07\x1b]133;C\x07juliet"
+      "\x1b]133;B\x07\x1b]133;C\x07juliet",
    ];
    const tui = {
       addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
@@ -1090,13 +1090,13 @@ test("terminal split selection does not expose OSC control sequences as text", (
          return rootLines;
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1131,13 +1131,13 @@ test("terminal split selection highlighting does not duplicate wide glyphs", () 
             return ["old-0", "old-1", "old-2", "old-3", "old-4", "old-5", "old-6", "old-7", "old-8", line];
          },
          requestRender() {},
-         terminal
+         terminal,
       };
 
       const compositor = new TerminalSplitCompositor({
          renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
          terminal,
-         tui
+         tui,
       });
 
       compositor.install();
@@ -1172,14 +1172,14 @@ test("terminal split selection highlight excludes trailing line padding", () => 
          return rootLines;
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       onCopySelection: (text) => copied.push(text),
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1207,7 +1207,7 @@ test("terminal split preserves normal root text left padding", () => {
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1237,7 +1237,7 @@ test("terminal split copies wrapped root text as one logical line", () => {
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1270,7 +1270,7 @@ test("terminal split ignores outer root padding when selection starts before con
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1305,7 +1305,7 @@ test("terminal split copies chat and fixed cluster selections", () => {
       "golf seven",
       "hotel eight",
       "india nine",
-      "juliet ten"
+      "juliet ten",
    ];
    const tui = {
       addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
@@ -1318,7 +1318,7 @@ test("terminal split copies chat and fixed cluster selections", () => {
          return rootLines;
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
@@ -1326,7 +1326,7 @@ test("terminal split copies chat and fixed cluster selections", () => {
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "  > hello world"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1381,7 +1381,7 @@ test("terminal split selection scrolls when dragged to viewport edges", () => {
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
@@ -1389,7 +1389,7 @@ test("terminal split selection scrolls when dragged to viewport edges", () => {
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1431,14 +1431,14 @@ test("terminal split wheel-scrolls while preserving active chat selection", () =
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       onCopySelection: (text) => copied.push(text),
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1470,14 +1470,14 @@ test("terminal split copies edge-scrolled selections without waiting for render"
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       onCopySelection: (text) => copied.push(text),
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1508,8 +1508,8 @@ test("terminal split copies edge-scrolled selections without waiting for render"
          "line-26",
          "line-27",
          "line-28",
-         "line"
-      ].join("\n")
+         "line",
+      ].join("\n"),
    );
 
    compositor.dispose();
@@ -1530,14 +1530,14 @@ test("terminal split maps post-edge-scroll drags against the updated viewport", 
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       onCopySelection: (text) => copied.push(text),
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1568,13 +1568,13 @@ test("terminal split keyboard scroll supports page aliases", () => {
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1598,14 +1598,14 @@ test("terminal split jumps to previous root target lines", () => {
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       scrollBar: false,
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1619,7 +1619,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-26",
       "line-27",
       "line-28",
-      "line-29"
+      "line-29",
    ]);
 
    assert.equal(compositor.jumpToPreviousRootTarget([6, 14, 24]), true);
@@ -1634,7 +1634,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-20",
       "line-21",
       "line-22",
-      "line-23"
+      "line-23",
    ]);
 
    assert.equal(compositor.jumpToPreviousRootTarget([6, 14, 24]), true);
@@ -1649,7 +1649,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-12",
       "line-13",
       "line-14",
-      "line-15"
+      "line-15",
    ]);
 
    assert.equal(compositor.jumpToPreviousRootTarget([6, 14, 24]), false);
@@ -1665,7 +1665,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-20",
       "line-21",
       "line-22",
-      "line-23"
+      "line-23",
    ]);
 
    assert.equal(compositor.jumpToNextRootTarget([6, 14, 24]), true);
@@ -1679,7 +1679,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-26",
       "line-27",
       "line-28",
-      "line-29"
+      "line-29",
    ]);
 
    assert.equal(compositor.jumpToNextRootTarget([6, 14, 24]), false);
@@ -1695,7 +1695,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-20",
       "line-21",
       "line-22",
-      "line-23"
+      "line-23",
    ]);
    assert.equal(compositor.jumpToRootBottom(), true);
    assert.deepEqual(tui.render(40), [
@@ -1708,7 +1708,7 @@ test("terminal split jumps to previous root target lines", () => {
       "line-26",
       "line-27",
       "line-28",
-      "line-29"
+      "line-29",
    ]);
    assert.equal(compositor.jumpToRootBottom(), false);
    compositor.dispose();
@@ -1728,13 +1728,13 @@ test("terminal split previous root target only moves to older targets", () => {
          return Array.from({ length: 30 }, (_, index) => `line-${index}`);
       },
       requestRender() {},
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1748,7 +1748,7 @@ test("terminal split previous root target only moves to older targets", () => {
       "line-26",
       "line-27",
       "line-28",
-      "line-29"
+      "line-29",
    ]);
    assert.deepEqual(inputListener?.("\x1b[5~"), { consume: true });
    assert.deepEqual(tui.render(), [
@@ -1761,7 +1761,7 @@ test("terminal split previous root target only moves to older targets", () => {
       "line-16",
       "line-17",
       "line-18",
-      "line-19"
+      "line-19",
    ]);
 
    assert.equal(compositor.jumpToPreviousRootTarget([6, 14, 24]), true);
@@ -1775,7 +1775,7 @@ test("terminal split previous root target only moves to older targets", () => {
       "line-12",
       "line-13",
       "line-14",
-      "line-15"
+      "line-15",
    ]);
 
    compositor.dispose();
@@ -1798,13 +1798,13 @@ test("terminal split can disable mouse reporting for normal selection", () => {
       requestRender(force?: boolean) {
          renderRequests.push(force);
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1840,7 +1840,7 @@ test("terminal split reuses the fixed cluster during one render pass", () => {
       render() {
          return ["root-a", "root-b"];
       },
-      terminal
+      terminal,
    };
 
    const compositor = new TerminalSplitCompositor({
@@ -1849,7 +1849,7 @@ test("terminal split reuses the fixed cluster during one render pass", () => {
          return { cursor: null, lines: ["cluster-a", "cluster-b"] };
       },
       terminal,
-      tui
+      tui,
    });
 
    compositor.install();
@@ -1880,7 +1880,7 @@ test("terminal split emergency exit cleanup resets extended keyboard modes", () 
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();
@@ -1907,7 +1907,7 @@ test("terminal split unregisters emergency exit cleanup on dispose", () => {
    const compositor = new TerminalSplitCompositor({
       renderCluster: () => ({ cursor: null, lines: ["cluster"] }),
       terminal,
-      tui: { terminal }
+      tui: { terminal },
    });
 
    compositor.install();

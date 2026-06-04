@@ -30,12 +30,11 @@ pnpm install
 ## Daily Development
 
 ```bash
-pnpm fmt       # format with biome
-pnpm lint      # lint with biome
-pnpm lint:fix  # auto-fix lint issues with biome
+pnpm fmt       # format with oxfmt
+pnpm lint      # auto-fix lint issues with oxlint
 pnpm test      # run Vitest tests
 pnpm coverage  # run Vitest coverage with enforced thresholds
-pnpm check     # biome ci + tsc typecheck
+pnpm check     # lint, format check, and TypeScript typecheck
 ```
 
 Git hooks are the validation source for this repo:
@@ -126,7 +125,8 @@ pi-packages/
 │   └── sync-monorepo-changelog.mjs
 ├── publish.sh                    # gh workflow dispatch helper
 ├── CHANGELOG.md                  # generated package changelog summary
-├── biome.json                    # biome config (lint + format)
+├── oxlint.config.ts              # oxlint config
+├── oxfmt.config.ts               # oxfmt config
 ├── package.json                  # workspaces, shared devDeps, scripts
 ├── pnpm-workspace.yaml           # packages/* workspace definition
 ├── tsconfig.json                 # shared TS config
@@ -138,7 +138,8 @@ pi-packages/
 | Tool       | Config                | Purpose                        |
 | ---------- | --------------------- | ------------------------------ |
 | Changesets | `.changeset/`         | Versioning and changelogs      |
-| Biome      | `biome.json`          | Linting and formatting         |
+| oxlint     | `oxlint.config.ts`    | Linting                        |
+| oxfmt      | `oxfmt.config.ts`     | Formatting                     |
 | Vitest     | `vitest.config.ts`    | Testing and coverage           |
 | TypeScript | `tsconfig.json`       | Type checking                  |
 | Husky      | `.husky/*`            | Git hooks                      |

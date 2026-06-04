@@ -27,7 +27,7 @@ export function parseArgs(args: string): SimplifyOptions {
 export async function handleSimplifyCommand(
    args: string,
    ctx: ExtensionCommandContext,
-   pi: ExtensionAPI
+   pi: ExtensionAPI,
 ): Promise<void> {
    const options = parseArgs(args);
    const files = await getChangedFiles(pi, ctx.cwd, options);

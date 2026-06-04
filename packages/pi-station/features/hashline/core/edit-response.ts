@@ -90,7 +90,7 @@ type StructureSection = { label?: string; previewText: string };
 type FullPreviewBuilder = (text: string) => FullContentPreview;
 type RangePreviewBuilder = (
    text: string,
-   ranges: ReturnRange[]
+   ranges: ReturnRange[],
 ) => { text: string; returnedRanges: ReturnedRangePreview[] };
 type OutlineBuilder = (sections: StructureSection[]) => {
    text: string;
@@ -169,13 +169,13 @@ function buildMetrics(args: {
       edits_noop: args.noopEditsCount,
       warnings: args.warningsCount,
       return_mode: args.returnMode,
-      classification: args.classification
+      classification: args.classification,
    };
    if (args.legacyReplace) metrics.legacy_replace = true;
    if (args.classification === "applied" && args.firstChangedLine !== undefined && args.lastChangedLine !== undefined) {
       metrics.changed_lines = {
          first: args.firstChangedLine,
-         last: args.lastChangedLine
+         last: args.lastChangedLine,
       };
    }
    if (args.addedLines !== undefined) metrics.added_lines = args.addedLines;
@@ -206,14 +206,14 @@ export function buildNoopResponse(input: NoopResponseInput): ToolResult {
       legacyReplace,
       formatHashlineReadPreview,
       formatRequestedRangePreviews,
-      buildStructureOutline
+      buildStructureOutline,
    } = input;
 
    const noopDetailsText = noopEdits?.length
       ? noopEdits
            .map(
               (edit) =>
-                 `Edit ${edit.editIndex}: replacement for ${edit.loc} is identical to current content:\n  ${edit.loc}: ${edit.currentContent}`
+                 `Edit ${edit.editIndex}: replacement for ${edit.loc} is identical to current content:\n  ${edit.loc}: ${edit.currentContent}`,
            )
            .join("\n")
       : "The edits produced identical content.";
@@ -228,8 +228,8 @@ export function buildNoopResponse(input: NoopResponseInput): ToolResult {
            ? buildStructureOutline(
                 rangePreviews!.returnedRanges.map((range, index) => ({
                    label: `Range ${index + 1} (lines ${range.start}-${range.end})`,
-                   previewText: range.text
-                }))
+                   previewText: range.text,
+                })),
              )
            : undefined;
 
@@ -246,7 +246,7 @@ export function buildNoopResponse(input: NoopResponseInput): ToolResult {
       editsAttempted,
       noopEditsCount: noopEdits?.length ?? 0,
       warningsCount: warnings?.length ?? 0,
-      legacyReplace
+      legacyReplace,
    });
 
    return {
@@ -261,14 +261,14 @@ export function buildNoopResponse(input: NoopResponseInput): ToolResult {
             ? {
                  fullContent: {
                     text: fullPreview.text,
-                    ...(fullPreview.nextOffset !== undefined ? { nextOffset: fullPreview.nextOffset } : {})
-                 }
+                    ...(fullPreview.nextOffset !== undefined ? { nextOffset: fullPreview.nextOffset } : {}),
+                 },
               }
             : {}),
          ...(rangePreviews ? { returnedRanges: rangePreviews.returnedRanges } : {}),
          ...(outline ? { structureOutline: outline.outline } : {}),
-         metrics
-      }
+         metrics,
+      },
    };
 }
 
@@ -286,7 +286,7 @@ export function buildFullResponse(input: SuccessResponseInput): ToolResult {
       noopEditsCount,
       legacyReplace,
       formatHashlineReadPreview,
-      buildStructureOutline
+      buildStructureOutline,
    } = input;
 
    const diffResult = generateDiffString(originalNormalized, result);
@@ -302,7 +302,7 @@ export function buildFullResponse(input: SuccessResponseInput): ToolResult {
       warningsCount: warnings?.length ?? 0,
       legacyReplace,
       firstChangedLine,
-      lastChangedLine
+      lastChangedLine,
    });
 
    return {
@@ -314,12 +314,12 @@ export function buildFullResponse(input: SuccessResponseInput): ToolResult {
          ...(fullPreview.nextOffset !== undefined ? { nextOffset: fullPreview.nextOffset } : {}),
          fullContent: {
             text: fullPreview.text,
-            ...(fullPreview.nextOffset !== undefined ? { nextOffset: fullPreview.nextOffset } : {})
+            ...(fullPreview.nextOffset !== undefined ? { nextOffset: fullPreview.nextOffset } : {}),
          },
          structureOutline: outline.outline,
          ...(compatibilityDetails ? { compatibility: compatibilityDetails } : {}),
-         metrics
-      }
+         metrics,
+      },
    };
 }
 
@@ -338,7 +338,7 @@ export function buildRangesResponse(input: SuccessResponseInput): ToolResult {
       noopEditsCount,
       legacyReplace,
       formatRequestedRangePreviews,
-      buildStructureOutline
+      buildStructureOutline,
    } = input;
 
    const diffResult = generateDiffString(originalNormalized, result);
@@ -346,8 +346,8 @@ export function buildRangesResponse(input: SuccessResponseInput): ToolResult {
    const outline = buildStructureOutline(
       rangePreviews.returnedRanges.map((range, index) => ({
          label: `Range ${index + 1} (lines ${range.start}-${range.end})`,
-         previewText: range.text
-      }))
+         previewText: range.text,
+      })),
    );
    const text = `Updated ${path}${warningsBlockOf(warnings)}${outlineBlockOf(outline.text)}\n\nRequested range payloads are available in details.returnedRanges.`;
 
@@ -359,7 +359,7 @@ export function buildRangesResponse(input: SuccessResponseInput): ToolResult {
       warningsCount: warnings?.length ?? 0,
       legacyReplace,
       firstChangedLine,
-      lastChangedLine
+      lastChangedLine,
    });
 
    return {
@@ -371,8 +371,8 @@ export function buildRangesResponse(input: SuccessResponseInput): ToolResult {
          returnedRanges: rangePreviews.returnedRanges,
          structureOutline: outline.outline,
          ...(compatibilityDetails ? { compatibility: compatibilityDetails } : {}),
-         metrics
-      }
+         metrics,
+      },
    };
 }
 
@@ -387,7 +387,7 @@ export function buildChangedResponse(input: SuccessResponseInput): ToolResult {
       originalNormalized,
       editsAttempted,
       noopEditsCount,
-      legacyReplace
+      legacyReplace,
    } = input;
 
    const diffResult = generateDiffString(originalNormalized, result);
@@ -399,7 +399,7 @@ export function buildChangedResponse(input: SuccessResponseInput): ToolResult {
    const anchorRange = computeAffectedLineRange({
       firstChangedLine,
       lastChangedLine,
-      resultLineCount: resultLines.length
+      resultLineCount: resultLines.length,
    });
    const anchorsBlock = anchorRange
       ? (() => {
@@ -426,7 +426,7 @@ export function buildChangedResponse(input: SuccessResponseInput): ToolResult {
       firstChangedLine,
       lastChangedLine,
       addedLines,
-      removedLines
+      removedLines,
    });
 
    return {
@@ -436,7 +436,7 @@ export function buildChangedResponse(input: SuccessResponseInput): ToolResult {
          firstChangedLine: firstChangedLine ?? diffResult.firstChangedLine,
          snapshotId,
          ...(compatibilityDetails ? { compatibility: compatibilityDetails } : {}),
-         metrics
-      }
+         metrics,
+      },
    };
 }

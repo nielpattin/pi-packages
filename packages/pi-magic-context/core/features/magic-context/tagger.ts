@@ -6,7 +6,7 @@ import {
    getNullOwnerToolTag,
    getTagNumberByMessageId,
    getToolTagNumberByOwner,
-   insertTag
+   insertTag,
 } from "./storage-tags";
 import type { TagEntry } from "./types";
 
@@ -57,7 +57,7 @@ export interface Tagger {
       db: Database,
       reasoningByteSize?: number,
       toolName?: string | null,
-      inputByteSize?: number
+      inputByteSize?: number,
    ): number;
    /**
     * Look up the tag number for a non-tool entity.
@@ -88,7 +88,7 @@ export interface Tagger {
       db: Database,
       reasoningByteSize?: number,
       toolName?: string | null,
-      inputByteSize?: number
+      inputByteSize?: number,
    ): number;
    /**
     * Look up the tag number for a tool invocation by composite
@@ -315,7 +315,7 @@ export function createTagger(): Tagger {
       inputByteSize: number,
       toolOwnerMessageId: string | null,
       mapKey: string,
-      dbExistingLookup: () => number | null
+      dbExistingLookup: () => number | null,
    ): number {
       const sessionAssignments = getSessionAssignments(sessionId);
 
@@ -354,7 +354,7 @@ export function createTagger(): Tagger {
                   reasoningByteSize,
                   toolName,
                   inputByteSize,
-                  toolOwnerMessageId
+                  toolOwnerMessageId,
                );
                getUpsertCounterStatement(db).run(sessionId, next, getHarness());
             })();
@@ -388,7 +388,7 @@ export function createTagger(): Tagger {
       // Give up after retries — surface the failure so the transform
       // catch can log it and continue with reduced functionality.
       throw new Error(
-         `tagger.allocateTag: failed to allocate tag for session=${sessionId} key=${mapKey} after ${MAX_TAG_ALLOC_RETRIES} retries`
+         `tagger.allocateTag: failed to allocate tag for session=${sessionId} key=${mapKey} after ${MAX_TAG_ALLOC_RETRIES} retries`,
       );
    }
 
@@ -400,14 +400,14 @@ export function createTagger(): Tagger {
       db: Database,
       reasoningByteSize: number = 0,
       toolName: string | null = null,
-      inputByteSize: number = 0
+      inputByteSize: number = 0,
    ): number {
       // Defense-in-depth: TS narrowing already excludes "tool", but a
       // caller routing through `as any` could still hit this body.
       // Throw to surface the misuse loudly.
       if ((type as string) === "tool") {
          throw new Error(
-            "tagger.assignTag: type='tool' is forbidden — use assignToolTag(sessionId, callId, ownerMsgId, ...)"
+            "tagger.assignTag: type='tool' is forbidden — use assignToolTag(sessionId, callId, ownerMsgId, ...)",
          );
       }
       return allocateTag(
@@ -421,7 +421,7 @@ export function createTagger(): Tagger {
          inputByteSize,
          null,
          messageId,
-         () => getTagNumberByMessageId(db, sessionId, messageId)
+         () => getTagNumberByMessageId(db, sessionId, messageId),
       );
    }
 
@@ -433,7 +433,7 @@ export function createTagger(): Tagger {
       db: Database,
       reasoningByteSize: number = 0,
       toolName: string | null = null,
-      inputByteSize: number = 0
+      inputByteSize: number = 0,
    ): number {
       const compositeKey = makeToolCompositeKey(ownerMsgId, callId);
       const sessionAssignments = getSessionAssignments(sessionId);
@@ -501,7 +501,7 @@ export function createTagger(): Tagger {
          inputByteSize,
          ownerMsgId,
          compositeKey,
-         () => getToolTagNumberByOwner(db, sessionId, callId, ownerMsgId)
+         () => getToolTagNumberByOwner(db, sessionId, callId, ownerMsgId),
       );
    }
 
@@ -554,7 +554,7 @@ export function createTagger(): Tagger {
       const tcRow = getProbeTotalChangesStatement(db).get() as { tc: number } | null | undefined;
       return {
          dataVersion: dvRow?.data_version ?? 0,
-         totalChanges: tcRow?.tc ?? 0
+         totalChanges: tcRow?.tc ?? 0,
       };
    }
 
@@ -631,7 +631,7 @@ export function createTagger(): Tagger {
             if (assignment.tool_owner_message_id !== null) {
                sessionAssignments.set(
                   makeToolCompositeKey(assignment.tool_owner_message_id, assignment.message_id),
-                  assignment.tag_number
+                  assignment.tag_number,
                );
             }
             // else: NULL-owner — skip the in-memory binding.
@@ -657,7 +657,7 @@ export function createTagger(): Tagger {
       loadSignatures.set(sessionId, {
          db,
          dataVersion: probe.dataVersion,
-         totalChanges: probe.totalChanges
+         totalChanges: probe.totalChanges,
       });
    }
 
@@ -680,6 +680,6 @@ export function createTagger(): Tagger {
       resetCounter,
       getCounter,
       initFromDb,
-      cleanup
+      cleanup,
    };
 }

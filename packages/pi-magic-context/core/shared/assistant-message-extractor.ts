@@ -27,12 +27,12 @@ function asSessionMessage(value: unknown): SessionMessage | null {
               role: typeof info.role === "string" ? info.role : undefined,
               time: isRecord(info.time)
                  ? {
-                      created: typeof info.time.created === "number" ? info.time.created : undefined
+                      created: typeof info.time.created === "number" ? info.time.created : undefined,
                    }
-                 : undefined
+                 : undefined,
            }
          : undefined,
-      parts
+      parts,
    };
 }
 
@@ -46,7 +46,7 @@ function getTextParts(message: SessionMessage): MessagePart[] {
       .filter((part): part is Record<string, unknown> => isRecord(part))
       .map((part) => ({
          type: typeof part.type === "string" ? part.type : undefined,
-         text: typeof part.text === "string" ? part.text : undefined
+         text: typeof part.text === "string" ? part.text : undefined,
       }))
       .filter((part) => part.type === "text" && Boolean(part.text));
 }

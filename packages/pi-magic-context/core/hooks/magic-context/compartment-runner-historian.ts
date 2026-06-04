@@ -15,7 +15,7 @@ import type {
    HistorianProgressCallbacks,
    HistorianRunResult,
    StoredCompartmentRange,
-   ValidatedHistorianPassResult
+   ValidatedHistorianPassResult,
 } from "./compartment-runner-types";
 import { buildHistorianRepairPrompt, validateHistorianOutput } from "./compartment-runner-validation";
 
@@ -70,14 +70,14 @@ export async function runValidatedHistorianPass(args: {
 }): Promise<ValidatedHistorianPassResult> {
    const firstRun = await runHistorianPrompt({
       ...args,
-      dumpLabel: `${args.dumpLabelBase}-initial`
+      dumpLabel: `${args.dumpLabelBase}-initial`,
    });
    if (!firstRun.ok || !firstRun.result) {
       return runFallbackHistorianPass({
          ...args,
          prompt: args.prompt,
          error: firstRun.error ?? "historian run failed",
-         dumpPaths: [firstRun.dumpPath]
+         dumpPaths: [firstRun.dumpPath],
       });
    }
 
@@ -86,7 +86,7 @@ export async function runValidatedHistorianPass(args: {
       args.parentSessionId,
       args.chunk,
       args.priorCompartments,
-      args.sequenceOffset
+      args.sequenceOffset,
    );
    if (firstValidation.ok) {
       const finalResult = args.twoPass
@@ -95,7 +95,7 @@ export async function runValidatedHistorianPass(args: {
               draftXml: firstRun.result,
               draftValidation: firstValidation,
               draftDumpPath: firstRun.dumpPath,
-              draftInvocationId: firstRun.invocationId ?? null
+              draftInvocationId: firstRun.invocationId ?? null,
            })
          : firstValidation;
       cleanupHistorianDump(args.parentSessionId, firstRun.dumpPath);
@@ -106,19 +106,19 @@ export async function runValidatedHistorianPass(args: {
    const repairPrompt = buildHistorianRepairPrompt(
       args.prompt,
       firstRun.result,
-      firstValidation.error ?? "invalid compartment output"
+      firstValidation.error ?? "invalid compartment output",
    );
    const repairRun = await runHistorianPrompt({
       ...args,
       prompt: repairPrompt,
-      dumpLabel: `${args.dumpLabelBase}-repair`
+      dumpLabel: `${args.dumpLabelBase}-repair`,
    });
    if (!repairRun.ok || !repairRun.result) {
       return runFallbackHistorianPass({
          ...args,
          prompt: repairPrompt,
          error: repairRun.error ?? "historian repair run failed",
-         dumpPaths: [firstRun.dumpPath, repairRun.dumpPath]
+         dumpPaths: [firstRun.dumpPath, repairRun.dumpPath],
       });
    }
 
@@ -127,7 +127,7 @@ export async function runValidatedHistorianPass(args: {
       args.parentSessionId,
       args.chunk,
       args.priorCompartments,
-      args.sequenceOffset
+      args.sequenceOffset,
    );
    if (repairValidation.ok) {
       const finalResult = args.twoPass
@@ -136,7 +136,7 @@ export async function runValidatedHistorianPass(args: {
               draftXml: repairRun.result,
               draftValidation: repairValidation,
               draftDumpPath: repairRun.dumpPath,
-              draftInvocationId: repairRun.invocationId ?? null
+              draftInvocationId: repairRun.invocationId ?? null,
            })
          : repairValidation;
       // Keep firstRun.dumpPath (initial failure) for debugging.
@@ -149,7 +149,7 @@ export async function runValidatedHistorianPass(args: {
       ...args,
       prompt: repairPrompt,
       error: repairValidation.error ?? "invalid compartment output",
-      dumpPaths: [firstRun.dumpPath, repairRun.dumpPath]
+      dumpPaths: [firstRun.dumpPath, repairRun.dumpPath],
    });
 }
 
@@ -196,12 +196,12 @@ async function runEditorPassOrFallback(args: {
       timeoutMs: args.timeoutMs,
       dumpLabel: `${args.dumpLabelBase}-editor`,
       agentId: HISTORIAN_EDITOR_AGENT,
-      parentInvocationId: args.draftInvocationId ?? null
+      parentInvocationId: args.draftInvocationId ?? null,
    });
 
    if (!editorRun.ok || !editorRun.result) {
       shared.sessionLog(args.parentSessionId, "historian two-pass: editor call failed", {
-         error: editorRun.error
+         error: editorRun.error,
       });
       return args.draftValidation;
    }
@@ -211,11 +211,11 @@ async function runEditorPassOrFallback(args: {
       args.parentSessionId,
       args.chunk,
       args.priorCompartments,
-      args.sequenceOffset
+      args.sequenceOffset,
    );
    if (!editorValidation.ok) {
       shared.sessionLog(args.parentSessionId, "historian two-pass: editor validation failed, falling back to draft", {
-         error: editorValidation.error
+         error: editorValidation.error,
       });
       // Editor output was bad — keep editor dump for debugging.
       return args.draftValidation;
@@ -253,7 +253,7 @@ async function runHistorianPrompt(args: {
       agentId = HISTORIAN_AGENT,
       fallbackModels,
       subagentKind,
-      parentInvocationId
+      parentInvocationId,
    } = args;
    let agentSessionId: string | null = null;
    const startedAt = Date.now();
@@ -275,32 +275,32 @@ async function runHistorianPrompt(args: {
          status: params.status,
          messages: params.messages,
          error: params.error,
-         parentInvocationId: agentId === HISTORIAN_EDITOR_AGENT ? (parentInvocationId ?? null) : null
+         parentInvocationId: agentId === HISTORIAN_EDITOR_AGENT ? (parentInvocationId ?? null) : null,
       });
    };
 
    try {
       shared.sessionLog(
          parentSessionId,
-         `historian: creating child session (agent=${agentId}, model=${modelOverride ? `${modelOverride.providerID}/${modelOverride.modelID}` : `agent:${agentId}`})`
+         `historian: creating child session (agent=${agentId}, model=${modelOverride ? `${modelOverride.providerID}/${modelOverride.modelID}` : `agent:${agentId}`})`,
       );
       const createResponse = await client.session.create({
          body: {
             parentID: parentSessionId,
-            title: "magic-context-compartment"
+            title: "magic-context-compartment",
          },
-         query: { directory: sessionDirectory }
+         query: { directory: sessionDirectory },
       });
 
       const createdSession = shared.normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       agentSessionId = typeof createdSession?.id === "string" ? createdSession.id : null;
 
       if (!agentSessionId) {
          recordInvocation({
             status: "failed",
-            error: "Historian could not create its child session."
+            error: "Historian could not create its child session.",
          });
          return { ok: false, error: "Historian could not create its child session." };
       }
@@ -325,20 +325,20 @@ async function runHistorianPrompt(args: {
                      // unreadable visible message — see issue #50). The historian
                      // model still receives the part because toModelMessages only
                      // filters `ignored`, not `synthetic`.
-                     parts: [{ type: "text", text: prompt, synthetic: true }]
-                  }
+                     parts: [{ type: "text", text: prompt, synthetic: true }],
+                  },
                },
                {
                   timeoutMs: timeoutMs ?? DEFAULT_HISTORIAN_TIMEOUT_MS,
                   // When modelOverride is set we're already in the last-ditch retry
                   // path; iterating fallbacks again would be redundant.
                   fallbackModels: modelOverride ? undefined : fallbackModels,
-                  callContext: agentId === HISTORIAN_EDITOR_AGENT ? "historian:editor" : "historian"
-               }
+                  callContext: agentId === HISTORIAN_EDITOR_AGENT ? "historian:editor" : "historian",
+               },
             );
             shared.sessionLog(
                parentSessionId,
-               `historian: prompt completed (attempt ${retryIndex + 1}/${MAX_HISTORIAN_RETRIES + 1})`
+               `historian: prompt completed (attempt ${retryIndex + 1}/${MAX_HISTORIAN_RETRIES + 1})`,
             );
             break;
          } catch (error: unknown) {
@@ -352,7 +352,7 @@ async function runHistorianPrompt(args: {
             const backoffMs = getHistorianRetryBackoffMs(retryIndex);
             shared.sessionLog(
                parentSessionId,
-               `historian retry ${retryIndex + 1}/${MAX_HISTORIAN_RETRIES} after ${backoffMs}ms: ${errorMsg}`
+               `historian retry ${retryIndex + 1}/${MAX_HISTORIAN_RETRIES} after ${backoffMs}ms: ${errorMsg}`,
             );
             await sleep(backoffMs);
          }
@@ -360,10 +360,10 @@ async function runHistorianPrompt(args: {
 
       const messagesResponse = await client.session.messages({
          path: { id: agentSessionId },
-         query: { directory: sessionDirectory, limit: 50 }
+         query: { directory: sessionDirectory, limit: 50 },
       });
       const messages = shared.normalizeSDKResponse(messagesResponse, [] as unknown[], {
-         preferResponseOnMissingData: true
+         preferResponseOnMissingData: true,
       });
       const invocationId = recordInvocation({ status: "completed", messages });
       const result = extractLatestAssistantText(messages);
@@ -371,7 +371,7 @@ async function runHistorianPrompt(args: {
          return {
             ok: false,
             error: "Historian returned no assistant output.",
-            invocationId: invocationId ?? undefined
+            invocationId: invocationId ?? undefined,
          };
       }
 
@@ -379,19 +379,19 @@ async function runHistorianPrompt(args: {
          parentSessionId,
          sessionDirectory,
          dumpLabel ?? "historian-response",
-         result
+         result,
       );
       return { ok: true, result, dumpPath, invocationId: invocationId ?? undefined };
    } catch (modelError: unknown) {
       const desc = describeError(modelError);
       shared.sessionLog(
          parentSessionId,
-         `historian prompt failed: ${desc.brief} promptLength=${prompt.length}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`
+         `historian prompt failed: ${desc.brief} promptLength=${prompt.length}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`,
       );
       recordInvocation({ status: "failed", error: modelError });
       return {
          ok: false,
-         error: `Historian failed while processing this session: ${desc.brief}`
+         error: `Historian failed while processing this session: ${desc.brief}`,
       };
    } finally {
       if (agentSessionId) {
@@ -432,7 +432,7 @@ async function runFallbackHistorianPass(args: {
 
    shared.sessionLog(
       args.parentSessionId,
-      `compartment agent: retrying historian with primary session model ${args.fallbackModelId}`
+      `compartment agent: retrying historian with primary session model ${args.fallbackModelId}`,
    );
 
    const fallbackRun = await runHistorianPrompt({
@@ -442,7 +442,7 @@ async function runFallbackHistorianPass(args: {
       prompt: args.prompt,
       timeoutMs: args.timeoutMs,
       dumpLabel: `${args.dumpLabelBase}-fallback-primary-model`,
-      modelOverride
+      modelOverride,
    });
    if (!fallbackRun.ok || !fallbackRun.result) {
       return { ok: false, error: fallbackRun.error ?? args.error };
@@ -453,7 +453,7 @@ async function runFallbackHistorianPass(args: {
       args.parentSessionId,
       args.chunk,
       args.priorCompartments,
-      args.sequenceOffset
+      args.sequenceOffset,
    );
    if (fallbackValidation.ok) {
       // Only cleanup the successful fallback run's dump.
@@ -498,7 +498,7 @@ function isTransientHistorianPromptError(message: string): boolean {
    }
 
    return ["429", "rate limit", "timeout", "econnreset", "etimedout", "503", "502", "500", "overloaded"].some((token) =>
-      normalized.includes(token)
+      normalized.includes(token),
    );
 }
 
@@ -516,7 +516,7 @@ function cleanupHistorianDump(sessionId: string, dumpPath?: string): void {
    } catch (error: unknown) {
       shared.sessionLog(sessionId, "compartment agent: failed to remove historian response dump", {
          dumpPath,
-         error: getErrorMessage(error)
+         error: getErrorMessage(error),
       });
    }
 }
@@ -531,13 +531,13 @@ function dumpHistorianResponse(sessionId: string, directory: string, label: stri
       writeFileSync(dumpPath, text, "utf8");
       shared.sessionLog(sessionId, "compartment agent: historian response dumped", {
          label,
-         dumpPath
+         dumpPath,
       });
       return dumpPath;
    } catch (error: unknown) {
       shared.sessionLog(sessionId, "compartment agent: failed to dump historian response", {
          label,
-         error: getErrorMessage(error)
+         error: getErrorMessage(error),
       });
       return undefined;
    }

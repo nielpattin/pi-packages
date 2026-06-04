@@ -11,7 +11,7 @@ import {
    createBlockingRunner,
    createMockWorktrees,
    createRunResult,
-   createSessionRunner
+   createSessionRunner,
 } from "#test/helpers/manager-stubs";
 import { createMockSession } from "#test/helpers/mock-session";
 import { STUB_SNAPSHOT } from "#test/helpers/stub-ctx";
@@ -33,21 +33,21 @@ function createManager(overrides?: {
          responseText: "done",
          session: createMockSession(),
          aborted: false,
-         steered: false
+         steered: false,
       }),
-      resume: vi.fn().mockResolvedValue("resumed")
+      resume: vi.fn().mockResolvedValue("resumed"),
    };
    const worktrees: WorktreeManager = overrides?.worktrees ?? {
       create: vi.fn(),
       cleanup: vi.fn(() => ({ hasChanges: false })),
-      prune: vi.fn()
+      prune: vi.fn(),
    };
    const observer: AgentManagerObserver | undefined = overrides?.observer
       ? {
            onAgentStarted: overrides.observer.onAgentStarted ?? (() => {}),
            onAgentCompleted: overrides.observer.onAgentCompleted ?? (() => {}),
            onAgentCompacted: overrides.observer.onAgentCompacted ?? (() => {}),
-           onAgentCreated: overrides.observer.onAgentCreated ?? (() => {})
+           onAgentCreated: overrides.observer.onAgentCreated ?? (() => {}),
         }
       : undefined;
    // Forward-reference via closure — safe because drain is never called during construction.
@@ -64,7 +64,7 @@ function createManager(overrides?: {
       observer,
       queue,
       baseCwd: overrides?.baseCwd ?? "/repo",
-      getRunConfig: overrides?.getRunConfig
+      getRunConfig: overrides?.getRunConfig,
    });
    return { manager: mgr, runner, worktrees, queue };
 }
@@ -73,14 +73,14 @@ function createManager(overrides?: {
 function spawnBg(mgr: AgentManager, prompt = "test", desc = prompt) {
    return mgr.spawn(STUB_SNAPSHOT, "general-purpose", prompt, {
       description: desc,
-      isBackground: true
+      isBackground: true,
    });
 }
 
 /** Spawn a foreground agent using STUB_SNAPSHOT. */
 function spawnFg(mgr: AgentManager, prompt = "test", desc = prompt) {
    return mgr.spawnAndWait(STUB_SNAPSHOT, "general-purpose", prompt, {
-      description: desc
+      description: desc,
    });
 }
 
@@ -97,8 +97,8 @@ describe("AgentManager — Bug 1 race condition (notification.resultConsumed vs 
          observer: {
             onAgentCompleted: (r) => {
                seenConsumed = r.notification?.resultConsumed;
-            }
-         }
+            },
+         },
       }));
 
       const id = spawnBg(manager);
@@ -119,8 +119,8 @@ describe("AgentManager — Bug 1 race condition (notification.resultConsumed vs 
          observer: {
             onAgentCompleted: (r) => {
                seenConsumed = r.notification?.resultConsumed;
-            }
-         }
+            },
+         },
       }));
 
       const id = spawnBg(manager);
@@ -140,8 +140,8 @@ describe("AgentManager — Bug 1 race condition (notification.resultConsumed vs 
          observer: {
             onAgentCompleted: (r) => {
                completedRecord = r;
-            }
-         }
+            },
+         },
       }));
 
       const id = spawnBg(manager);
@@ -157,8 +157,8 @@ describe("AgentManager — Bug 1 race condition (notification.resultConsumed vs 
          observer: {
             onAgentCompleted: () => {
                onCompleteCalled = true;
-            }
-         }
+            },
+         },
       }));
 
       await spawnFg(manager);
@@ -179,8 +179,8 @@ describe("AgentManager — completion callbacks", () => {
          observer: {
             onAgentCompleted: () => {
                throw new Error("stale extension context");
-            }
-         }
+            },
+         },
       }));
 
       const id = spawnBg(manager);
@@ -250,7 +250,7 @@ describe("AgentManager — Bug 3 clearCompleted", () => {
       const sess = createMockSession({ dispose: disposeSpy });
       const runner: AgentRunner = {
          run: vi.fn().mockResolvedValue(createRunResult(sess)),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({ runner }));
 
@@ -265,7 +265,7 @@ describe("AgentManager — Bug 3 clearCompleted", () => {
    it("clearCompleted removes error and stopped records", async () => {
       const runner: AgentRunner = {
          run: vi.fn().mockRejectedValue(new Error("boom")),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({ runner }));
 
@@ -310,15 +310,15 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
             opts.onSessionCreated?.(session);
             session.emit({
                type: "message_end",
-               message: { role: "assistant", usage: { input: 100, output: 50, cacheWrite: 10 } }
+               message: { role: "assistant", usage: { input: 100, output: 50, cacheWrite: 10 } },
             });
             session.emit({
                type: "message_end",
-               message: { role: "assistant", usage: { input: 200, output: 80, cacheWrite: 20 } }
+               message: { role: "assistant", usage: { input: 200, output: 80, cacheWrite: 20 } },
             });
             return { responseText: "done", session, aborted: false, steered: false };
          }),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({ runner }));
 
@@ -328,7 +328,7 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
       expect(manager.getRecord(id)!.lifetimeUsage).toEqual({
          input: 300,
          output: 130,
-         cacheWrite: 30
+         cacheWrite: 30,
       });
    });
 
@@ -345,12 +345,12 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
                type: "compaction_end",
                aborted: false,
                result: { tokensBefore: 12345 },
-               reason: "threshold"
+               reason: "threshold",
             });
             session.emit({ type: "compaction_end", aborted: false, result: { tokensBefore: 22222 }, reason: "manual" });
             return { responseText: "done", session, aborted: false, steered: false };
          }),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
 
       ({ manager } = createManager({
@@ -358,8 +358,8 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
          observer: {
             onAgentCompacted: (record, info) => {
                compactSeen.push({ count: record.compactionCount, reason: info.reason });
-            }
-         }
+            },
+         },
       }));
 
       const id = spawnBg(manager);
@@ -367,7 +367,7 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
 
       expect(compactSeen).toEqual([
          { count: 1, reason: "threshold" },
-         { count: 2, reason: "manual" }
+         { count: 2, reason: "manual" },
       ]);
       expect(manager.getRecord(id)!.compactionCount).toBe(2);
    });
@@ -385,11 +385,11 @@ describe("AgentManager — lifetime usage + compaction count are eagerly initial
             // AgentManager.resume() will pick them up.
             session.emit({
                type: "message_end",
-               message: { role: "assistant", usage: { input: 70, output: 30, cacheWrite: 5 } }
+               message: { role: "assistant", usage: { input: 70, output: 30, cacheWrite: 5 } },
             });
             session.emit({ type: "compaction_end", aborted: false, result: { tokensBefore: 999 }, reason: "overflow" });
             return "second";
-         })
+         }),
       };
       ({ manager } = createManager({ runner }));
 
@@ -459,7 +459,7 @@ describe("AgentManager — parent session threading", () => {
       manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
          isBackground: true,
-         parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "parent-session-123" }
+         parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "parent-session-123" },
       });
 
       await vi.waitFor(() => expect(runner.run).toHaveBeenCalled());
@@ -489,12 +489,12 @@ describe("AgentManager — isolation: worktree fails loud, no silent fallback", 
       const worktrees = createMockWorktrees({ createResult: undefined });
       const runner: AgentRunner = {
          run: vi.fn(),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({ runner, worktrees }));
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
-         isolation: "worktree"
+         isolation: "worktree",
       });
 
       // Error propagates through the promise
@@ -531,9 +531,9 @@ describe("AgentManager — dependency injection via options bag", () => {
             responseText: "first",
             session,
             aborted: false,
-            steered: false
+            steered: false,
          }),
-         resume: vi.fn().mockResolvedValue("second")
+         resume: vi.fn().mockResolvedValue("second"),
       };
       ({ manager } = createManager({ runner }));
 
@@ -553,7 +553,7 @@ describe("AgentManager — dependency injection via options bag", () => {
       manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
          isolation: "worktree",
-         isBackground: true
+         isBackground: true,
       });
 
       expect(worktrees.create).toHaveBeenCalledOnce();
@@ -566,7 +566,7 @@ describe("AgentManager — dependency injection via options bag", () => {
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
          isolation: "worktree",
-         isBackground: true
+         isBackground: true,
       });
       await manager.getRecord(id)!.promise;
 
@@ -580,7 +580,7 @@ describe("AgentManager — dependency injection via options bag", () => {
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
          isolation: "worktree",
-         isBackground: true
+         isBackground: true,
       });
       await manager.getRecord(id)!.promise;
 
@@ -596,7 +596,7 @@ describe("AgentManager — dependency injection via options bag", () => {
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test",
          isolation: "worktree",
-         isBackground: true
+         isBackground: true,
       });
       await manager.getRecord(id)!.promise;
 
@@ -627,7 +627,7 @@ describe("AgentManager — queueing and concurrency with injected stubs", () => 
             if (n === 2) await gate2;
             return { responseText: `result-${n}`, session: createMockSession(), aborted: false, steered: false };
          }),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({ runner, getMaxConcurrent: () => 1 }));
 
@@ -684,7 +684,7 @@ describe("AgentManager — queueing and concurrency with injected stubs", () => 
             if (callCount === 1) await gate;
             return { responseText: "ok", session: createMockSession(), aborted: false, steered: false };
          }),
-         resume: vi.fn()
+         resume: vi.fn(),
       };
       ({ manager } = createManager({
          runner,
@@ -692,8 +692,8 @@ describe("AgentManager — queueing and concurrency with injected stubs", () => 
          observer: {
             onAgentStarted: (record) => {
                startedIds.push(record.id);
-            }
-         }
+            },
+         },
       }));
 
       const id1 = spawnBg(manager, "a");
@@ -759,7 +759,7 @@ describe("AgentManager — onAgentCreated observer", () => {
 
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "test agent",
-         isBackground: true
+         isBackground: true,
       });
 
       expect(onCreated).toHaveBeenCalledOnce();
@@ -773,7 +773,7 @@ describe("AgentManager — onAgentCreated observer", () => {
       ({ manager } = createManager({ observer: { onAgentCreated: onCreated } }));
 
       await manager.spawnAndWait(STUB_SNAPSHOT, "general-purpose", "test", {
-         description: "foreground agent"
+         description: "foreground agent",
       });
 
       expect(onCreated).not.toHaveBeenCalled();
@@ -788,13 +788,13 @@ describe("AgentManager — onAgentCreated observer", () => {
             },
             onAgentStarted: () => {
                callOrder.push("started");
-            }
-         }
+            },
+         },
       }));
 
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "bg agent",
-         isBackground: true
+         isBackground: true,
       });
       await manager.getRecord(id)!.promise;
 
@@ -821,8 +821,8 @@ describe("AgentManager — lifecycle observer forwarding", () => {
          observer: {
             onSessionCreated: (agent) => {
                received.agent = agent;
-            }
-         }
+            },
+         },
       });
       await manager.getRecord(id)!.promise;
 
@@ -841,8 +841,8 @@ describe("AgentManager — lifecycle observer forwarding", () => {
          observer: {
             onSessionCreated: (agent) => {
                received.agent = agent;
-            }
-         }
+            },
+         },
       });
 
       expect(received.agent).toBeDefined();
@@ -863,7 +863,7 @@ describe("AgentManager — toolCallId notification wiring", () => {
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "bg",
          isBackground: true,
-         parentSession: { toolCallId: "tc-42" }
+         parentSession: { toolCallId: "tc-42" },
       });
       const record = manager.getRecord(id)!;
 
@@ -878,7 +878,7 @@ describe("AgentManager — toolCallId notification wiring", () => {
 
       const id = manager.spawn(STUB_SNAPSHOT, "general-purpose", "test", {
          description: "bg",
-         isBackground: true
+         isBackground: true,
       });
       const record = manager.getRecord(id)!;
 

@@ -58,7 +58,7 @@ export function getSessionReadStats(hostDb: Database, sessionId: string, minRead
         JOIN file_counts fc ON r.file_path = fc.file_path
         WHERE r.rn = 1
         ORDER BY fc.full_read_count DESC
-    `
+    `,
       )
       .all(sessionId, minReads) as Array<{
       file_path: string;
@@ -82,7 +82,7 @@ export function getSessionReadStats(hostDb: Database, sessionId: string, minRead
             AND json_extract(data, '$.tool') IN ('edit', 'write', 'mcp_edit', 'mcp_write')
             AND json_extract(json_extract(data, '$.state'), '$.input.filePath') IS NOT NULL
         GROUP BY file_path
-    `
+    `,
       )
       .all(sessionId) as Array<{ file_path: string; edit_count: number }>;
 
@@ -99,6 +99,6 @@ export function getSessionReadStats(hostDb: Database, sessionId: string, minRead
       // Rough estimate from byte size — we don't have the file content at
       // this layer. Used only for dreamer's key-file budget-fit filtering,
       // where approximate bucketing is sufficient. Intentional: bytes/3.5.
-      latestReadTokens: Math.ceil((row.latest_read_bytes ?? 0) / 3.5)
+      latestReadTokens: Math.ceil((row.latest_read_bytes ?? 0) / 3.5),
    }));
 }

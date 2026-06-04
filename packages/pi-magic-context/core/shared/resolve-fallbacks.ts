@@ -21,7 +21,7 @@ import { getAgentFallbackModels } from "./model-requirements";
  */
 export function resolveFallbackChain(
    agentName: string,
-   userFallbacks: readonly string[] | string | undefined
+   userFallbacks: readonly string[] | string | undefined,
 ): string[] {
    const userList = normalizeUserFallbacks(userFallbacks);
 
@@ -71,6 +71,6 @@ export function parseProviderModel(spec: string): { providerID: string; modelID:
    if (slash < 1 || slash >= spec.length - 1) return null;
    return {
       providerID: spec.slice(0, slash).trim(),
-      modelID: spec.slice(slash + 1).trim()
+      modelID: spec.slice(slash + 1).trim(),
    };
 }

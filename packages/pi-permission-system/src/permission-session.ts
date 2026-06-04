@@ -60,7 +60,7 @@ export class PermissionSession {
       private readonly paths: ExtensionPaths,
       readonly logger: SessionLogger,
       private readonly forwarding: ForwardingController,
-      private readonly runtimeDeps: PermissionSessionRuntimeDeps
+      private readonly runtimeDeps: PermissionSessionRuntimeDeps,
    ) {
       this.permissionManager = createPermissionManagerForCwd(paths.agentDir, undefined);
    }

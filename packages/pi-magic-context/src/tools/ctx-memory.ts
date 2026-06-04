@@ -46,7 +46,7 @@ import {
    saveEmbedding,
    supersededMemory,
    updateMemoryContent,
-   updateMemorySeenCount
+   updateMemorySeenCount,
 } from "#core/features/magic-context/memory";
 import { embedTextForProject, getProjectEmbeddingSnapshot } from "#core/features/magic-context/memory/embedding";
 import { computeNormalizedHash } from "#core/features/magic-context/memory/normalize-hash";
@@ -70,36 +70,36 @@ const DREAMER_ONLY_ACTIONS: ReadonlySet<CtxMemoryAction> = new Set(["list", "upd
 const ParamsSchema = Type.Object({
    action: Type.Union(
       ALL_ACTIONS.map((a) => Type.Literal(a)),
-      { description: "Action to perform on memories" }
+      { description: "Action to perform on memories" },
    ),
    content: Type.Optional(
       Type.String({
-         description: "Memory content (required for write, update, merge)"
-      })
+         description: "Memory content (required for write, update, merge)",
+      }),
    ),
    category: Type.Optional(
       Type.String({
          description:
             "Memory category (required for write, optional filter for list, optional override for merge). One of: " +
-            CATEGORY_PRIORITY.join(", ")
-      })
+            CATEGORY_PRIORITY.join(", "),
+      }),
    ),
    id: Type.Optional(
       Type.Number({
-         description: "Memory ID (required for delete, update, archive)"
-      })
+         description: "Memory ID (required for delete, update, archive)",
+      }),
    ),
    ids: Type.Optional(
       Type.Array(Type.Number(), {
-         description: "Memory IDs to merge (required for merge)"
-      })
+         description: "Memory IDs to merge (required for merge)",
+      }),
    ),
    limit: Type.Optional(
       Type.Number({
-         description: "Maximum results to return for list (default: 10)"
-      })
+         description: "Maximum results to return for list (default: 10)",
+      }),
    ),
-   reason: Type.Optional(Type.String({ description: "Archive reason (optional for archive)" }))
+   reason: Type.Optional(Type.String({ description: "Archive reason (optional for archive)" })),
 });
 
 type CtxMemoryParams = Static<typeof ParamsSchema>;
@@ -112,7 +112,7 @@ function err(text: string) {
    return {
       content: [{ type: "text" as const, text }],
       details: undefined,
-      isError: true
+      isError: true,
    };
 }
 
@@ -129,13 +129,13 @@ function formatMemoryList(memories: Memory[]): string {
       category: m.category,
       status: m.status,
       updated: new Date(m.updatedAt).toISOString(),
-      content: m.content.replace(/\s+/g, " ").trim()
+      content: m.content.replace(/\s+/g, " ").trim(),
    }));
    const widths = {
       id: Math.max(2, ...rows.map((r) => r.id.length)),
       category: Math.max(8, ...rows.map((r) => r.category.length)),
       status: Math.max(6, ...rows.map((r) => r.status.length)),
-      updated: Math.max(7, ...rows.map((r) => r.updated.length))
+      updated: Math.max(7, ...rows.map((r) => r.updated.length)),
    };
    const fmt = (r: (typeof rows)[number]) =>
       [
@@ -143,10 +143,10 @@ function formatMemoryList(memories: Memory[]): string {
          r.category.padEnd(widths.category),
          r.status.padEnd(widths.status),
          r.updated.padEnd(widths.updated),
-         r.content
+         r.content,
       ].join(" | ");
    return [`Found ${rows.length} active ${rows.length === 1 ? "memory" : "memories"}:`, "", ...rows.map(fmt)].join(
-      "\n"
+      "\n",
    );
 }
 
@@ -232,7 +232,7 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
                category: rawCategory,
                content,
                sourceSessionId: sessionId,
-               sourceType: dreamerAllowed ? "dreamer" : "agent"
+               sourceType: dreamerAllowed ? "dreamer" : "agent",
             });
 
             queueEmbedding({ deps, projectIdentity, memoryId: memory.id, content });
@@ -279,7 +279,7 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
             const duplicate = getMemoryByHash(deps.db, projectIdentity, memory.category, normalizedHash);
             if (duplicate && duplicate.id !== memory.id) {
                return err(
-                  `Error: Memory content already exists as ID ${duplicate.id}; merge or archive duplicates instead.`
+                  `Error: Memory content already exists as ID ${duplicate.id}; merge or archive duplicates instead.`,
                );
             }
 
@@ -314,7 +314,7 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
             const requestedCategory = params.category?.trim();
             if (requestedCategory && !isMemoryCategory(requestedCategory)) {
                return err(
-                  `Error: Unknown memory category '${requestedCategory}'. Valid: ${CATEGORY_PRIORITY.join(", ")}`
+                  `Error: Unknown memory category '${requestedCategory}'. Valid: ${CATEGORY_PRIORITY.join(", ")}`,
                );
             }
             const requestedCategoryTyped: MemoryCategory | undefined =
@@ -353,8 +353,8 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
                         ? parsed.filter((value): value is number => typeof value === "number")
                         : [];
                      return [memory.id, ...priorIds];
-                  })
-               )
+                  }),
+               ),
             );
             const mergedFrom = JSON.stringify(mergedFromIds);
             const mergedStatus: "active" | "permanent" = sourceMemories.some((memory) => memory.status === "permanent")
@@ -376,7 +376,7 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
                   category,
                   content,
                   sourceSessionId: sessionId,
-                  sourceType: dreamerAllowed ? "dreamer" : "agent"
+                  sourceType: dreamerAllowed ? "dreamer" : "agent",
                });
             }
 
@@ -386,7 +386,7 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
                mergedSeenCount,
                mergedRetrievalCount,
                mergedFrom,
-               mergedStatus
+               mergedStatus,
             );
 
             for (const memory of sourceMemories) {
@@ -400,13 +400,13 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
                deps,
                projectIdentity,
                memoryId: canonicalMemory.id,
-               content
+               content,
             });
 
             invalidateAllMemoryBlockCaches(deps.db);
             const supersededIds = sourceMemories.map((memory) => memory.id).filter((id) => id !== canonicalMemory.id);
             return ok(
-               `Merged memories [${ids.join(", ")}] into canonical memory [ID: ${canonicalMemory.id}] in ${category}; superseded [${supersededIds.join(", ")}].`
+               `Merged memories [${ids.join(", ")}] into canonical memory [ID: ${canonicalMemory.id}] in ${category}; superseded [${supersededIds.join(", ")}].`,
             );
          }
 
@@ -425,6 +425,6 @@ export function createCtxMemoryTool(deps: CtxMemoryToolDeps): ToolDefinition<typ
          }
 
          return err("Error: Unknown action.");
-      }
+      },
    };
 }

@@ -77,7 +77,7 @@ export function registerCtxStatusCommand(pi: ExtensionAPI, deps: RegisterCtxStat
             sendCtxStatusMessage(pi, {
                title: "/ctx-status",
                text: "## Magic Status\n\nNo active Pi session is available.",
-               level: "error"
+               level: "error",
             });
             return;
          }
@@ -89,7 +89,7 @@ export function registerCtxStatusCommand(pi: ExtensionAPI, deps: RegisterCtxStat
                await showStatusDialog(pi, ctx, currentDeps);
                profileCtxStatus(
                   sessionId,
-                  `ctx-status: dialog completed after ${(performance.now() - commandStart).toFixed(0)}ms`
+                  `ctx-status: dialog completed after ${(performance.now() - commandStart).toFixed(0)}ms`,
                );
                return;
             }
@@ -106,7 +106,7 @@ export function registerCtxStatusCommand(pi: ExtensionAPI, deps: RegisterCtxStat
                currentDeps.historyBudgetPercentage,
                currentDeps.commitClusterTrigger,
                currentDeps.executeThresholdTokens,
-               usage?.contextWindow
+               usage?.contextWindow,
             );
             const details = buildStatusDetails(currentDeps, sessionId);
             sendCtxStatusMessage(pi, { title: "/ctx-status", text: statusText, level: "info" }, details);
@@ -114,10 +114,10 @@ export function registerCtxStatusCommand(pi: ExtensionAPI, deps: RegisterCtxStat
             sendCtxStatusMessage(pi, {
                title: "/ctx-status",
                text: `## Magic Status — Failed\n\n${describeError(error).brief}`,
-               level: "error"
+               level: "error",
             });
          }
-      }
+      },
    });
 }
 
@@ -146,14 +146,14 @@ function buildStatusDetails(deps: RegisterCtxStatusDeps, sessionId: string): Ctx
          getNotes(deps.db, {
             projectPath: deps.projectIdentity,
             type: "smart",
-            status: ["pending", "ready"]
+            status: ["pending", "ready"],
          }).length,
       dreamer: {
          enabled: deps.dreamer?.runnable === true,
          schedule: deps.dreamer?.schedule ?? null,
-         lastRunAt: readNumberState(deps.db, `last_dream_at:${deps.projectIdentity}`)
+         lastRunAt: readNumberState(deps.db, `last_dream_at:${deps.projectIdentity}`),
       },
-      historian: readHistorianState(deps.db, sessionId, meta)
+      historian: readHistorianState(deps.db, sessionId, meta),
    };
 }
 
@@ -167,7 +167,7 @@ function readNumberState(db: ContextDatabase, key: string): number | null {
 function readHistorianState(
    db: ContextDatabase,
    sessionId: string,
-   meta: ReturnType<typeof getOrCreateSessionMeta>
+   meta: ReturnType<typeof getOrCreateSessionMeta>,
 ): CtxStatusDetails["historian"] {
    const row = db
       .prepare<
@@ -178,7 +178,7 @@ function readHistorianState(
             historian_last_failure_at: number | null;
          }
       >(
-         "SELECT historian_failure_count, historian_last_error, historian_last_failure_at FROM session_meta WHERE session_id = ?"
+         "SELECT historian_failure_count, historian_last_error, historian_last_failure_at FROM session_meta WHERE session_id = ?",
       )
       .get(sessionId);
    return {
@@ -186,7 +186,7 @@ function readHistorianState(
       inProgress: meta.compartmentInProgress,
       lastFailureAt: typeof row?.historian_last_failure_at === "number" ? row.historian_last_failure_at : null,
       lastError: row?.historian_last_error ?? null,
-      failureCount: row?.historian_failure_count ?? 0
+      failureCount: row?.historian_failure_count ?? 0,
    };
 }
 
@@ -202,6 +202,6 @@ export function formatCtxStatusSummary(details: CtxStatusDetails): string {
       `**Memories:** ${details.memoryCount}`,
       `**Notes:** ${details.noteCount}`,
       `**Dreamer:** ${details.dreamer.enabled ? `enabled (${details.dreamer.schedule?.trim() ? details.dreamer.schedule : "manual-only"})` : "disabled"}`,
-      `**Historian:** ${details.historian.inProgress ? "running" : "idle"}, failures=${details.historian.failureCount}`
+      `**Historian:** ${details.historian.inProgress ? "running" : "idle"}, failures=${details.historian.failureCount}`,
    ].join("\n");
 }

@@ -12,7 +12,7 @@ import type {
    SubagentProgressEvent,
    SubagentRunner,
    SubagentRunOptions,
-   SubagentRunResult
+   SubagentRunResult,
 } from "#core/shared/subagent-runner";
 
 /**
@@ -201,7 +201,7 @@ export class PiSubagentRunner implements SubagentRunner {
          piBinary?: string;
          /** Test seam for subprocess lifecycle tests. Production uses child_process.spawn. */
          spawnImpl?: typeof childProcess.spawn;
-      } = {}
+      } = {},
    ) {
       if (options.piBinary) {
          // Explicit override always wins. Used by tests + advanced users
@@ -225,7 +225,7 @@ export class PiSubagentRunner implements SubagentRunner {
 
    async run(options: SubagentRunOptions): Promise<SubagentRunResult> {
       const models = [options.model, ...(options.fallbackModels ?? [])].filter(
-         (model): model is string => typeof model === "string" && model.length > 0
+         (model): model is string => typeof model === "string" && model.length > 0,
       );
       const attempts = models.length > 0 ? models : [undefined];
       let lastResult: SubagentRunResult | null = null;
@@ -234,7 +234,7 @@ export class PiSubagentRunner implements SubagentRunner {
          const attemptOptions = {
             ...options,
             model,
-            fallbackModels: undefined
+            fallbackModels: undefined,
          };
          const result = await this.runOnce(attemptOptions);
          if (result.ok) return result;
@@ -264,7 +264,7 @@ export class PiSubagentRunner implements SubagentRunner {
             providerId: typeof options.model === "string" ? options.model.split("/")[0] : null,
             modelId: typeof options.model === "string" ? options.model.split("/").slice(1).join("/") : null,
             error: result.ok ? null : result.error,
-            parentInvocationId: options.accountingParentInvocationId ?? null
+            parentInvocationId: options.accountingParentInvocationId ?? null,
          });
       };
       if (options.signal?.aborted) {
@@ -272,7 +272,7 @@ export class PiSubagentRunner implements SubagentRunner {
             ok: false,
             reason: "abort",
             error: "pi subagent aborted by caller",
-            durationMs: Date.now() - startTime
+            durationMs: Date.now() - startTime,
          };
          recordAccounting(result);
          return result;
@@ -319,8 +319,8 @@ export class PiSubagentRunner implements SubagentRunner {
                {
                   cwd: options.cwd,
                   env: process.env,
-                  stdio: ["pipe", "pipe", "pipe"]
-               }
+                  stdio: ["pipe", "pipe", "pipe"],
+               },
             );
             if (options.userMessage && child.stdin) {
                child.stdin.write(options.userMessage);
@@ -331,7 +331,7 @@ export class PiSubagentRunner implements SubagentRunner {
                ok: false,
                reason: "spawn_failed",
                error: error instanceof Error ? error.message : String(error),
-               durationMs: Date.now() - startTime
+               durationMs: Date.now() - startTime,
             });
             return;
          }
@@ -342,7 +342,7 @@ export class PiSubagentRunner implements SubagentRunner {
                ok: false,
                reason: "abort",
                error: "pi subagent aborted by caller",
-               durationMs: Date.now() - startTime
+               durationMs: Date.now() - startTime,
             });
             return;
          }
@@ -393,13 +393,13 @@ export class PiSubagentRunner implements SubagentRunner {
                ok: false,
                reason: "parse_failed",
                error: "pi child process did not expose stdout (stdio misconfigured)",
-               durationMs: Date.now() - startTime
+               durationMs: Date.now() - startTime,
             });
             return;
          }
          const rl = createInterface({
             input: child.stdout,
-            crlfDelay: Number.POSITIVE_INFINITY
+            crlfDelay: Number.POSITIVE_INFINITY,
          });
 
          // Track event progress so a timeout can report whether the
@@ -459,7 +459,7 @@ export class PiSubagentRunner implements SubagentRunner {
                emitProgress({
                   type: "first_event",
                   eventType: e.type,
-                  ms: elapsedMs
+                  ms: elapsedMs,
                });
             }
 
@@ -471,7 +471,7 @@ export class PiSubagentRunner implements SubagentRunner {
                type: "raw_event",
                eventType: typeof e.type === "string" ? e.type : undefined,
                event,
-               ms: elapsedMs
+               ms: elapsedMs,
             });
 
             // Backwards-compat: if Pi (or any pi-compatible runner) ever
@@ -488,7 +488,7 @@ export class PiSubagentRunner implements SubagentRunner {
                   stopReason: result.stopReason ?? undefined,
                   textLength: result.text?.length ?? 0,
                   hasToolCall: false,
-                  ms: elapsedMs
+                  ms: elapsedMs,
                });
                return;
             }
@@ -513,7 +513,7 @@ export class PiSubagentRunner implements SubagentRunner {
                   const hasToolCall =
                      Array.isArray(m.content) &&
                      m.content.some(
-                        (c) => typeof c === "object" && c !== null && (c as { type?: unknown }).type === "toolCall"
+                        (c) => typeof c === "object" && c !== null && (c as { type?: unknown }).type === "toolCall",
                      );
                   const isTerminalStopReason =
                      typeof m.stopReason === "string" &&
@@ -529,7 +529,7 @@ export class PiSubagentRunner implements SubagentRunner {
                         stopReason: m.stopReason,
                         textLength: result.text?.length ?? 0,
                         hasToolCall: false,
-                        ms: elapsedMs
+                        ms: elapsedMs,
                      });
                   }
                }
@@ -594,8 +594,8 @@ export class PiSubagentRunner implements SubagentRunner {
                      stderr: stderr.length > 0 ? stderr : undefined,
                      eventCount,
                      lastEventType: lastEventType ?? undefined,
-                     msSinceLastEvent: sinceLastEvent
-                  }
+                     msSinceLastEvent: sinceLastEvent,
+                  },
                });
             }, options.timeoutMs);
          }
@@ -608,7 +608,7 @@ export class PiSubagentRunner implements SubagentRunner {
                ok: false,
                reason: "abort",
                error: "pi subagent aborted by caller",
-               durationMs: Date.now() - startTime
+               durationMs: Date.now() - startTime,
             });
          };
          options.signal?.addEventListener("abort", onAbort, { once: true });
@@ -621,7 +621,7 @@ export class PiSubagentRunner implements SubagentRunner {
                ok: false,
                reason: "spawn_failed",
                error: error instanceof Error ? error.message : String(error),
-               durationMs: Date.now() - startTime
+               durationMs: Date.now() - startTime,
             });
          });
 
@@ -633,7 +633,7 @@ export class PiSubagentRunner implements SubagentRunner {
                type: "child_exit",
                code,
                signal,
-               ms: Date.now() - startTime
+               ms: Date.now() - startTime,
             });
             if (settled) return;
 
@@ -647,7 +647,7 @@ export class PiSubagentRunner implements SubagentRunner {
                      reason: "no_assistant",
                      error: "pi agent_end did not include an assistant message",
                      durationMs: Date.now() - startTime,
-                     meta: { stderr: stderr.length > 0 ? stderr : undefined }
+                     meta: { stderr: stderr.length > 0 ? stderr : undefined },
                   });
                   return;
                }
@@ -660,8 +660,8 @@ export class PiSubagentRunner implements SubagentRunner {
                      meta: {
                         stderr: stderr.length > 0 ? stderr : undefined,
                         exitCode: code,
-                        signal
-                     }
+                        signal,
+                     },
                   });
                   return;
                }
@@ -672,7 +672,7 @@ export class PiSubagentRunner implements SubagentRunner {
                      reason: finalStopReason === "length" ? "truncated" : "model_failed",
                      error: finalErrorMessage ?? `pi assistant stopped with reason "${finalStopReason}"`,
                      durationMs: Date.now() - startTime,
-                     meta: { stderr: stderr.length > 0 ? stderr : undefined }
+                     meta: { stderr: stderr.length > 0 ? stderr : undefined },
                   });
                   return;
                }
@@ -680,7 +680,7 @@ export class PiSubagentRunner implements SubagentRunner {
                   ok: true,
                   assistantText: (finalAssistantText ?? "").trim(),
                   durationMs: Date.now() - startTime,
-                  meta: { stderr: stderr.length > 0 ? stderr : undefined }
+                  meta: { stderr: stderr.length > 0 ? stderr : undefined },
                });
                return;
             }
@@ -697,8 +697,8 @@ export class PiSubagentRunner implements SubagentRunner {
                   meta: {
                      stderr: stderr.length > 0 ? stderr : undefined,
                      exitCode: code,
-                     signal
-                  }
+                     signal,
+                  },
                });
                return;
             }
@@ -712,8 +712,8 @@ export class PiSubagentRunner implements SubagentRunner {
                   meta: {
                      stderr: stderr.length > 0 ? stderr : undefined,
                      exitCode: code,
-                     signal
-                  }
+                     signal,
+                  },
                });
                return;
             }
@@ -726,8 +726,8 @@ export class PiSubagentRunner implements SubagentRunner {
                meta: {
                   stderr: stderr.length > 0 ? stderr : undefined,
                   exitCode: code,
-                  signal
-               }
+                  signal,
+               },
             });
          });
       });
@@ -773,7 +773,7 @@ export function buildArgs(options: SubagentRunOptions): string[] {
       //       a focused system prompt and one user message.
       "--no-extensions",
       "--no-skills",
-      "--no-prompt-templates"
+      "--no-prompt-templates",
       // --no-tools is intentionally NOT set: historian and dreamer use
       // Pi's built-in tools (Edit, Write, etc.) for some maintenance
       // tasks. Sidekick uses ctx_search via the lean subagent extension
@@ -893,7 +893,7 @@ export function extractFinalAssistant(messages: unknown[]): {
       return {
          text,
          stopReason: typeof m.stopReason === "string" ? m.stopReason : null,
-         errorMessage: typeof m.errorMessage === "string" ? m.errorMessage : null
+         errorMessage: typeof m.errorMessage === "string" ? m.errorMessage : null,
       };
    }
    return { text: null, stopReason: null, errorMessage: null };
@@ -905,7 +905,7 @@ export function parsePiEventLine(line: string): { ok: true; event: unknown } | {
    } catch (error) {
       return {
          ok: false,
-         error: `failed to parse event: ${error instanceof Error ? error.message : String(error)} | line=${line.slice(0, 200)}`
+         error: `failed to parse event: ${error instanceof Error ? error.message : String(error)} | line=${line.slice(0, 200)}`,
       };
    }
 }
@@ -933,5 +933,5 @@ export const __test = {
    buildArgs,
    extractFinalAssistant,
    parsePiEventLine,
-   terminateChild
+   terminateChild,
 };

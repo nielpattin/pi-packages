@@ -17,23 +17,23 @@ const COMMAND_ARGUMENTS = [
    {
       value: "show",
       label: "Show active settings",
-      description: "Display the current permission-system config summary"
+      description: "Display the current permission-system config summary",
    },
    {
       value: "path",
       label: "Show config path",
-      description: "Display the permission.jsonc path used by pi-permission-system"
+      description: "Display the permission.jsonc path used by pi-permission-system",
    },
    {
       value: "reset",
       label: "Reset defaults",
-      description: "Restore default yolo/logging settings and persist them"
+      description: "Restore default yolo/logging settings and persist them",
    },
    {
       value: "help",
       label: "Show help",
-      description: "Display command usage"
-   }
+      description: "Display command usage",
+   },
 ] as const;
 const USAGE_TEXT =
    "Usage: /permission-system [show|path|reset|help] (or run /permission-system with no args to open settings modal)";
@@ -42,7 +42,7 @@ function cloneDefaultConfig(): PermissionSystemExtensionConfig {
    return {
       debugLog: DEFAULT_EXTENSION_CONFIG.debugLog,
       permissionReviewLog: DEFAULT_EXTENSION_CONFIG.permissionReviewLog,
-      yoloMode: DEFAULT_EXTENSION_CONFIG.yoloMode
+      yoloMode: DEFAULT_EXTENSION_CONFIG.yoloMode,
    };
 }
 
@@ -67,7 +67,7 @@ function summarizeConfig(config: PermissionSystemExtensionConfig, rules?: Rulese
    const knobs = [
       `yoloMode=${toOnOff(config.yoloMode)}`,
       `permissionReviewLog=${toOnOff(config.permissionReviewLog)}`,
-      `debugLog=${toOnOff(config.debugLog)}`
+      `debugLog=${toOnOff(config.debugLog)}`,
    ].join(", ");
    const rulesSuffix = rules ? formatRulesSummary(rules) : "";
    return `${knobs}${rulesSuffix}`;
@@ -80,29 +80,29 @@ function buildSettingItems(config: PermissionSystemExtensionConfig): SettingItem
          label: "YOLO mode",
          description: "Auto-approve ask-state permission checks, including subagent approval forwarding",
          currentValue: toOnOff(config.yoloMode),
-         values: ON_OFF
+         values: ON_OFF,
       },
       {
          id: "permissionReviewLog",
          label: "Permission review log",
          description: "Write permission request and decision audit events to the extension logs directory",
          currentValue: toOnOff(config.permissionReviewLog),
-         values: ON_OFF
+         values: ON_OFF,
       },
       {
          id: "debugLog",
          label: "Debug logging",
          description: "Write verbose permission-system diagnostics to the extension logs directory",
          currentValue: toOnOff(config.debugLog),
-         values: ON_OFF
-      }
+         values: ON_OFF,
+      },
    ];
 }
 
 function applySetting(
    config: PermissionSystemExtensionConfig,
    id: string,
-   value: string
+   value: string,
 ): PermissionSystemExtensionConfig {
    switch (id) {
       case "yoloMode":
@@ -123,7 +123,7 @@ function syncSettingValues(settingsList: SettingsList, config: PermissionSystemE
 }
 
 function getArgumentCompletions(
-   argumentPrefix: string
+   argumentPrefix: string,
 ): Array<{ value: string; label: string; description: string }> | null {
    const normalized = argumentPrefix.trim().toLowerCase();
    if (normalized.includes(" ")) {
@@ -136,13 +136,13 @@ function getArgumentCompletions(
 
 async function openSettingsModal(
    ctx: ExtensionCommandContext,
-   controller: PermissionSystemConfigController
+   controller: PermissionSystemConfigController,
 ): Promise<void> {
    const overlayOptions = {
       anchor: "center" as const,
       width: 82,
       maxHeight: "85%" as const,
-      margin: 1
+      margin: 1,
    };
 
    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- ctx.ui.custom<void> is valid; rule does not allow void in generic fn call type args
@@ -159,12 +159,12 @@ async function openSettingsModal(
                current = controller.getConfig();
                syncSettingValues(settingsList, current);
             },
-            () => done()
+            () => done(),
          );
 
          return settingsList;
       },
-      { overlay: true, overlayOptions }
+      { overlay: true, overlayOptions },
    );
 }
 
@@ -215,6 +215,6 @@ export function registerPermissionSystemCommand(pi: ExtensionAPI, controller: Pe
          }
 
          await openSettingsModal(ctx, controller);
-      }
+      },
    });
 }

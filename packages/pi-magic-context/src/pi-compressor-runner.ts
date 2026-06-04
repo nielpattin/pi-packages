@@ -27,7 +27,7 @@ import {
    DEFAULT_COMPRESSOR_MAX_COMPARTMENTS_PER_PASS,
    DEFAULT_COMPRESSOR_MAX_MERGE_DEPTH,
    DEFAULT_COMPRESSOR_MIN_COMPARTMENT_RATIO,
-   DEFAULT_HISTORIAN_TIMEOUT_MS
+   DEFAULT_HISTORIAN_TIMEOUT_MS,
 } from "#core/config/schema/magic-context";
 import type { Compartment } from "#core/features/magic-context/compartment-storage";
 import { replaceAllCompartmentStateAndBumpDepth } from "#core/features/magic-context/compartment-storage";
@@ -37,7 +37,7 @@ import {
    getCompartments,
    getSessionFacts,
    incrementCompressionDepth,
-   replaceAllCompartmentState
+   replaceAllCompartmentState,
 } from "#core/features/magic-context/storage";
 import type { CavemanLevel } from "#core/hooks/magic-context/caveman";
 import { cavemanCompress } from "#core/hooks/magic-context/caveman";
@@ -93,10 +93,10 @@ function cavemanLevelForDepth(outputDepth: number): CavemanLevel | null {
 }
 
 function compartmentTokenEstimate(
-   compartment: Pick<Compartment, "startMessage" | "endMessage" | "title" | "content">
+   compartment: Pick<Compartment, "startMessage" | "endMessage" | "title" | "content">,
 ): number {
    return estimateTokens(
-      `<compartment start="${compartment.startMessage}" end="${compartment.endMessage}" title="${compartment.title}">\n${compartment.content}\n</compartment>\n`
+      `<compartment start="${compartment.startMessage}" end="${compartment.endMessage}" title="${compartment.title}">\n${compartment.content}\n</compartment>\n`,
    );
 }
 
@@ -105,7 +105,7 @@ function scoreCompartments(db: ContextDatabase, sessionId: string, compartments:
       compartment,
       index,
       tokenEstimate: compartmentTokenEstimate(compartment),
-      averageDepth: getAverageCompressionDepth(db, sessionId, compartment.startMessage, compartment.endMessage)
+      averageDepth: getAverageCompressionDepth(db, sessionId, compartment.startMessage, compartment.endMessage),
    }));
 }
 
@@ -116,7 +116,7 @@ function scoreCompartments(db: ContextDatabase, sessionId: string, compartments:
  */
 export function selectPiCompressionBand(
    scored: ScoredCompartment[],
-   constraints: SelectionConstraints
+   constraints: SelectionConstraints,
 ): ScoredCompartment[] {
    const { maxPickable, maxMergeDepth, graceCompartments, floorHeadroom } = constraints;
    const hardMaxPick = Math.max(0, Math.min(maxPickable, floorHeadroom));
@@ -169,7 +169,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
       maxMergeDepth = DEFAULT_COMPRESSOR_MAX_MERGE_DEPTH,
       maxCompartmentsPerPass = DEFAULT_COMPRESSOR_MAX_COMPARTMENTS_PER_PASS,
       graceCompartments = DEFAULT_COMPRESSOR_GRACE_COMPARTMENTS,
-      onPublished
+      onPublished,
    } = deps;
 
    const compartments = getCompartments(db, sessionId);
@@ -183,7 +183,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
    if (totalTokens <= historyBudgetTokens) {
       sessionLog(
          sessionId,
-         `compressor: history block ~${totalTokens} tokens within budget ${historyBudgetTokens}, skipping`
+         `compressor: history block ~${totalTokens} tokens within budget ${historyBudgetTokens}, skipping`,
       );
       return false;
    }
@@ -191,7 +191,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
    const overage = totalTokens - historyBudgetTokens;
    sessionLog(
       sessionId,
-      `compressor: history block ~${totalTokens} tokens exceeds budget ${historyBudgetTokens} by ~${overage} tokens`
+      `compressor: history block ~${totalTokens} tokens exceeds budget ${historyBudgetTokens} by ~${overage} tokens`,
    );
 
    const lastEndMessage = compartments[compartments.length - 1]?.endMessage ?? 0;
@@ -200,7 +200,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
    if (floorHeadroom < 1) {
       sessionLog(
          sessionId,
-         `compressor: no floor headroom (${compartments.length} compartments, floor=${floor}), skipping`
+         `compressor: no floor headroom (${compartments.length} compartments, floor=${floor}), skipping`,
       );
       return false;
    }
@@ -225,12 +225,12 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
       maxPickable: maxCompartmentsPerPass,
       maxMergeDepth,
       graceCompartments,
-      floorHeadroom
+      floorHeadroom,
    });
    if (band.length < 2) {
       sessionLog(
          sessionId,
-         `compressor: no eligible same-depth band found (floor=${floor}, maxDepth=${maxMergeDepth}, grace=${graceCompartments}, maxPerPass=${maxCompartmentsPerPass}), skipping`
+         `compressor: no eligible same-depth band found (floor=${floor}, maxDepth=${maxMergeDepth}, grace=${graceCompartments}, maxPerPass=${maxCompartmentsPerPass}), skipping`,
       );
       return false;
    }
@@ -246,7 +246,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
 
    sessionLog(
       sessionId,
-      `compressor: scored ${compartments.length}, picked ${band.length} contiguous (${selectedCompartments[0]?.startMessage}-${selectedCompartments[selectedCompartments.length - 1]?.endMessage}, ~${selectedTokens} tokens), avg_depth=${avgDepth.toFixed(1)} → output_depth=${outputDepth} (ratio=${mergeRatio}, target=${outputCount} compartments)`
+      `compressor: scored ${compartments.length}, picked ${band.length} contiguous (${selectedCompartments[0]?.startMessage}-${selectedCompartments[selectedCompartments.length - 1]?.endMessage}, ~${selectedTokens} tokens), avg_depth=${avgDepth.toFixed(1)} → output_depth=${outputDepth} (ratio=${mergeRatio}, target=${outputCount} compartments)`,
    );
 
    if (outputDepth === 5) {
@@ -256,7 +256,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
          startMessageId: c.startMessageId,
          endMessageId: c.endMessageId,
          title: c.title,
-         content: ""
+         content: "",
       }));
       const ok = finalizeCompression({
          db,
@@ -269,7 +269,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
          originalEnd: selectedCompartments[selectedCompartments.length - 1]?.endMessage ?? 0,
          facts,
          logLabel: `depth-5 title-only collapse (${selectedCompartments.length} → ${compressed.length})`,
-         holderId: deps.compartmentLeaseHolderId
+         holderId: deps.compartmentLeaseHolderId,
       });
       if (ok) onPublished?.();
       return ok;
@@ -281,7 +281,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
       currentTokens: selectedTokens,
       targetTokens: Math.max(200, Math.floor(selectedTokens / mergeRatio)),
       outputCount,
-      outputDepth
+      outputDepth,
    });
    if (!llmCompressed) return false;
 
@@ -289,7 +289,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
    const finalCompressed = level
       ? llmCompressed.map((c) => ({
            ...c,
-           content: cavemanCompress(c.content, level)
+           content: cavemanCompress(c.content, level),
         }))
       : llmCompressed;
    const ok = finalizeCompression({
@@ -303,7 +303,7 @@ export async function runPiCompressionPassIfNeeded(deps: PiCompressorDeps): Prom
       originalEnd: selectedCompartments[selectedCompartments.length - 1]?.endMessage ?? 0,
       facts,
       logLabel: `depth-${outputDepth} (${selectedCompartments.length} → ${finalCompressed.length})`,
-      holderId: deps.compartmentLeaseHolderId
+      holderId: deps.compartmentLeaseHolderId,
    });
    if (ok) onPublished?.();
    return ok;
@@ -316,7 +316,7 @@ async function runCompressorPass(
       targetTokens: number;
       outputCount: number;
       outputDepth: number;
-   }
+   },
 ): Promise<Array<{
    startMessage: number;
    endMessage: number;
@@ -330,7 +330,7 @@ async function runCompressorPass(
       args.currentTokens,
       args.targetTokens,
       args.outputDepth,
-      args.outputCount
+      args.outputCount,
    );
 
    try {
@@ -344,7 +344,7 @@ async function runCompressorPass(
          cwd: args.directory,
          thinkingLevel: args.thinkingLevel,
          accountingSessionId: args.sessionId,
-         accountingSubagent: "compressor"
+         accountingSubagent: "compressor",
       });
       if (!result.ok) {
          sessionLog(args.sessionId, `compressor: subagent failed (${result.reason}): ${result.error}`);
@@ -377,7 +377,7 @@ function snapLLMOutputToInputBoundaries(
       title: string;
       content: string;
    }>,
-   inputCompartments: Compartment[]
+   inputCompartments: Compartment[],
 ): {
    result: Array<{
       startMessage: number;
@@ -414,7 +414,7 @@ function snapLLMOutputToInputBoundaries(
          startMessageId: startOwner.startMessageId,
          endMessageId: endOwner.endMessageId,
          title: pc.title,
-         content: pc.content
+         content: pc.content,
       });
    }
    return { result };
@@ -446,7 +446,7 @@ function finalizeCompression(args: {
    if (compressedStart !== originalStart || compressedEnd !== originalEnd) {
       sessionLog(
          sessionId,
-         `compressor: compressed range ${compressedStart}-${compressedEnd} doesn't match original ${originalStart}-${originalEnd}, aborting`
+         `compressor: compressed range ${compressedStart}-${compressedEnd} doesn't match original ${originalStart}-${originalEnd}, aborting`,
       );
       return false;
    }
@@ -467,8 +467,8 @@ function finalizeCompression(args: {
       ...compressed.map((c, i) => ({ ...c, sequence: leading.length + i })),
       ...trailing.map((c, i) => ({
          ...c,
-         sequence: leading.length + compressed.length + i
-      }))
+         sequence: leading.length + compressed.length + i,
+      })),
    ];
 
    const published = args.holderId
@@ -479,7 +479,7 @@ function finalizeCompression(args: {
            allCompartments,
            args.facts,
            originalStart,
-           originalEnd
+           originalEnd,
         )
       : (() => {
            replaceAllCompartmentState(db, sessionId, allCompartments, args.facts);

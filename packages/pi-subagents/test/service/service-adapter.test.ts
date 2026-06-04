@@ -17,7 +17,7 @@ function setUpWorktree(cleanupResult: WorktreeCleanupResult): WorktreeIsolation 
    const worktrees: WorktreeManager = {
       create: vi.fn(() => ({ path: "/tmp/wt", branch: "agent/abc-123" })),
       cleanup: vi.fn(() => cleanupResult),
-      prune: vi.fn()
+      prune: vi.fn(),
    };
    const worktree = new WorktreeIsolation(worktrees, "abc-123");
    worktree.setup();
@@ -35,7 +35,7 @@ describe("toSubagentRecord", () => {
          toolUses: 5,
          lifetimeUsage: { input: 100, output: 200, cacheWrite: 50 },
          compactionCount: 1,
-         worktree: setUpWorktree({ hasChanges: true, branch: "agent/abc-123" })
+         worktree: setUpWorktree({ hasChanges: true, branch: "agent/abc-123" }),
       });
       return r;
    })();
@@ -53,7 +53,7 @@ describe("toSubagentRecord", () => {
          completedAt: 2000,
          lifetimeUsage: { input: 100, output: 200, cacheWrite: 50 },
          compactionCount: 1,
-         worktreeResult: { hasChanges: true, branch: "agent/abc-123" }
+         worktreeResult: { hasChanges: true, branch: "agent/abc-123" },
       });
    });
 
@@ -107,7 +107,7 @@ describe("toSubagentRecord", () => {
          toolUses: 0,
          startedAt: 500,
          completedAt: undefined,
-         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 }
+         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 },
       });
       const result = toSubagentRecord(minimal);
       expect(result).toEqual({
@@ -118,7 +118,7 @@ describe("toSubagentRecord", () => {
          toolUses: 0,
          startedAt: 500,
          lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 },
-         compactionCount: 0
+         compactionCount: 0,
       });
       expect(result).not.toHaveProperty("result");
       expect(result).not.toHaveProperty("error");
@@ -137,8 +137,8 @@ function makeStubCtx(): SessionContext {
       sessionManager: {
          getSessionFile: () => undefined,
          getSessionId: () => "stub-session",
-         getBranch: () => []
-      }
+         getBranch: () => [],
+      },
    };
 }
 
@@ -150,7 +150,7 @@ function makeRuntimeStub(override: Partial<ServiceRuntimeLike> = {}): ServiceRun
    return {
       currentCtx: makeStubCtx(),
       buildSnapshot: vi.fn((_: boolean): ParentSnapshot => STUB_SNAPSHOT),
-      ...override
+      ...override,
    };
 }
 
@@ -159,7 +159,7 @@ describe("SubagentsServiceAdapter — getRecord and listAgents", () => {
       id: "a-1",
       type: "Explore",
       description: "task A",
-      lifetimeUsage: { input: 10, output: 20, cacheWrite: 5 }
+      lifetimeUsage: { input: 10, output: 20, cacheWrite: 5 },
    });
 
    const recordB = createTestAgent({
@@ -171,7 +171,7 @@ describe("SubagentsServiceAdapter — getRecord and listAgents", () => {
       startedAt: 3000,
       result: undefined,
       completedAt: undefined,
-      lifetimeUsage: { input: 5, output: 10, cacheWrite: 0 }
+      lifetimeUsage: { input: 5, output: 10, cacheWrite: 0 },
    });
 
    function createMockManager(records: Agent[]) {
@@ -182,7 +182,7 @@ describe("SubagentsServiceAdapter — getRecord and listAgents", () => {
          abort: vi.fn(() => true),
          waitForAll: vi.fn(async () => {}),
          hasRunning: vi.fn(() => false),
-         registerWorkspaceProvider: vi.fn(() => () => {})
+         registerWorkspaceProvider: vi.fn(() => () => {}),
       };
    }
 
@@ -226,7 +226,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
          abort: vi.fn(() => true),
          waitForAll: vi.fn(async () => {}),
          hasRunning: vi.fn(() => false),
-         registerWorkspaceProvider: vi.fn(() => () => {})
+         registerWorkspaceProvider: vi.fn(() => () => {}),
       };
    }
 
@@ -241,7 +241,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
       const svc = new SubagentsServiceAdapter(
          defaultManager(),
          resolveModel,
-         makeRuntimeStub({ currentCtx: { ...makeStubCtx(), modelRegistry: registry } })
+         makeRuntimeStub({ currentCtx: { ...makeStubCtx(), modelRegistry: registry } }),
       );
       svc.spawn("Explore", "check TODOs", { model: "haiku" });
       expect(resolveModel).toHaveBeenCalledWith("haiku", registry);
@@ -251,7 +251,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
       const svc = new SubagentsServiceAdapter(
          defaultManager(),
          () => 'Model not found: "bad-model".\n\nAvailable models:\n  anthropic/claude-sonnet',
-         makeRuntimeStub()
+         makeRuntimeStub(),
       );
       expect(() => svc.spawn("Explore", "task", { model: "bad-model" })).toThrow(/Model not found/);
    });
@@ -269,8 +269,8 @@ describe("SubagentsServiceAdapter — spawn", () => {
          expect.objectContaining({
             model: resolvedModel,
             maxTurns: 5,
-            isBackground: true
-         })
+            isBackground: true,
+         }),
       );
    });
 
@@ -282,7 +282,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
          expect.anything(), // snapshot
          "Plan",
          "plan work",
-         expect.objectContaining({ isBackground: false })
+         expect.objectContaining({ isBackground: false }),
       );
    });
 
@@ -295,7 +295,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
          expect.anything(), // snapshot
          "Explore",
          longPrompt,
-         expect.objectContaining({ description: "x".repeat(80) })
+         expect.objectContaining({ description: "x".repeat(80) }),
       );
    });
 
@@ -307,7 +307,7 @@ describe("SubagentsServiceAdapter — spawn", () => {
          expect.anything(), // snapshot
          "Explore",
          "long prompt here",
-         expect.objectContaining({ description: "short desc" })
+         expect.objectContaining({ description: "short desc" }),
       );
    });
 
@@ -328,7 +328,7 @@ describe("SubagentsServiceAdapter — steer, abort, waitForAll, hasRunning", () 
          abort: vi.fn<AgentManagerLike["abort"]>(() => true),
          waitForAll: vi.fn(async () => {}),
          hasRunning: vi.fn(() => true),
-         registerWorkspaceProvider: vi.fn(() => () => {})
+         registerWorkspaceProvider: vi.fn(() => () => {}),
       };
    }
 
@@ -376,7 +376,7 @@ describe("SubagentsServiceAdapter — steer, abort, waitForAll, hasRunning", () 
          const mgr = createTestManager();
          mgr.getRecord.mockReturnValue({
             id: "a-1",
-            status: "completed"
+            status: "completed",
          } as Agent);
          const svc = createSvc(mgr);
          expect(await svc.steer("a-1", "hurry")).toBe(false);
@@ -421,7 +421,7 @@ describe("SubagentsServiceAdapter — registerWorkspaceProvider", () => {
          abort: vi.fn(() => true),
          waitForAll: vi.fn(async () => {}),
          hasRunning: vi.fn(() => false),
-         registerWorkspaceProvider: vi.fn(() => disposer)
+         registerWorkspaceProvider: vi.fn(() => disposer),
       };
       const svc = new SubagentsServiceAdapter(mgr, vi.fn(), makeRuntimeStub());
       const provider: WorkspaceProvider = { prepare: vi.fn(async () => undefined) };

@@ -6,7 +6,7 @@ import {
    appendProjectHistory,
    matchHistoryEntries,
    readGlobalShellHistory,
-   readProjectHistory
+   readProjectHistory,
 } from "../bash-mode/history.ts";
 import { ManagedShellSession } from "../bash-mode/shell-session.ts";
 import { BashTranscriptStore } from "../bash-mode/transcript.ts";
@@ -34,6 +34,7 @@ export class BashModeIntegration {
    transcript: BashTranscriptStore;
    completionEngine: BashCompletionEngine;
    session: ManagedShellSession | null = null;
+   private settings: BashModeSettings;
    private callbacks: BashIntegrationCallbacks;
 
    constructor(settings: BashModeSettings, callbacks: BashIntegrationCallbacks) {
@@ -95,7 +96,7 @@ export class BashModeIntegration {
       const project = matchHistoryEntries(
          readProjectHistory(cwd ?? process.cwd()).map((entry) => entry.command),
          prefix,
-         50
+         50,
       );
       const global = matchHistoryEntries(readGlobalShellHistory(this.getShellPath()), prefix, 50);
       return [...new Set([...project, ...global])];
@@ -109,7 +110,7 @@ export class BashModeIntegration {
             cwd ?? process.cwd(),
             this.transcript,
             () => this.callbacks.requestStatusRender(),
-            (command, sessionCwd) => appendProjectHistory(cwd ?? process.cwd(), command, sessionCwd)
+            (command, sessionCwd) => appendProjectHistory(cwd ?? process.cwd(), command, sessionCwd),
          );
       }
       await this.session.ensureReady();
@@ -119,7 +120,7 @@ export class BashModeIntegration {
    /** Run a shell command. */
    async runCommand(
       command: string,
-      ctx: { cwd?: string; ui: { notify: (msg: string, level: string) => void } }
+      ctx: { cwd?: string; ui: { notify: (msg: string, level: string) => void } },
    ): Promise<void> {
       return this.runCommandWithCwd(command, ctx.cwd, (msg, lvl) => ctx.ui.notify(msg, lvl));
    }
@@ -127,7 +128,7 @@ export class BashModeIntegration {
    private async runCommandWithCwd(
       command: string,
       cwd: string | undefined,
-      notify: (msg: string, level: string) => void
+      notify: (msg: string, level: string) => void,
    ): Promise<void> {
       try {
          const session = await this.ensureSession(cwd);
@@ -142,7 +143,7 @@ export class BashModeIntegration {
    /** Toggle bash mode on/off. */
    async setActive(
       value: boolean,
-      ctx: { cwd?: string; ui: { notify: (msg: string, level: string) => void } }
+      ctx: { cwd?: string; ui: { notify: (msg: string, level: string) => void } },
    ): Promise<void> {
       const editor = this.callbacks.getCurrentEditor();
       const notify = (msg: string, level: string) => ctx.ui.notify(msg, level);
@@ -195,7 +196,7 @@ export class BashModeIntegration {
 
       if (snapshot.truncatedCommands > 0) {
          lines.push(
-            ` ${theme.fg("dim", `... ${snapshot.truncatedCommands} earlier command${snapshot.truncatedCommands === 1 ? "" : "s"} truncated`)}`
+            ` ${theme.fg("dim", `... ${snapshot.truncatedCommands} earlier command${snapshot.truncatedCommands === 1 ? "" : "s"} truncated`)}`,
          );
       }
 
@@ -209,10 +210,10 @@ export class BashModeIntegration {
          const commandLine = truncateToWidth(
             command.command.replace(/\s+/g, " ").trim(),
             Math.max(8, width - 8),
-            "..."
+            "...",
          );
          lines.push(
-            ` ${theme.fg("accent", promptGlyph)} ${commandLine} ${theme.fg("dim", "(")}${status}${theme.fg("dim", ")")}`
+            ` ${theme.fg("accent", promptGlyph)} ${commandLine} ${theme.fg("dim", "(")}${status}${theme.fg("dim", ")")}`,
          );
 
          for (const outputLine of command.output) {

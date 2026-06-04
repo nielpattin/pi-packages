@@ -6,7 +6,7 @@ import { createNotificationRenderer } from "#src/observation/renderer";
 function stubTheme() {
    return {
       fg: (style: string, text: string) => `[${style}:${text}]`,
-      bold: (text: string) => `**${text}**`
+      bold: (text: string) => `**${text}**`,
    };
 }
 
@@ -20,7 +20,7 @@ function makeDetails(overrides: Partial<NotificationDetails> = {}): Notification
       totalTokens: 1000,
       durationMs: 5000,
       resultPreview: "All done.",
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -65,7 +65,7 @@ describe("createNotificationRenderer", () => {
       const result = renderer(
          { details: makeDetails({ resultPreview: "line1\nline2\nline3" }) },
          { expanded: true },
-         stubTheme()
+         stubTheme(),
       );
       const text = renderText(result);
       expect(text).toContain("line1");
@@ -78,7 +78,7 @@ describe("createNotificationRenderer", () => {
       const result = renderer(
          { details: makeDetails({ resultPreview: "short result" }) },
          { expanded: false },
-         stubTheme()
+         stubTheme(),
       );
       expect(renderText(result)).toContain("⎿");
       expect(renderText(result)).toContain("short result");
@@ -89,7 +89,7 @@ describe("createNotificationRenderer", () => {
       const result = renderer(
          { details: makeDetails({ outputFile: "/tmp/transcript.jsonl" }) },
          { expanded: false },
-         stubTheme()
+         stubTheme(),
       );
       expect(renderText(result)).toContain("/tmp/transcript.jsonl");
    });
@@ -99,7 +99,7 @@ describe("createNotificationRenderer", () => {
       const result = renderer(
          { details: makeDetails({ toolUses: 7, totalTokens: 5000 }) },
          { expanded: false },
-         stubTheme()
+         stubTheme(),
       );
       const text = renderText(result);
       expect(text).toContain("7 tool uses");

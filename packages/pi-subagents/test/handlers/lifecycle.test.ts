@@ -25,12 +25,12 @@ describe("SessionLifecycleHandler", () => {
 
       runtime = {
          setSessionContext: mockSetSessionContext,
-         clearSessionContext: mockClearSessionContext
+         clearSessionContext: mockClearSessionContext,
       };
       manager = {
          clearCompleted: mockClearCompleted,
          abortAll: mockAbortAll,
-         dispose: mockDispose
+         dispose: mockDispose,
       };
 
       handler = new SessionLifecycleHandler(runtime, manager, mockDisposeNotifications, mockUnpublishService);
@@ -105,7 +105,7 @@ describe("SessionLifecycleHandler", () => {
             "clearSessionContext",
             "abortAll",
             "disposeNotifications",
-            "dispose"
+            "dispose",
          ]);
       });
    });

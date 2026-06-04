@@ -31,7 +31,7 @@ export class ForwardingManager {
    constructor(
       private readonly subagentSessionsDir: string,
       private readonly forwardingDeps: PermissionForwardingDeps,
-      private readonly registry?: SubagentSessionRegistry
+      private readonly registry?: SubagentSessionRegistry,
    ) {}
 
    /**

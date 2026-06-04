@@ -1,8 +1,8 @@
 import { vi } from "vitest";
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import type { ParentSnapshot } from "#src/lifecycle/parent-snapshot";
-import type { AgentToolManager, AgentToolRuntime, AgentToolSettings } from "#src/tools/agent-tool";
-import type { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
+import { type AgentToolManager, type AgentToolRuntime, type AgentToolSettings } from "#src/tools/agent-tool";
+import { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
 import { createTestAgent } from "./make-agent";
 import { STUB_SNAPSHOT } from "./stub-ctx";
 
@@ -49,12 +49,12 @@ export function createToolDeps(overrides: Partial<AgentToolFixture> = {}): Agent
       buildSnapshot: vi.fn((_inheritContext: boolean): ParentSnapshot => STUB_SNAPSHOT),
       getModelInfo: vi.fn(() => ({
          parentModel: { id: "claude-sonnet", name: "Claude Sonnet" },
-         modelRegistry: { getAll: () => [], getAvailable: () => [] }
+         modelRegistry: { getAll: () => [], getAvailable: () => [] },
       })),
       getSessionInfo: vi.fn(() => ({
          parentSessionFile: "/sessions/parent.jsonl",
-         parentSessionId: "session-1"
-      }))
+         parentSessionId: "session-1",
+      })),
    };
 
    return {
@@ -62,12 +62,12 @@ export function createToolDeps(overrides: Partial<AgentToolFixture> = {}): Agent
          spawn: vi.fn().mockReturnValue("agent-1"),
          spawnAndWait: vi.fn().mockResolvedValue(createTestAgent()),
          resume: vi.fn().mockResolvedValue(createTestAgent()),
-         getRecord: vi.fn().mockReturnValue(createTestAgent())
+         getRecord: vi.fn().mockReturnValue(createTestAgent()),
       },
       runtime,
       settings: { defaultMaxTurns: undefined as number | undefined, maxConcurrent: 4 },
       registry: defaultRegistry,
       agentDir: "/home/user/.pi",
-      ...overrides
+      ...overrides,
    };
 }

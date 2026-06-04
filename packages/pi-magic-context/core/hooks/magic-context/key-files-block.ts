@@ -7,7 +7,7 @@ import {
    type KeyFileStaleReason,
    readCurrentKeyFiles,
    resolveProjectPath,
-   sha256
+   sha256,
 } from "../../features/magic-context/key-files/project-key-files";
 import type { SessionMeta } from "../../features/magic-context/types";
 import { log, sessionLog } from "../../shared/logger";
@@ -42,7 +42,7 @@ export function queueStaleUpdate(
    projectPath: string,
    path: string,
    generatedAtWitness: number,
-   staleReason: KeyFileStaleReason
+   staleReason: KeyFileStaleReason,
 ): void {
    const update = { projectPath, path, generatedAtWitness, staleReason };
    staleUpdates.set(staleKey(update), update);
@@ -58,7 +58,7 @@ export function flushStaleUpdates(db: Database): number {
           WHERE project_path = ?2
             AND path = ?3
             AND generated_at = ?4
-            AND (stale_reason IS NULL OR stale_reason != ?1)`
+            AND (stale_reason IS NULL OR stale_reason != ?1)`,
    );
    let changed = 0;
    for (const update of updates) {
@@ -87,7 +87,7 @@ function isUnderProject(projectPath: string, absPath: string): boolean {
 export function buildKeyFilesBlock(
    db: Database,
    projectPath: string,
-   config: KeyFilesConfigForRender = { enabled: true, tokenBudget: 10_000 }
+   config: KeyFilesConfigForRender = { enabled: true, tokenBudget: 10_000 },
 ): string | null {
    if (!config.enabled) return null;
    if (!isAftAvailable()) return null;
@@ -118,7 +118,7 @@ export function buildKeyFilesBlock(
             observed = true;
          } else {
             log(
-               `[key-files] freshness check transient failure: ${row.path}: ${error instanceof Error ? error.message : String(error)}`
+               `[key-files] freshness check transient failure: ${row.path}: ${error instanceof Error ? error.message : String(error)}`,
             );
          }
       }

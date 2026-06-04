@@ -67,7 +67,7 @@ function normalizeCustomStatusItem(raw: unknown, idOverride?: string): CustomSta
       id,
       position: normalizeCustomItemPosition(raw.position),
       prefix: normalizeCustomPrefix(raw.prefix),
-      statusKey
+      statusKey,
    };
 }
 
@@ -104,7 +104,7 @@ export function parseStationConfig(value: unknown): StationConfig {
       fixedEditor: true,
       scrollBar: true,
       hashline: true,
-      shortcuts: { ...DEFAULT_STATION_SHORTCUTS }
+      shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
    };
 
    if (!isRecord(value)) {
@@ -116,13 +116,13 @@ export function parseStationConfig(value: unknown): StationConfig {
       fixedEditor: value.fixedEditor !== false,
       scrollBar: value.scrollBar !== false,
       hashline: value.hashline !== false,
-      shortcuts: resolveStationShortcuts(value.shortcuts)
+      shortcuts: resolveStationShortcuts(value.shortcuts),
    };
 }
 
 export function mergeSegmentsWithCustomItems(
    layoutDef: PresetDef,
-   customItems: readonly CustomStatusItem[]
+   customItems: readonly CustomStatusItem[],
 ): {
    leftSegments: StatusLineSegmentId[];
    rightSegments: StatusLineSegmentId[];
@@ -152,7 +152,7 @@ export function mergeSegmentsWithCustomItems(
       rightSegments: right,
       secondaryRightSegments: secondaryRight,
       secondarySegments: secondary,
-      tertiarySegments: tertiary
+      tertiarySegments: tertiary,
    };
 }
 
@@ -172,7 +172,7 @@ export function isNotificationExtensionStatus(value: string): boolean {
 
 export function getNotificationExtensionStatuses(
    statuses: ReadonlyMap<string, string>,
-   hiddenKeys: ReadonlySet<string>
+   hiddenKeys: ReadonlySet<string>,
 ): string[] {
    const notifications: string[] = [];
    for (const [statusKey, value] of statuses.entries()) {

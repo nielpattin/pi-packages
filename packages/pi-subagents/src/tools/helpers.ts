@@ -1,6 +1,6 @@
 import type { AgentConfigLookup } from "#src/config/agent-types";
 import { getLifetimeTotal, type LifetimeUsage } from "#src/lifecycle/usage";
-import type { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
+import { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
 import { type AgentDetails, formatTokens } from "#src/ui/display";
 
 /** Parenthetical status note for completed agent result text. */
@@ -30,7 +30,7 @@ export function buildDetails(
       lifetimeUsage: LifetimeUsage;
    },
    activity?: AgentActivityTracker,
-   overrides?: Partial<AgentDetails>
+   overrides?: Partial<AgentDetails>,
 ): AgentDetails {
    return {
       ...base,
@@ -42,7 +42,7 @@ export function buildDetails(
       status: record.status as AgentDetails["status"],
       agentId: record.id,
       error: record.error,
-      ...overrides
+      ...overrides,
    };
 }
 
@@ -91,7 +91,7 @@ export function buildTypeListText(registry: TypeListRegistry, agentDir: string):
       ...defaultDescs,
       ...(customDescs.length > 0 ? ["", "Custom agents:", ...customDescs] : []),
       "",
-      `Custom agents can be defined in .pi/agents/<name>.md (project) or ${agentDir}/agents/<name>.md (global) — they are picked up automatically. Project-level agents override global ones. Creating a .md file with the same name as a default agent overrides it.`
+      `Custom agents can be defined in .pi/agents/<name>.md (project) or ${agentDir}/agents/<name>.md (global) — they are picked up automatically. Project-level agents override global ones. Creating a .md file with the same name as a default agent overrides it.`,
    ].join("\n");
 }
 

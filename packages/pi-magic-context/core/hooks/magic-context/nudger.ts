@@ -3,7 +3,7 @@ import {
    getOrCreateSessionMeta,
    getPendingOps,
    type getTopNBySize,
-   updateSessionMeta
+   updateSessionMeta,
 } from "../../features/magic-context/storage";
 import type { ContextUsage, SessionMeta, TagEntry } from "../../features/magic-context/types";
 import { sessionLog } from "../../shared/logger";
@@ -14,7 +14,7 @@ import {
    getRollingNudgeBand,
    getRollingNudgeBandPriority,
    getRollingNudgeIntervalTokens,
-   type RollingNudgeBand
+   type RollingNudgeBand,
 } from "./nudge-bands";
 
 type ContextDatabase = Parameters<typeof getOrCreateSessionMeta>[0];
@@ -65,7 +65,7 @@ export function createNudger(config: {
       topNFn: typeof getTopNBySize,
       preloadedTags?: TagEntry[],
       messagesSinceLastUser?: number,
-      preloadedSessionMeta?: SessionMeta
+      preloadedSessionMeta?: SessionMeta,
    ): ContextNudge | null => {
       const sessionMeta = preloadedSessionMeta ?? getOrCreateSessionMeta(db, sessionId);
       const now = config.now?.() ?? Date.now();
@@ -82,7 +82,7 @@ export function createNudger(config: {
       if (lastReduceAt !== undefined && now - lastReduceAt <= RECENT_CTX_REDUCE_WINDOW_MS) {
          sessionLog(
             sessionId,
-            `nudge: suppressed at ${contextUsage.percentage.toFixed(1)}% because ctx_reduce ran recently (${now - lastReduceAt}ms ago)`
+            `nudge: suppressed at ${contextUsage.percentage.toFixed(1)}% because ctx_reduce ran recently (${now - lastReduceAt}ms ago)`,
          );
          return null;
       }
@@ -134,7 +134,7 @@ export function createNudger(config: {
       ) {
          sessionLog(
             sessionId,
-            `nudge fired: iteration_nudge at ${contextUsage.percentage.toFixed(1)}% (${messagesSinceLastUser} messages since user, interval: ${contextUsage.inputTokens - sessionMeta.lastNudgeTokens}/${currentInterval} tokens)`
+            `nudge fired: iteration_nudge at ${contextUsage.percentage.toFixed(1)}% (${messagesSinceLastUser} messages since user, interval: ${contextUsage.inputTokens - sessionMeta.lastNudgeTokens}/${currentInterval} tokens)`,
          );
          updateSessionMeta(db, sessionId, { lastNudgeTokens: contextUsage.inputTokens });
          return {
@@ -152,8 +152,8 @@ export function createNudger(config: {
                `- drop: Remove content entirely. Best for old tool outputs you already acted on.`,
                `- Syntax: "3-5", "1,2,9", or "1-5,8,12-15" (bare integers).`,
                `- Only drop what you have already processed. NEVER drop large ranges blindly.`,
-               `</instruction>`
-            ].join("\n")
+               `</instruction>`,
+            ].join("\n"),
          };
       }
 
@@ -167,21 +167,21 @@ export function createNudger(config: {
             : `interval ${contextUsage.inputTokens - sessionMeta.lastNudgeTokens}/${currentInterval} tokens`;
          sessionLog(
             sessionId,
-            `nudge fired: rolling_${currentBand} at ${contextUsage.percentage.toFixed(1)}% (${reason})`
+            `nudge fired: rolling_${currentBand} at ${contextUsage.percentage.toFixed(1)}% (${reason})`,
          );
          updateSessionMeta(db, sessionId, {
             lastNudgeTokens: contextUsage.inputTokens,
-            lastNudgeBand: currentBand
+            lastNudgeBand: currentBand,
          });
          return {
             type: "assistant",
-            text: buildRollingNudgeText(currentBand, contextUsage.percentage, largest, oldToolHint, protectedHint)
+            text: buildRollingNudgeText(currentBand, contextUsage.percentage, largest, oldToolHint, protectedHint),
          };
       }
 
       sessionLog(
          sessionId,
-         `nudge: none fired at ${contextUsage.percentage.toFixed(1)}% (band=${currentBand} lastBand=${formatRollingNudgeBand(lastBand)} lastNudge=${sessionMeta.lastNudgeTokens} current=${contextUsage.inputTokens} interval=${currentInterval} projected=${projectedPercentage?.toFixed(1) ?? "none"})`
+         `nudge: none fired at ${contextUsage.percentage.toFixed(1)}% (band=${currentBand} lastBand=${formatRollingNudgeBand(lastBand)} lastNudge=${sessionMeta.lastNudgeTokens} current=${contextUsage.inputTokens} interval=${currentInterval} projected=${projectedPercentage?.toFixed(1) ?? "none"})`,
       );
       return null;
    };
@@ -192,25 +192,25 @@ function buildRollingNudgeText(
    percentage: number,
    largest: string,
    oldToolHint: string,
-   protectedHint: string
+   protectedHint: string,
 ): string {
    const titleByBand: Record<RollingNudgeBand, string> = {
       far: "CONTEXT REMINDER",
       near: "CONTEXT WARNING",
       urgent: "CONTEXT URGENT",
-      critical: "CONTEXT CRITICAL"
+      critical: "CONTEXT CRITICAL",
    };
    const instructionByBand: Record<RollingNudgeBand, string> = {
       far: "You should use `ctx_reduce` to drop old tool outputs before continuing.",
       near: "You should call `ctx_reduce` soon to free space before more heavy reads or tool output.",
       urgent: "You should call `ctx_reduce` before doing more reads or tool-heavy work.",
-      critical: "You MUST call `ctx_reduce` RIGHT NOW before doing ANYTHING else."
+      critical: "You MUST call `ctx_reduce` RIGHT NOW before doing ANYTHING else.",
    };
    const cautionByBand: Record<RollingNudgeBand, string> = {
       far: "- Only drop what you have already processed. NEVER drop large ranges blindly.",
       near: "- Review what each tag contains. Drop processed outputs, keep anything you might need soon.",
       urgent: "- Review each tag before deciding. Avoid broad drops that could remove active context.",
-      critical: '- NEVER drop large ranges blindly (e.g., "1-50"). Review each tag before deciding.'
+      critical: '- NEVER drop large ranges blindly (e.g., "1-50"). Review each tag before deciding.',
    };
    return [
       `\n\n<instruction name="context_${band}">`,
@@ -224,7 +224,7 @@ function buildRollingNudgeText(
       `- drop: Remove content entirely. Best for old tool outputs you already acted on.`,
       `- Syntax: "3-5", "1,2,9", or "1-5,8,12-15" (bare integers).`,
       cautionByBand[band],
-      `</instruction>`
+      `</instruction>`,
    ].join("\n");
 }
 
@@ -232,7 +232,7 @@ function estimateProjectedPercentage(
    db: ContextDatabase,
    sessionId: string,
    contextUsage: ContextUsage,
-   preloadedTags?: TagEntry[]
+   preloadedTags?: TagEntry[],
 ): number | null {
    const pendingOps = getPendingOps(db, sessionId);
    const pendingDrops = pendingOps.filter((op) => op.operation === "drop");

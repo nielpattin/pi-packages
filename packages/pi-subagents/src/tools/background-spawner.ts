@@ -36,7 +36,7 @@ export function spawnBackground(
    manager: BackgroundManagerDeps,
    widget: BackgroundWidgetDeps,
    agentActivity: AgentActivityAccess,
-   params: BackgroundParams
+   params: BackgroundParams,
 ) {
    const { identity, execution, presentation } = params.config;
    const bgState = new AgentActivityTracker(execution.effectiveMaxTurns);
@@ -58,8 +58,8 @@ export function spawnBackground(
             onSessionCreated: (_agent, session) => {
                bgState.setSession(session);
                subscribeUIObserver(session, bgState);
-            }
-         }
+            },
+         },
       });
    } catch (err) {
       return textResult(err instanceof Error ? err.message : String(err));
@@ -88,7 +88,7 @@ export function spawnBackground(
          tokens: "",
          durationMs: 0,
          status: "background" as const,
-         agentId: id
-      }
+         agentId: id,
+      },
    );
 }

@@ -10,7 +10,7 @@ function getInsertCompartmentStatement(db: Database): PreparedStatement {
    let stmt = insertCompartmentStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO compartments (session_id, sequence, start_message, end_message, start_message_id, end_message_id, title, content, created_at, harness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+         "INSERT INTO compartments (session_id, sequence, start_message, end_message, start_message_id, end_message_id, title, content, created_at, harness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       );
       insertCompartmentStatements.set(db, stmt);
    }
@@ -21,7 +21,7 @@ function getInsertFactStatement(db: Database): PreparedStatement {
    let stmt = insertFactStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO session_facts (session_id, category, content, created_at, updated_at, harness) VALUES (?, ?, ?, ?, ?, ?)"
+         "INSERT INTO session_facts (session_id, category, content, created_at, updated_at, harness) VALUES (?, ?, ?, ?, ?, ?)",
       );
       insertFactStatements.set(db, stmt);
    }
@@ -125,7 +125,7 @@ function insertCompartmentRows(db: Database, sessionId: string, compartments: Co
          compartment.title,
          compartment.content,
          now,
-         getHarness()
+         getHarness(),
       );
    }
 }
@@ -134,7 +134,7 @@ function insertFactRows(
    db: Database,
    sessionId: string,
    facts: Array<{ category: string; content: string }>,
-   now: number
+   now: number,
 ): void {
    const stmt = getInsertFactStatement(db);
    for (const fact of facts) {
@@ -153,7 +153,7 @@ function toCompartment(row: CompartmentRow): Compartment {
       endMessageId: row.end_message_id,
       title: row.title,
       content: row.content,
-      createdAt: row.created_at
+      createdAt: row.created_at,
    };
 }
 
@@ -164,7 +164,7 @@ function toSessionFact(row: SessionFactRow): SessionFact {
       category: row.category,
       content: row.content,
       createdAt: row.created_at,
-      updatedAt: row.updated_at
+      updatedAt: row.updated_at,
    };
 }
 
@@ -232,7 +232,7 @@ export function appendCompartments(db: Database, sessionId: string, compartments
 export function replaceSessionFacts(
    db: Database,
    sessionId: string,
-   facts: Array<{ category: string; content: string }>
+   facts: Array<{ category: string; content: string }>,
 ): void {
    const now = Date.now();
    db.transaction(() => {
@@ -243,7 +243,7 @@ export function replaceSessionFacts(
       // Clear memory_block_ids alongside so ctx_search's visible-memory filter doesn't use stale IDs
       // during the short window between invalidation and the next render.
       db.prepare("UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE session_id = ?").run(
-         sessionId
+         sessionId,
       );
    })();
 }
@@ -260,7 +260,7 @@ export function replaceAllCompartmentState(
    db: Database,
    sessionId: string,
    compartments: CompartmentInput[],
-   facts: Array<{ category: string; content: string }>
+   facts: Array<{ category: string; content: string }>,
 ): void {
    const now = Date.now();
    db.transaction(() => {
@@ -274,7 +274,7 @@ export function replaceAllCompartmentState(
       // because memories didn't change (only compartments/facts), and the dashboard reads count between busts.
       // Clear memory_block_ids alongside so the visible-memory filter doesn't use stale IDs.
       db.prepare("UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE session_id = ?").run(
-         sessionId
+         sessionId,
       );
    })();
 }
@@ -286,7 +286,7 @@ export function replaceAllCompartmentStateAndBumpDepth(
    compartments: CompartmentInput[],
    facts: Array<{ category: string; content: string }>,
    depthStartOrdinal: number,
-   depthEndOrdinal: number
+   depthEndOrdinal: number,
 ): boolean {
    const now = Date.now();
    db.exec("BEGIN IMMEDIATE");
@@ -308,7 +308,7 @@ export function replaceAllCompartmentStateAndBumpDepth(
       // because memories didn't change (only compartments/facts), and the dashboard reads count between busts.
       // Clear memory_block_ids alongside so the visible-memory filter doesn't use stale IDs.
       db.prepare("UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE session_id = ?").run(
-         sessionId
+         sessionId,
       );
 
       if (depthEndOrdinal >= depthStartOrdinal) {
@@ -341,7 +341,7 @@ export function buildCompartmentBlock(
    compartments: Compartment[],
    facts: SessionFact[],
    memoryBlock?: string,
-   dateRanges?: CompartmentDateRanges
+   dateRanges?: CompartmentDateRanges,
 ): string {
    const lines: string[] = [];
 
@@ -354,7 +354,7 @@ export function buildCompartmentBlock(
       const dates = dateRanges?.byId.get(c.id);
       const dateAttr = dates ? ` start-date="${dates.start}" end-date="${dates.end}"` : "";
       lines.push(
-         `<compartment start="${c.startMessage}" end="${c.endMessage}"${dateAttr} title="${escapeXmlAttr(c.title)}">`
+         `<compartment start="${c.startMessage}" end="${c.endMessage}"${dateAttr} title="${escapeXmlAttr(c.title)}">`,
       );
       lines.push(escapeXmlContent(c.content));
       lines.push("</compartment>");
@@ -394,7 +394,7 @@ export function saveRecompStagingPass(
    sessionId: string,
    passNumber: number,
    compartments: CompartmentInput[],
-   facts: Array<{ category: string; content: string }>
+   facts: Array<{ category: string; content: string }>,
 ): void {
    const now = Date.now();
    db.transaction(() => {
@@ -402,7 +402,7 @@ export function saveRecompStagingPass(
       db.prepare("DELETE FROM recomp_facts WHERE session_id = ?").run(sessionId);
 
       const compartmentStmt = db.prepare(
-         "INSERT OR REPLACE INTO recomp_compartments (session_id, sequence, start_message, end_message, start_message_id, end_message_id, title, content, pass_number, created_at, harness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+         "INSERT OR REPLACE INTO recomp_compartments (session_id, sequence, start_message, end_message, start_message_id, end_message_id, title, content, pass_number, created_at, harness) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
       );
       for (const c of compartments) {
          compartmentStmt.run(
@@ -416,12 +416,12 @@ export function saveRecompStagingPass(
             c.content,
             passNumber,
             now,
-            getHarness()
+            getHarness(),
          );
       }
 
       const factStmt = db.prepare(
-         "INSERT INTO recomp_facts (session_id, category, content, pass_number, created_at, harness) VALUES (?, ?, ?, ?, ?, ?)"
+         "INSERT INTO recomp_facts (session_id, category, content, pass_number, created_at, harness) VALUES (?, ?, ?, ?, ?, ?)",
       );
       for (const f of facts) {
          factStmt.run(sessionId, f.category, f.content, passNumber, now, getHarness());
@@ -445,7 +445,7 @@ export function getRecompStaging(db: Database, sessionId: string): RecompStaging
       startMessageId: row.start_message_id,
       endMessageId: row.end_message_id,
       title: row.title,
-      content: row.content
+      content: row.content,
    }));
 
    const factRows = db
@@ -460,7 +460,7 @@ export function getRecompStaging(db: Database, sessionId: string): RecompStaging
       compartments,
       facts: factRows,
       passCount: maxPass,
-      lastEndMessage: lastEnd
+      lastEndMessage: lastEnd,
    };
 }
 
@@ -468,7 +468,7 @@ export function getRecompStaging(db: Database, sessionId: string): RecompStaging
 export function promoteRecompStaging(
    db: Database,
    sessionId: string,
-   holderId?: string
+   holderId?: string,
 ): {
    compartments: CompartmentInput[];
    facts: Array<{ category: string; content: string }>;
@@ -486,7 +486,7 @@ export function promoteRecompStaging(
          db.prepare("DELETE FROM recomp_compartments WHERE session_id = ?").run(sessionId);
          db.prepare("DELETE FROM recomp_facts WHERE session_id = ?").run(sessionId);
          db.prepare("UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE session_id = ?").run(
-            sessionId
+            sessionId,
          );
          return { compartments: staging.compartments, facts: staging.facts };
       })();
@@ -520,7 +520,7 @@ export function promoteRecompStaging(
 
       // Clear cached injection block — preserve memory_block_count (memories didn't change)
       db.prepare("UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE session_id = ?").run(
-         sessionId
+         sessionId,
       );
 
       db.exec("COMMIT");
@@ -547,7 +547,7 @@ export function invalidateAllMemoryBlockCaches(db: Database): void {
       // Clear both memory_block_cache and memory_block_ids so ctx_search's
       // visible-memory filter can't use stale IDs either.
       db.prepare(
-         "UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE memory_block_cache != '' OR memory_block_ids != ''"
+         "UPDATE session_meta SET memory_block_cache = '', memory_block_ids = '' WHERE memory_block_cache != '' OR memory_block_ids != ''",
       ).run();
    } catch {
       // Best-effort — session_meta may not exist in test environments
@@ -564,7 +564,7 @@ export function clearRecompStaging(db: Database, sessionId: string): void {
       // in very old test DBs.
       try {
          db.prepare(
-            "UPDATE session_meta SET recomp_partial_range_start = 0, recomp_partial_range_end = 0 WHERE session_id = ?"
+            "UPDATE session_meta SET recomp_partial_range_start = 0, recomp_partial_range_end = 0 WHERE session_id = ?",
          ).run(sessionId);
       } catch {
          // column missing in very old schemas — ignore
@@ -585,7 +585,7 @@ export function getRecompPartialRange(db: Database, sessionId: string): { start:
    try {
       const row = db
          .prepare(
-            "SELECT recomp_partial_range_start AS start, recomp_partial_range_end AS end FROM session_meta WHERE session_id = ?"
+            "SELECT recomp_partial_range_start AS start, recomp_partial_range_end AS end FROM session_meta WHERE session_id = ?",
          )
          .get(sessionId) as { start?: number; end?: number } | null;
       const start = typeof row?.start === "number" ? row.start : 0;
@@ -604,7 +604,7 @@ export function getRecompPartialRange(db: Database, sessionId: string): { start:
 export function setRecompPartialRange(
    db: Database,
    sessionId: string,
-   range: { start: number; end: number } | null
+   range: { start: number; end: number } | null,
 ): void {
    const start = range ? range.start : 0;
    const end = range ? range.end : 0;
@@ -612,7 +612,7 @@ export function setRecompPartialRange(
    // pattern used elsewhere in this module.
    db.prepare("INSERT OR IGNORE INTO session_meta (session_id) VALUES (?)").run(sessionId);
    db.prepare(
-      "UPDATE session_meta SET recomp_partial_range_start = ?, recomp_partial_range_end = ? WHERE session_id = ?"
+      "UPDATE session_meta SET recomp_partial_range_start = ?, recomp_partial_range_end = ? WHERE session_id = ?",
    ).run(start, end, sessionId);
 }
 

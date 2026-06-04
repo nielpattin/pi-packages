@@ -4,7 +4,7 @@ import {
    adoptNullOwnerToolTag,
    getCandidateToolOwners,
    getNullOwnerToolTag,
-   pickNearestPriorOwner
+   pickNearestPriorOwner,
 } from "../../features/magic-context/storage-tags";
 import { makeToolCompositeKey, type Tagger } from "../../features/magic-context/tagger";
 import { isRecord } from "../../shared/record-type-guard";
@@ -17,14 +17,14 @@ import {
    isFilePart,
    isTextPart,
    isToolPartWithOutput,
-   stripTagPrefix
+   stripTagPrefix,
 } from "./tag-part-guards";
 import {
    createToolDropTarget,
    extractToolCallObservation,
    type ToolCallIndex,
    type ToolDropResult,
-   ToolMutationBatch
+   ToolMutationBatch,
 } from "./tool-drop-target";
 
 /**
@@ -47,7 +47,7 @@ function deriveToolOwnerMessageId(
    db: ContextDatabase,
    message: MessageLike,
    obs: { callId: string; kind: "invocation" | "result" },
-   unpaired: Map<string, string[]>
+   unpaired: Map<string, string[]>,
 ): string {
    const messageId = typeof message.info.id === "string" ? message.info.id : "";
 
@@ -135,7 +135,7 @@ export interface TagMessagesResult {
 
 function collectRelevantSourceTagIds(messages: MessageLike[], assignments: ReadonlyMap<string, number>): number[] {
    const currentMessageIds = new Set(
-      messages.flatMap((message) => (typeof message.info.id === "string" ? [message.info.id] : []))
+      messages.flatMap((message) => (typeof message.info.id === "string" ? [message.info.id] : [])),
    );
 
    const relevantTagIds = new Set<number>();
@@ -188,7 +188,7 @@ function extractToolTagMetadata(part: unknown): { toolName: string | null; input
 
    return {
       toolName,
-      inputByteSize: estimateInputByteSize(input)
+      inputByteSize: estimateInputByteSize(input),
    };
 }
 
@@ -210,7 +210,7 @@ export function tagMessages(
    messages: MessageLike[],
    tagger: Tagger,
    db: ContextDatabase,
-   options: TagMessagesOptions = {}
+   options: TagMessagesOptions = {},
 ): TagMessagesResult {
    const skipPrefixInjection = options.skipPrefixInjection === true;
    const targets = new Map<number, TagTarget>();
@@ -291,7 +291,7 @@ export function tagMessages(
             const compositeKey = makeToolCompositeKey(ownerMsgId, toolObservation.callId);
             const entry = toolCallIndex.get(compositeKey) ?? {
                occurrences: [],
-               hasResult: false
+               hasResult: false,
             };
             entry.occurrences.push({ message, part, kind: toolObservation.kind });
             if (toolObservation.kind === "result") entry.hasResult = true;
@@ -354,7 +354,7 @@ export function tagMessages(
                "message",
                byteSize(textPart.text),
                db,
-               reasoningBytes
+               reasoningBytes,
             );
             // Prefer persisted source_contents over the existingTagId
             // signal: even if we just allocated a fresh tag (because in-
@@ -387,7 +387,7 @@ export function tagMessages(
                   }
                   return true;
                },
-               getContent: () => textPart.text
+               getContent: () => textPart.text,
             });
             textOrdinal += 1;
             continue;
@@ -417,7 +417,7 @@ export function tagMessages(
                db,
                reasoningBytes,
                toolName,
-               inputByteSize
+               inputByteSize,
             );
             messageTagNumbers.set(message, Math.max(messageTagNumbers.get(message) ?? 0, tagId));
             if (!skipPrefixInjection) {
@@ -451,10 +451,10 @@ export function tagMessages(
                   if (prevText === content) return false;
                   messageParts[partIndex] = {
                      type: "text",
-                     text: content
+                     text: content,
                   } as MessageLike["parts"][number];
                   return true;
-               }
+               },
             });
             fileOrdinal += 1;
          }
@@ -493,6 +493,6 @@ export function tagMessages(
       toolCallIndex,
       batch,
       hasRecentReduceCall,
-      hasRecentCommit: commitDetected
+      hasRecentCommit: commitDetected,
    };
 }

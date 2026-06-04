@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test, vi } from "vitest";
 import {
    resolvePermissionForwardingTargetSessionId,
    SUBAGENT_PARENT_SESSION_ENV_CANDIDATES,
-   SUBAGENT_PARENT_SESSION_ENV_KEY
+   SUBAGENT_PARENT_SESSION_ENV_KEY,
 } from "#src/permission-forwarding";
 import { SubagentSessionRegistry } from "#src/subagent-registry";
 
@@ -33,8 +33,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: true,
             isSubagent: false,
             currentSessionId: "parent-session-abc",
-            env: {}
-         })
+            env: {},
+         }),
       ).toBe("parent-session-abc");
    });
 
@@ -44,8 +44,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: true,
             isSubagent: true,
             currentSessionId: "session-xyz",
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "other" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "other" },
+         }),
       ).toBe("session-xyz");
    });
 
@@ -55,8 +55,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: false,
             isSubagent: false,
             currentSessionId: "session-xyz",
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session-abc" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session-abc" },
+         }),
       ).toBeNull();
    });
 
@@ -66,8 +66,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: false,
             isSubagent: true,
             currentSessionId: "session-xyz",
-            env: {}
-         })
+            env: {},
+         }),
       ).toBeNull();
    });
 
@@ -77,8 +77,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: false,
             isSubagent: true,
             currentSessionId: "session-xyz",
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session-abc" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-session-abc" },
+         }),
       ).toBe("parent-session-abc");
    });
 
@@ -89,9 +89,9 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             isSubagent: true,
             currentSessionId: "session-xyz",
             env: {
-               PI_SUBAGENT_PARENT_SESSION: "parent-from-convention"
-            }
-         })
+               PI_SUBAGENT_PARENT_SESSION: "parent-from-convention",
+            },
+         }),
       ).toBe("parent-from-convention");
    });
 
@@ -103,9 +103,9 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             currentSessionId: "session-xyz",
             env: {
                PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-router",
-               PI_SUBAGENT_PARENT_SESSION: "parent-from-convention"
-            }
-         })
+               PI_SUBAGENT_PARENT_SESSION: "parent-from-convention",
+            },
+         }),
       ).toBe("parent-from-router");
    });
 
@@ -115,8 +115,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: false,
             isSubagent: true,
             currentSessionId: "session-xyz",
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "" },
+         }),
       ).toBeNull();
    });
 
@@ -126,8 +126,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
             hasUI: false,
             isSubagent: true,
             currentSessionId: "session-xyz",
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "unknown" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "unknown" },
+         }),
       ).toBeNull();
    });
 
@@ -136,8 +136,8 @@ describe("resolvePermissionForwardingTargetSessionId", () => {
       expect(
          resolvePermissionForwardingTargetSessionId({
             hasUI: false,
-            isSubagent: true
-         })
+            isSubagent: true,
+         }),
       ).toBe("env-session-abc");
    });
 });
@@ -149,7 +149,7 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
       const registry = new SubagentSessionRegistry();
       registry.register(sessionDir, {
          agentName: "Explore",
-         parentSessionId: "parent-from-registry"
+         parentSessionId: "parent-from-registry",
       });
 
       expect(
@@ -158,8 +158,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             isSubagent: true,
             sessionDir,
             registry,
-            env: {}
-         })
+            env: {},
+         }),
       ).toBe("parent-from-registry");
    });
 
@@ -167,7 +167,7 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
       const registry = new SubagentSessionRegistry();
       registry.register(sessionDir, {
          agentName: "Explore",
-         parentSessionId: "parent-from-registry"
+         parentSessionId: "parent-from-registry",
       });
 
       expect(
@@ -176,8 +176,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             isSubagent: true,
             sessionDir,
             registry,
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" },
+         }),
       ).toBe("parent-from-registry");
    });
 
@@ -191,8 +191,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             isSubagent: true,
             sessionDir,
             registry,
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" },
+         }),
       ).toBe("parent-from-env");
    });
 
@@ -205,8 +205,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             isSubagent: true,
             sessionDir,
             registry,
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" },
+         }),
       ).toBe("parent-from-env");
    });
 
@@ -220,8 +220,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             isSubagent: true,
             sessionDir,
             registry,
-            env: {}
-         })
+            env: {},
+         }),
       ).toBeNull();
    });
 
@@ -231,8 +231,8 @@ describe("resolvePermissionForwardingTargetSessionId — registry resolution", (
             hasUI: false,
             isSubagent: true,
             sessionDir,
-            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" }
-         })
+            env: { PI_AGENT_ROUTER_PARENT_SESSION_ID: "parent-from-env" },
+         }),
       ).toBe("parent-from-env");
    });
 });

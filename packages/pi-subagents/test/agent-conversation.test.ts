@@ -5,7 +5,7 @@ import { createMockSession, toAgentSession } from "#test/helpers/mock-session";
 describe("getAgentConversation", () => {
    it("formats user messages", () => {
       const session = createMockSession({
-         messages: [{ role: "user", content: "hello world", timestamp: 1 }]
+         messages: [{ role: "user", content: "hello world", timestamp: 1 }],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[User]: hello world");
@@ -17,9 +17,9 @@ describe("getAgentConversation", () => {
             {
                role: "user",
                content: [{ type: "text", text: "from array" }],
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[User]: from array");
@@ -27,7 +27,7 @@ describe("getAgentConversation", () => {
 
    it("skips empty user messages", () => {
       const session = createMockSession({
-         messages: [{ role: "user", content: "   ", timestamp: 1 }]
+         messages: [{ role: "user", content: "   ", timestamp: 1 }],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("");
@@ -41,9 +41,9 @@ describe("getAgentConversation", () => {
                content: [{ type: "text", text: "hi there" }],
                provider: "anthropic",
                model: "claude-sonnet-4-20250514",
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[Assistant (anthropic/claude-sonnet-4-20250514)]: hi there");
@@ -56,9 +56,9 @@ describe("getAgentConversation", () => {
                role: "assistant",
                content: [{ type: "text", text: "response" }],
                provider: "openai",
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[Assistant (openai)]: response");
@@ -71,9 +71,9 @@ describe("getAgentConversation", () => {
                role: "assistant",
                content: [{ type: "text", text: "response" }],
                model: "gpt-4o",
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[Assistant (gpt-4o)]: response");
@@ -85,9 +85,9 @@ describe("getAgentConversation", () => {
             {
                role: "assistant",
                content: [{ type: "text", text: "response" }],
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[Assistant]: response");
@@ -101,9 +101,9 @@ describe("getAgentConversation", () => {
                content: [{ type: "toolCall", name: "read" }],
                provider: "anthropic",
                model: "claude-sonnet-4-20250514",
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[Tool Calls]:\n  Tool: read");
@@ -119,9 +119,9 @@ describe("getAgentConversation", () => {
                content: [{ type: "text", text: longText }],
                toolCallId: "tc1",
                isError: false,
-               timestamp: 1
-            }
-         ]
+               timestamp: 1,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe(`[Tool Result (read)]: ${"x".repeat(200)}...`);
@@ -136,9 +136,9 @@ describe("getAgentConversation", () => {
                content: [{ type: "text", text: "The answer is 4." }],
                provider: "anthropic",
                model: "claude-sonnet-4-20250514",
-               timestamp: 2
-            }
-         ]
+               timestamp: 2,
+            },
+         ],
       });
       const result = getAgentConversation(toAgentSession(session));
       expect(result).toBe("[User]: What is 2+2?\n\n[Assistant (anthropic/claude-sonnet-4-20250514)]: The answer is 4.");

@@ -14,7 +14,7 @@ export function applyDeferredCompactionMarker(
    _db: Database,
    _sessionId: string,
    _pending: PendingCompactionMarker,
-   _directory?: string
+   _directory?: string,
 ): MarkerUpdateOutcome {
    return { kind: "already-current" };
 }
@@ -23,7 +23,7 @@ export function updateCompactionMarkerAfterPublication(
    _db: Database,
    _sessionId: string,
    _lastCompartmentEnd: number,
-   _directory?: string
+   _directory?: string,
 ): void {}
 
 export function removeCompactionMarkerForSession(_db: Database, _sessionId: string): void {}
