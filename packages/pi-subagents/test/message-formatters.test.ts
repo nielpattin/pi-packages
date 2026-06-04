@@ -7,7 +7,7 @@ import {
    formatMessage,
    formatStreamingIndicator,
    formatToolResult,
-   formatUserMessage,
+   formatUserMessage
 } from "#src/ui/message-formatters";
 
 // ── Theme helpers ────────────────────────────────────────────────────────────
@@ -15,13 +15,13 @@ import {
 /** Label theme: wraps text in [color:text] / [bold:text] for precise assertions. */
 const labelTheme: Theme = {
    fg: (color, text) => `[${color}:${text}]`,
-   bold: (text) => `[bold:${text}]`,
+   bold: (text) => `[bold:${text}]`
 };
 
 /** Identity theme: returns text unchanged for structure-only assertions. */
 const plainTheme: Theme = {
    fg: (_color, text) => text,
-   bold: (text) => text,
+   bold: (text) => text
 };
 
 /** No-op wrapText: returns input as a single line. */
@@ -105,7 +105,7 @@ describe("message-formatters", () => {
       it("formats mixed text and tool calls", () => {
          const content = [
             { type: "text", text: "Let me check" },
-            { type: "toolCall", name: "grep" },
+            { type: "toolCall", name: "grep" }
          ];
          const result = formatAssistantMessage(content, 80, ctx);
          expect(result).toEqual(["[bold:[Assistant]]", "Let me check", "[muted:  [Tool: grep]]"]);
@@ -119,7 +119,7 @@ describe("message-formatters", () => {
          };
          const content = [
             { type: "text", text: "Part A" },
-            { type: "text", text: "Part B" },
+            { type: "text", text: "Part B" }
          ];
          formatAssistantMessage(content, 80, { theme: plainTheme, wrapText: capturingWrap });
          expect(capturedTexts).toEqual(["Part A\nPart B"]);
@@ -141,7 +141,7 @@ describe("message-formatters", () => {
          const content = [{ type: "text", text: "hi" }];
          const result = formatAssistantMessage(content, 80, ctx, {
             provider: "anthropic",
-            model: "claude-sonnet-4-20250514",
+            model: "claude-sonnet-4-20250514"
          });
          expect(result).toEqual(["[bold:[Assistant (anthropic/claude-sonnet-4-20250514)]]", "hi"]);
       });
@@ -289,7 +289,7 @@ describe("message-formatters", () => {
          const splitWrap = (text: string, _width: number): string[] => text.split("\n");
          const result = formatBashExecution(makeMsg({ output: "line1\nline2" }), 80, {
             theme: labelTheme,
-            wrapText: splitWrap,
+            wrapText: splitWrap
          });
          expect(result).toEqual(["[muted:  $ ls]", "[dim:line1]", "[dim:line2]"]);
       });
@@ -355,13 +355,13 @@ describe("message-formatters", () => {
          const result = formatMessage(
             { role: "assistant", content, provider: "anthropic", model: "claude-sonnet-4-20250514" },
             80,
-            ctx,
+            ctx
          );
          expect(result).toEqual(
             formatAssistantMessage(content, 80, ctx, {
                provider: "anthropic",
-               model: "claude-sonnet-4-20250514",
-            }),
+               model: "claude-sonnet-4-20250514"
+            })
          );
       });
 

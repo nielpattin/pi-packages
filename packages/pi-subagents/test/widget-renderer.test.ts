@@ -8,7 +8,7 @@ import { renderFinishedLine, renderRunningLines, renderWidgetLines } from "#src/
 function stubTheme(): Theme {
    return {
       fg: (color: string, text: string) => `[${color}:${text}]`,
-      bold: (text: string) => `**${text}**`,
+      bold: (text: string) => `**${text}**`
    };
 }
 
@@ -24,7 +24,7 @@ function makeAgent(overrides: Partial<WidgetAgent> = {}): WidgetAgent {
       startedAt: 1000,
       completedAt: 6000,
       compactionCount: 0,
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -34,7 +34,7 @@ function makeActivity(overrides: Partial<WidgetActivity> = {}): WidgetActivity {
       responseText: "",
       turnCount: 3,
       maxTurns: 10,
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -154,7 +154,7 @@ describe("renderRunningLines", () => {
       const activity = makeActivity({
          activeTools: new Map([["read_1", "read"]]),
          turnCount: 2,
-         maxTurns: 10,
+         maxTurns: 10
       });
       const [header, activityLine] = renderRunningLines(agent, activity, testRegistry, 0, theme);
 
@@ -192,15 +192,15 @@ describe("renderRunningLines", () => {
          status: "running",
          completedAt: undefined,
          lifetimeUsage: { input: 5000, output: 2000, cacheWrite: 1000 },
-         compactionCount: 1,
+         compactionCount: 1
       });
       const activity = makeActivity({
          session: {
             getSessionStats: () => ({
                tokens: { input: 5000, output: 2000, cacheWrite: 1000 },
-               contextUsage: { percent: 45 },
-            }),
-         },
+               contextUsage: { percent: 45 }
+            })
+         }
       });
       const [header] = renderRunningLines(agent, activity, testRegistry, 0, theme);
 
@@ -216,7 +216,7 @@ describe("renderRunningLines", () => {
       const agent = makeAgent({
          status: "running",
          completedAt: undefined,
-         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 },
+         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 }
       });
       const [header] = renderRunningLines(agent, undefined, testRegistry, 0, theme);
 
@@ -239,7 +239,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => true,
+         shouldShowFinished: () => true
       });
 
       // Heading with active indicator
@@ -261,7 +261,7 @@ describe("renderWidgetLines", () => {
       const queued = makeAgent({ id: "q1", status: "queued", completedAt: undefined });
       const activityMap = new Map<string, WidgetActivity>([
          ["r1", makeActivity()],
-         ["f1", makeActivity({ turnCount: 5 })],
+         ["f1", makeActivity({ turnCount: 5 })]
       ]);
 
       const lines = renderWidgetLines({
@@ -271,7 +271,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => true,
+         shouldShowFinished: () => true
       });
 
       // Heading (active because running+queued exist)
@@ -302,7 +302,7 @@ describe("renderWidgetLines", () => {
          terminalWidth: 200,
          theme,
          // Only show f1, filter out f2
-         shouldShowFinished: (id) => id === "f1",
+         shouldShowFinished: (id) => id === "f1"
       });
 
       // Heading + 1 finished line
@@ -333,7 +333,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => true,
+         shouldShowFinished: () => true
       });
 
       // heading(1) + 5 running*2(10) + overflow(1) = 12
@@ -353,7 +353,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => true,
+         shouldShowFinished: () => true
       });
 
       expect(lines).toEqual([]);
@@ -369,7 +369,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => false,
+         shouldShowFinished: () => false
       });
 
       expect(lines).toEqual([]);
@@ -385,7 +385,7 @@ describe("renderWidgetLines", () => {
          spinnerFrame: 0,
          terminalWidth: 200,
          theme,
-         shouldShowFinished: () => true,
+         shouldShowFinished: () => true
       });
 
       // Dim heading with open circle

@@ -28,9 +28,9 @@ describe("loadUnifiedConfig", () => {
             permission: {
                "*": "ask",
                read: "allow",
-               bash: { "git status": "allow" },
-            },
-         }),
+               bash: { "git status": "allow" }
+            }
+         })
       );
 
       const result = loadUnifiedConfig(configPath);
@@ -41,7 +41,7 @@ describe("loadUnifiedConfig", () => {
       expect(result.config.permission).toEqual({
          "*": "ask",
          read: "allow",
-         bash: { "git status": "allow" },
+         bash: { "git status": "allow" }
       });
    });
 
@@ -54,7 +54,7 @@ describe("loadUnifiedConfig", () => {
   "debugLog": true,
   /* block comment */
   "permission": { "*": "ask" }
-}`,
+}`
       );
 
       const result = loadUnifiedConfig(configPath);
@@ -70,8 +70,8 @@ describe("loadUnifiedConfig", () => {
          JSON.stringify({
             debugLog: false,
             unknownField: "ignored",
-            anotherRandom: 42,
-         }),
+            anotherRandom: 42
+         })
       );
 
       const result = loadUnifiedConfig(configPath);
@@ -104,8 +104,8 @@ describe("loadUnifiedConfig", () => {
          JSON.stringify({
             debugLog: "yes",
             permissionReviewLog: 1,
-            yoloMode: null,
-         }),
+            yoloMode: null
+         })
       );
 
       const result = loadUnifiedConfig(configPath);
@@ -122,15 +122,15 @@ describe("loadUnifiedConfig", () => {
             permission: {
                read: "allow",
                write: "invalid",
-               bash: { "git *": "ask", "rm -rf": 42 },
-            },
-         }),
+               bash: { "git *": "ask", "rm -rf": 42 }
+            }
+         })
       );
 
       const result = loadUnifiedConfig(configPath);
       expect(result.config.permission).toEqual({
          read: "allow",
-         bash: { "git *": "ask" },
+         bash: { "git *": "ask" }
       });
    });
 
@@ -143,9 +143,9 @@ describe("loadUnifiedConfig", () => {
                "*": "ask",
                read: "allow",
                bash: { "*": "ask", "git *": "allow" },
-               external_directory: "ask",
-            },
-         }),
+               external_directory: "ask"
+            }
+         })
       );
 
       const result = loadUnifiedConfig(configPath);
@@ -154,7 +154,7 @@ describe("loadUnifiedConfig", () => {
          "*": "ask",
          read: "allow",
          bash: { "*": "ask", "git *": "allow" },
-         external_directory: "ask",
+         external_directory: "ask"
       });
    });
 
@@ -182,21 +182,21 @@ describe("mergeUnifiedConfigs", () => {
             permission: {
                "*": "ask",
                read: "allow",
-               bash: { "git status": "allow" },
-            },
+               bash: { "git status": "allow" }
+            }
          },
          {
             permission: {
                "*": "allow",
-               bash: { "rm -rf *": "deny" },
-            },
-         },
+               bash: { "rm -rf *": "deny" }
+            }
+         }
       );
 
       expect(merged.permission).toEqual({
          "*": "allow",
          read: "allow",
-         bash: { "git status": "allow", "rm -rf *": "deny" },
+         bash: { "git status": "allow", "rm -rf *": "deny" }
       });
    });
 
@@ -208,17 +208,17 @@ describe("mergeUnifiedConfigs", () => {
    it("object replaces string when override uses object for same surface", () => {
       const merged = mergeUnifiedConfigs(
          { permission: { bash: "ask" } },
-         { permission: { bash: { "*": "allow", "rm -rf *": "deny" } } },
+         { permission: { bash: { "*": "allow", "rm -rf *": "deny" } } }
       );
       expect(merged.permission).toEqual({
-         bash: { "*": "allow", "rm -rf *": "deny" },
+         bash: { "*": "allow", "rm -rf *": "deny" }
       });
    });
 
    it("string replaces object when override uses string for same surface", () => {
       const merged = mergeUnifiedConfigs(
          { permission: { bash: { "git *": "allow" } } },
-         { permission: { bash: "deny" } },
+         { permission: { bash: "deny" } }
       );
       expect(merged.permission).toEqual({ bash: "deny" });
    });
@@ -226,7 +226,7 @@ describe("mergeUnifiedConfigs", () => {
    it("replaces scalar runtime knobs (project wins)", () => {
       const merged = mergeUnifiedConfigs(
          { debugLog: true, permissionReviewLog: true, yoloMode: false },
-         { debugLog: false, yoloMode: true },
+         { debugLog: false, yoloMode: true }
       );
 
       expect(merged.debugLog).toBe(false);
@@ -237,7 +237,7 @@ describe("mergeUnifiedConfigs", () => {
    it("returns base unchanged when override is empty", () => {
       const base = {
          debugLog: true,
-         permission: { read: "allow" as const },
+         permission: { read: "allow" as const }
       };
       const merged = mergeUnifiedConfigs(base, {});
 
@@ -248,7 +248,7 @@ describe("mergeUnifiedConfigs", () => {
    it("returns override unchanged when base is empty", () => {
       const override = {
          yoloMode: true,
-         permission: { bash: { "rm -rf *": "deny" as const } },
+         permission: { bash: { "rm -rf *": "deny" as const } }
       };
       const merged = mergeUnifiedConfigs({}, override);
 
@@ -313,10 +313,10 @@ describe("loadAndMergeConfigs", () => {
    it("merges global and project new-layout configs", () => {
       writeGlobal({
          debugLog: true,
-         permission: { "*": "ask", read: "allow" },
+         permission: { "*": "ask", read: "allow" }
       });
       writeProject({
-         permission: { "*": "allow", write: "deny" },
+         permission: { "*": "allow", write: "deny" }
       });
 
       const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
@@ -325,14 +325,14 @@ describe("loadAndMergeConfigs", () => {
       expect(result.merged.permission).toEqual({
          "*": "allow",
          read: "allow",
-         write: "deny",
+         write: "deny"
       });
    });
 
    it("detects legacy global policy and emits migration issue", () => {
       writeLegacyGlobalPolicy({
          defaultPolicy: { tools: "allow" },
-         tools: { read: "allow" },
+         tools: { read: "allow" }
       });
 
       const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
@@ -345,7 +345,7 @@ describe("loadAndMergeConfigs", () => {
 
    it("detects legacy project policy and emits migration issue", () => {
       writeLegacyProjectPolicy({
-         bash: { "git status": "allow" },
+         bash: { "git status": "allow" }
       });
 
       const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
@@ -359,7 +359,7 @@ describe("loadAndMergeConfigs", () => {
    it("detects legacy extension runtime config and emits migration issue", () => {
       writeLegacyExtensionConfig({
          debugLog: true,
-         yoloMode: true,
+         yoloMode: true
       });
 
       const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);
@@ -385,10 +385,10 @@ describe("loadAndMergeConfigs", () => {
 
    it("new-layout config takes precedence over legacy config at same scope", () => {
       writeGlobal({
-         permission: { "*": "deny" },
+         permission: { "*": "deny" }
       });
       writeLegacyGlobalPolicy({
-         permission: { "*": "allow" },
+         permission: { "*": "allow" }
       });
 
       const result = loadAndMergeConfigs(agentDir, cwd, extensionRoot);

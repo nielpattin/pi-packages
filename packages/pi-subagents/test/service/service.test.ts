@@ -4,7 +4,7 @@ import {
    publishSubagentsService,
    SUBAGENT_EVENTS,
    type SubagentsService,
-   unpublishSubagentsService,
+   unpublishSubagentsService
 } from "#src/service/service";
 
 const SERVICE_KEY = Symbol.for("@nielpattin/pi-subagents:service");

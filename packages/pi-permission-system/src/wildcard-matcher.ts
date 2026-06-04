@@ -33,12 +33,12 @@ export function compileWildcardPattern<TState>(pattern: string, state: TState): 
    return {
       pattern,
       state,
-      regex: new RegExp(`^${escaped}$`, "s"),
+      regex: new RegExp(`^${escaped}$`, "s")
    };
 }
 
 export function compileWildcardPatternEntries<TState>(
-   entries: Iterable<readonly [string, TState]>,
+   entries: Iterable<readonly [string, TState]>
 ): CompiledWildcardPattern<TState>[] {
    return Array.from(entries, ([pattern, state]) => compileWildcardPattern(pattern, state));
 }
@@ -49,14 +49,14 @@ function _compileWildcardPatterns<TState>(patterns: Record<string, TState>): Com
 
 export function findCompiledWildcardMatch<TState>(
    patterns: readonly CompiledWildcardPattern<TState>[],
-   name: string,
+   name: string
 ): WildcardPatternMatch<TState> | null {
    const match = patterns.findLast((p) => p.regex.test(name));
    if (match === undefined) return null;
    return {
       state: match.state,
       matchedPattern: match.pattern,
-      matchedName: name,
+      matchedName: name
    };
 }
 
@@ -72,7 +72,7 @@ export function wildcardMatch(pattern: string, value: string): boolean {
 
 export function findCompiledWildcardMatchForNames<TState>(
    patterns: readonly CompiledWildcardPattern<TState>[],
-   names: readonly string[],
+   names: readonly string[]
 ): WildcardPatternMatch<TState> | null {
    const normalizedNames = names.map((value) => value.trim()).filter((value) => value.length > 0);
    if (normalizedNames.length === 0) {

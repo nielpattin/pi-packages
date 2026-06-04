@@ -211,7 +211,7 @@ export function convertEntriesToRawMessages(entries: unknown[]): RawMessage[] {
             ordinal: nextOrdinal++,
             id: entry.id,
             role: "user",
-            parts,
+            parts
          });
          continue;
       }
@@ -229,7 +229,7 @@ export function convertEntriesToRawMessages(entries: unknown[]): RawMessage[] {
                ordinal: nextOrdinal++,
                id: `synth-user-${pendingFirstRealId}`,
                role: "user",
-               parts: pendingToolParts,
+               parts: pendingToolParts
             });
             pendingToolParts = [];
             pendingFirstRealId = "";
@@ -239,7 +239,7 @@ export function convertEntriesToRawMessages(entries: unknown[]): RawMessage[] {
             ordinal: nextOrdinal++,
             id: entry.id,
             role: "assistant",
-            parts: synthesizeAssistantParts(msg),
+            parts: synthesizeAssistantParts(msg)
          });
          continue;
       }
@@ -251,7 +251,7 @@ export function convertEntriesToRawMessages(entries: unknown[]): RawMessage[] {
          ordinal: nextOrdinal++,
          id: entry.id,
          role: typeof role === "string" ? role : "unknown",
-         parts: [],
+         parts: []
       });
    }
 
@@ -264,7 +264,7 @@ export function convertEntriesToRawMessages(entries: unknown[]): RawMessage[] {
          ordinal: nextOrdinal,
          id: `synth-user-${pendingFirstRealId}`,
          role: "user",
-         parts: pendingToolParts,
+         parts: pendingToolParts
       });
    }
 
@@ -339,8 +339,8 @@ function synthesizeAssistantParts(msg: unknown): unknown[] {
             tool: typeof cc.name === "string" ? cc.name : "unknown",
             callID: cc.id,
             state: {
-               input: cc.arguments ?? {},
-            },
+               input: cc.arguments ?? {}
+            }
          });
       }
       // thinking parts dropped intentionally
@@ -385,8 +385,8 @@ function synthesizeToolResultParts(msg: unknown): unknown[] {
          tool,
          callID,
          state: {
-            output,
-         },
-      },
+            output
+         }
+      }
    ];
 }

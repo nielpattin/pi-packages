@@ -19,7 +19,7 @@ function makeSession(text: string) {
       bindExtensions: vi.fn().mockResolvedValue(undefined),
       prompt: vi.fn().mockResolvedValue(undefined),
       abort: vi.fn(),
-      steer: vi.fn(),
+      steer: vi.fn()
    };
    return { session: session as unknown as AgentSession };
 }
@@ -32,7 +32,7 @@ describe("ConcreteAgentRunner", () => {
 
       const runner = new ConcreteAgentRunner(deps);
       const result = await runner.run(STUB_SNAPSHOT, "Explore", "do the thing", {
-         context: {},
+         context: {}
       });
 
       expect(result.responseText).toBe("result text");
@@ -48,7 +48,7 @@ describe("ConcreteAgentRunner", () => {
             listeners.push(fn);
             return () => {};
          }),
-         prompt: vi.fn().mockResolvedValue(undefined),
+         prompt: vi.fn().mockResolvedValue(undefined)
       } as unknown as AgentSession;
 
       const runner = new ConcreteAgentRunner(createRunnerDeps());

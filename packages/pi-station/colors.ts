@@ -12,7 +12,7 @@ export const ansi: AnsiColors = {
    getBgAnsi: (r, g, b) => `\x1b[48;2;${r};${g};${b}m`,
    getFgAnsi: (r, g, b) => `\x1b[38;2;${r};${g};${b}m`,
    getFgAnsi256: (code) => `\x1b[38;5;${code}m`,
-   reset: "\x1b[0m",
+   reset: "\x1b[0m"
 };
 
 // Convert hex to RGB tuple
@@ -27,7 +27,7 @@ const THEME = {
    gitClean: "#5faf5f", // Green
    model: "#d787af", // Pink/mauve
    path: "#00afaf", // Teal/cyan
-   sep: 244, // ANSI 256 gray
+   sep: 244 // ANSI 256 gray
 };
 
 // Color name to ANSI code mapping

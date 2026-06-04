@@ -62,7 +62,7 @@ export class AgentConfigEditor {
       private readonly fileOps: AgentFileOps,
       private readonly registry: AgentTypeRegistry,
       private readonly personalAgentsDir: string,
-      private readonly projectAgentsDir: string,
+      private readonly projectAgentsDir: string
    ) {}
 
    private agentDirs(): string[] {
@@ -120,7 +120,7 @@ export class AgentConfigEditor {
    private async ejectAgent(ui: MenuUI, name: string, cfg: AgentConfig): Promise<void> {
       const location = await ui.select("Choose location", [
          "Project (.pi/agents/)",
-         `Personal (${this.personalAgentsDir})`,
+         `Personal (${this.personalAgentsDir})`
       ]);
       if (!location) return;
 
@@ -149,7 +149,7 @@ export class AgentConfigEditor {
 
       const location = await ui.select("Choose location", [
          "Project (.pi/agents/)",
-         `Personal (${this.personalAgentsDir})`,
+         `Personal (${this.personalAgentsDir})`
       ]);
       if (!location) return;
 

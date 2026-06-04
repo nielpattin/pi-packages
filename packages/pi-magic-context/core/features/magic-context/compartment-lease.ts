@@ -22,7 +22,7 @@ export function acquireCompartmentLease(db: Database, sessionId: string, holderI
                 acquired_at = excluded.acquired_at,
                 expires_at = excluded.expires_at
              WHERE compartment_state_lease.holder_id = excluded.holder_id
-                OR compartment_state_lease.expires_at <= ?`,
+                OR compartment_state_lease.expires_at <= ?`
       )
       .run(sessionId, holderId, acquiredAt, expiresAt, acquiredAt);
 
@@ -40,7 +40,7 @@ export function renewCompartmentLease(db: Database, sessionId: string, holderId:
       .prepare(
          `UPDATE compartment_state_lease
              SET expires_at = ?, acquired_at = ?
-             WHERE session_id = ? AND holder_id = ? AND expires_at > ?`,
+             WHERE session_id = ? AND holder_id = ? AND expires_at > ?`
       )
       .run(expiresAt, now, sessionId, holderId, now);
    return result.changes === 1;

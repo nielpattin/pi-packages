@@ -17,7 +17,7 @@ import {
    readCurrentKeyFiles,
    resolveCommitFiles,
    resolveProjectPath,
-   sha256,
+   sha256
 } from "./project-key-files";
 import { collectKeyFileCandidates, type KeyFileCandidate } from "./read-history";
 import { type FileReadStat, getSessionReadStats } from "./read-stats";
@@ -34,7 +34,7 @@ export function buildKeyFilesPrompt(candidates: FileReadStat[], tokenBudget: num
    const statsText = candidates
       .map(
          (s) =>
-            `- **${s.filePath}** — ${s.fullReadCount} full reads, ${s.editCount} edits, ~${s.latestReadTokens} tokens`,
+            `- **${s.filePath}** — ${s.fullReadCount} full reads, ${s.editCount} edits, ~${s.latestReadTokens} tokens`
       )
       .join("\n");
 
@@ -87,7 +87,7 @@ export function parseKeyFilesOutput(text: string): Array<{ filePath: string; tok
                typeof item === "object" &&
                item !== null &&
                typeof (item as Record<string, unknown>).filePath === "string" &&
-               typeof (item as Record<string, unknown>).tokens === "number",
+               typeof (item as Record<string, unknown>).tokens === "number"
          )
          .map((item) => ({ filePath: item.filePath, tokens: item.tokens }));
    } catch {
@@ -104,7 +104,7 @@ export function getKeyFileCandidates(
    sessionId: string,
    minReads: number,
    tokenBudget: number,
-   projectDirectory?: string,
+   projectDirectory?: string
 ): FileReadStat[] {
    const stats = getSessionReadStats(hostDb, sessionId, minReads);
    const maxPerFileTokens = Math.min(tokenBudget / 2, 5000);
@@ -115,7 +115,7 @@ export function getKeyFileCandidates(
       (s) =>
          s.latestReadTokens > 0 &&
          s.latestReadTokens <= maxPerFileTokens &&
-         (!projectPrefix || s.filePath.startsWith(projectPrefix)),
+         (!projectPrefix || s.filePath.startsWith(projectPrefix))
    );
 }
 
@@ -127,7 +127,7 @@ export function applyKeyFileResults(
    sessionId: string,
    llmRanked: Array<{ filePath: string; tokens: number }>,
    tokenBudget: number,
-   candidatePaths?: Set<string>,
+   candidatePaths?: Set<string>
 ): { filesIdentified: number; totalTokens: number } {
    // Filter LLM output to only include files that were in the candidate set.
    // Prevents hallucinated paths from being pinned.
@@ -137,7 +137,7 @@ export function applyKeyFileResults(
 
    const totalTokens = selected.reduce((sum, f) => sum + f.tokens, 0);
    log(
-      `[key-files][${sessionId}] pinned ${selected.length} files (${totalTokens} tokens): ${selected.map((f) => f.filePath).join(", ")}`,
+      `[key-files][${sessionId}] pinned ${selected.length} files (${totalTokens} tokens): ${selected.map((f) => f.filePath).join(", ")}`
    );
 
    return { filesIdentified: selected.length, totalTokens };
@@ -151,13 +151,13 @@ export function heuristicKeyFileSelection(
    db: Database,
    sessionId: string,
    candidates: FileReadStat[],
-   tokenBudget: number,
+   tokenBudget: number
 ): { filesIdentified: number; totalTokens: number } {
    const scored = candidates
       .map((c) => ({
          filePath: c.filePath,
          tokens: c.latestReadTokens,
-         score: c.fullReadCount * 2 - c.editCount * 3,
+         score: c.fullReadCount * 2 - c.editCount * 3
       }))
       .filter((c) => c.score > 0)
       .sort((a, b) => b.score - a.score);
@@ -313,14 +313,14 @@ export function validateLlmOutput(raw: string, config: V6KeyFilesConfig, project
          (local / file.approx_token_estimate > 1.5 || local / file.approx_token_estimate < 0.5)
       ) {
          log(
-            `key-files: token estimate divergence for ${file.path}: claimed=${file.approx_token_estimate}, plugin=${local}`,
+            `key-files: token estimate divergence for ${file.path}: claimed=${file.approx_token_estimate}, plugin=${local}`
          );
       }
       files.push({
          path: file.path,
          content: file.content,
          approx_token_estimate: file.approx_token_estimate,
-         local_token_estimate: local,
+         local_token_estimate: local
       });
    }
    const total = files.reduce((sum, file) => sum + file.local_token_estimate, 0);
@@ -345,8 +345,8 @@ export function commitKeyFiles(args: {
       args.validated.files.map((file) => ({
          path: file.path,
          content: file.content,
-         localTokenEstimate: file.local_token_estimate,
-      })),
+         localTokenEstimate: file.local_token_estimate
+      }))
    );
    const generatedAt = Date.now();
    const bump = args.bumpVersion ?? bumpKeyFilesVersion;
@@ -363,7 +363,7 @@ export function commitKeyFiles(args: {
       args.db.exec("COMMIT");
       committed = true;
       log(
-         `key-files committed: ${resolved.length} files, version=${version}, ${resolved.filter((r) => r.staleReason).length} pre-stale`,
+         `key-files committed: ${resolved.length} files, version=${version}, ${resolved.filter((r) => r.staleReason).length} pre-stale`
       );
       return version;
    } finally {
@@ -388,12 +388,12 @@ async function runKeyFilesLlm(args: {
    const createResponse = await args.client.session.create({
       body: {
          ...(args.parentSessionId ? { parentID: args.parentSessionId } : {}),
-         title: "magic-context-dream-key-files-v6",
+         title: "magic-context-dream-key-files-v6"
       },
-      query: { directory: args.projectPath },
+      query: { directory: args.projectPath }
    });
    const created = shared.normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-      preferResponseOnMissingData: true,
+      preferResponseOnMissingData: true
    });
    const agentSessionId = typeof created?.id === "string" ? created.id : null;
    if (!agentSessionId) throw new Error("Could not create key-file identification session.");
@@ -406,21 +406,21 @@ async function runKeyFilesLlm(args: {
             body: {
                agent: DREAMER_AGENT,
                system: KEY_FILES_SYSTEM_PROMPT,
-               parts: [{ type: "text", text: args.prompt, synthetic: true }],
-            },
+               parts: [{ type: "text", text: args.prompt, synthetic: true }]
+            }
          },
          {
             timeoutMs: Math.min(Math.max(0, args.deadline - Date.now()), 5 * 60 * 1000),
             fallbackModels: args.fallbackModels,
-            callContext: "dreamer:key-files-v6",
-         },
+            callContext: "dreamer:key-files-v6"
+         }
       );
       const messagesResponse = await args.client.session.messages({
          path: { id: agentSessionId },
-         query: { directory: args.projectPath, limit: 50 },
+         query: { directory: args.projectPath, limit: 50 }
       });
       const messages = shared.normalizeSDKResponse(messagesResponse, [] as unknown[], {
-         preferResponseOnMissingData: true,
+         preferResponseOnMissingData: true
       });
       const text = extractLatestAssistantText(messages);
       if (!text) throw new Error("Dreamer returned no key-files output.");
@@ -451,7 +451,7 @@ export async function runKeyFilesTask(args: {
       hostDb: args.hostDb,
       magicDb: args.db,
       projectPath,
-      minReads: args.config.min_reads,
+      minReads: args.config.min_reads
    });
    if (candidates.length === 0) return { committedVersion: null, candidates: 0, noChange: false };
 
@@ -496,7 +496,7 @@ export async function runKeyFilesTask(args: {
             projectPath,
             prompt,
             deadline: args.deadline,
-            fallbackModels: args.fallbackModels,
+            fallbackModels: args.fallbackModels
          });
          validated = validateLlmOutput(raw, args.config, projectPath);
       } catch (error) {
@@ -510,7 +510,7 @@ export async function runKeyFilesTask(args: {
          validated,
          configHash,
          modelId: args.fallbackModels?.[0] ?? "dreamer",
-         leaseHolderId: args.holderId,
+         leaseHolderId: args.holderId
       });
       renewLease(args.db, args.holderId);
       return { committedVersion, candidates: candidates.length, noChange: false };

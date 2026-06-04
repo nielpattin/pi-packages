@@ -30,7 +30,7 @@ export const THINKING_TEXT_UNICODE: Record<string, string> = {
    low: "[low]",
    medium: "[med]",
    minimal: "[min]",
-   xhigh: "[xhi]",
+   xhigh: "[xhi]"
 };
 
 // Thinking level display text (Nerd Fonts - with icons)
@@ -39,7 +39,7 @@ export const THINKING_TEXT_NERD: Record<string, string> = {
    low: "\u{F10C} low", // Circle outline
    medium: "\u{F192} med", // Dot circle
    minimal: "\u{F0E7} min", // Lightning bolt
-   xhigh: "\u{F06D} xhi", // Fire
+   xhigh: "\u{F06D} xhi" // Fire
 };
 
 // Get thinking text based on font support
@@ -69,7 +69,7 @@ export const NERD_ICONS: IconSet = {
    skills: "\uF085", // Nf-fa-gears (tools/skills)
    time: "\uF017", // Nf-fa-clock_o
    tokens: "\uE26B", // Nf-seti-html (tokens symbol)
-   warning: "\uF071", // Nf-fa-warning
+   warning: "\uF071" // Nf-fa-warning
 };
 
 // ASCII/Unicode fallback icons (matching oh-my-pi)
@@ -91,7 +91,7 @@ export const ASCII_ICONS: IconSet = {
    skills: "SK",
    time: "◷",
    tokens: "⊛",
-   warning: "!",
+   warning: "!"
 };
 
 type PartialIconSet = Partial<IconSet>;
@@ -124,14 +124,14 @@ export const NERD_SEPARATORS: SeparatorChars = {
    left: "\uE0B0", //
    right: "\uE0B2", //
    thinLeft: "\uE0B1", //
-   thinRight: "\uE0B3", //
+   thinRight: "\uE0B3" //
 };
 
 export const ASCII_SEPARATORS: SeparatorChars = {
    left: ">",
    right: "<",
    thinLeft: "|",
-   thinRight: "|",
+   thinRight: "|"
 };
 
 // Detect Nerd Font support (check TERM or specific env var)
@@ -159,7 +159,7 @@ export function getIcons(): IconSet {
    const baseIcons = hasNerdFonts() ? NERD_ICONS : ASCII_ICONS;
    return {
       ...baseIcons,
-      ...sanitizeUserIconOverrides(loadThemeConfig().icons),
+      ...sanitizeUserIconOverrides(loadThemeConfig().icons)
    };
 }
 

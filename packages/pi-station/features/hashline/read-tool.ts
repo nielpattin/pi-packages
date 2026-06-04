@@ -5,7 +5,7 @@ import {
    DEFAULT_MAX_BYTES,
    DEFAULT_MAX_LINES,
    truncateHead,
-   type TruncationResult,
+   type TruncationResult
 } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
@@ -56,7 +56,7 @@ function getPreviewLines(text: string): string[] {
 
 export function formatHashlineReadPreview(
    text: string,
-   options: { offset?: number; limit?: number },
+   options: { offset?: number; limit?: number }
 ): { text: string; truncation?: TruncationResult; nextOffset?: number } {
    const allLines = getPreviewLines(text);
    const totalLines = allLines.length;
@@ -64,18 +64,18 @@ export function formatHashlineReadPreview(
    if (totalLines === 0) {
       if (startLine === 1) {
          return {
-            text: "File is empty. Use edit with prepend or append and omit pos to insert content.",
+            text: "File is empty. Use edit with prepend or append and omit pos to insert content."
          };
       }
 
       return {
-         text: `Offset ${startLine} is beyond end of file (0 lines total). The file is empty. Use edit with prepend or append and omit pos to insert content.`,
+         text: `Offset ${startLine} is beyond end of file (0 lines total). The file is empty. Use edit with prepend or append and omit pos to insert content.`
       };
    }
 
    if (startLine > totalLines) {
       return {
-         text: `Offset ${startLine} is beyond end of file (${totalLines} lines total). Use offset=1 to read from the start, or offset=${totalLines} to read the last line.`,
+         text: `Offset ${startLine} is beyond end of file (${totalLines} lines total). Use offset=1 to read from the start, or offset=${totalLines} to read the last line.`
       };
    }
 
@@ -88,7 +88,7 @@ export function formatHashlineReadPreview(
    if (truncation.firstLineExceedsLimit) {
       return {
          text: `[Line ${startLine} exceeds ${formatSize(truncation.maxBytes)}. Hashline output requires full lines; cannot compute hashes for a truncated preview.]`,
-         truncation,
+         truncation
       };
    }
 
@@ -110,7 +110,7 @@ export function formatHashlineReadPreview(
    return {
       text: preview,
       truncation: truncation.truncated ? truncation : undefined,
-      ...(nextOffset !== undefined ? { nextOffset } : {}),
+      ...(nextOffset !== undefined ? { nextOffset } : {})
    };
 }
 
@@ -123,20 +123,20 @@ export function registerReadTool(pi: ExtensionAPI): void {
       promptGuidelines: READ_PROMPT_GUIDELINES,
       parameters: Type.Object({
          path: Type.String({
-            description: "Path to the file to read (relative or absolute)",
+            description: "Path to the file to read (relative or absolute)"
          }),
          offset: Type.Optional(
             Type.Integer({
                minimum: 1,
-               description: "Line number to start reading from (1-indexed)",
-            }),
+               description: "Line number to start reading from (1-indexed)"
+            })
          ),
          limit: Type.Optional(
             Type.Integer({
                minimum: 1,
-               description: "Maximum number of lines to read",
-            }),
-         ),
+               description: "Maximum number of lines to read"
+            })
+         )
       }),
 
       renderShell: "self",
@@ -175,7 +175,7 @@ export function registerReadTool(pi: ExtensionAPI): void {
 
          if (file.kind === "binary") {
             throw new Error(
-               `Path is a binary file: ${rawPath} (${file.description}). Hashline read only supports text files and supported images.`,
+               `Path is a binary file: ${rawPath} (${file.description}). Hashline read only supports text files and supported images.`
             );
          }
 
@@ -188,7 +188,7 @@ export function registerReadTool(pi: ExtensionAPI): void {
          const normalized = normalizeToLF(stripBom(file.text).text);
          const preview = formatHashlineReadPreview(normalized, {
             offset: params.offset,
-            limit: params.limit,
+            limit: params.limit
          });
          const snapshot = await getFileSnapshot(absolutePath);
 
@@ -213,10 +213,10 @@ export function registerReadTool(pi: ExtensionAPI): void {
                // a follow-up read with `offset = next_offset` is coming.
                metrics: {
                   truncated: !!preview.truncation,
-                  ...(preview.nextOffset !== undefined ? { next_offset: preview.nextOffset } : {}),
-               },
-            },
+                  ...(preview.nextOffset !== undefined ? { next_offset: preview.nextOffset } : {})
+               }
+            }
          };
-      },
+      }
    });
 }

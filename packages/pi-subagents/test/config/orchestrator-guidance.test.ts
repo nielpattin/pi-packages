@@ -10,7 +10,7 @@ function agent(overrides: Partial<AgentConfig> = {}): AgentConfig {
       skills: false,
       systemPrompt: "",
       promptMode: "replace",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -21,7 +21,7 @@ function registry(configs: Record<string, AgentConfig>): OrchestratorGuidanceReg
          Object.entries(configs)
             .filter(([, config]) => config.enabled !== false)
             .map(([type]) => type),
-      resolveAgentConfig: (type) => configs[type]!,
+      resolveAgentConfig: (type) => configs[type]!
    };
 }
 
@@ -30,8 +30,8 @@ describe("buildOrchestratorGuidance", () => {
       const guidance = buildOrchestratorGuidance(
          registry({
             disabled: agent({ name: "disabled", enabled: false, guidance: "Disabled guidance" }),
-            enabled: agent({ name: "enabled", guidance: "Enabled guidance" }),
-         }),
+            enabled: agent({ name: "enabled", guidance: "Enabled guidance" })
+         })
       );
 
       expect(guidance).toContain("Enabled guidance");
@@ -44,8 +44,8 @@ describe("buildOrchestratorGuidance", () => {
       const guidance = buildOrchestratorGuidance(
          registry({
             one: agent({ name: "one", guidance: undefined }),
-            two: agent({ name: "two", guidance: "Disabled guidance", enabled: false }),
-         }),
+            two: agent({ name: "two", guidance: "Disabled guidance", enabled: false })
+         })
       );
 
       expect(guidance).toBeUndefined();

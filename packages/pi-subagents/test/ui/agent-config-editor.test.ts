@@ -15,18 +15,14 @@ function projectAgentPath(name: string): string {
 }
 
 function makeEditor(
-   overrides: {
-      fileOps?: ReturnType<typeof makeFileOps>;
-      personalAgentsDir?: string;
-      projectAgentsDir?: string;
-   } = {},
+   overrides: { fileOps?: ReturnType<typeof makeFileOps>; personalAgentsDir?: string; projectAgentsDir?: string } = {}
 ) {
    const fileOps = overrides.fileOps ?? makeFileOps();
    const personalAgentsDir = overrides.personalAgentsDir ?? "/home/.pi/agents";
    const projectAgentsDir = overrides.projectAgentsDir ?? "/project/.pi/agents";
    return {
       fileOps,
-      editor: new AgentConfigEditor(fileOps, testRegistry, personalAgentsDir, projectAgentsDir),
+      editor: new AgentConfigEditor(fileOps, testRegistry, personalAgentsDir, projectAgentsDir)
    };
 }
 
@@ -114,7 +110,7 @@ describe("createAgentConfigEditor", () => {
       it("shows Enable, Edit, Reset, Delete for a disabled default agent with file", async () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue({
             ...testDefaultConfig,
-            enabled: false,
+            enabled: false
          });
          const { editor, ui } = setupDetail([undefined], { filePath: "/project/.pi/agents/test-agent.md" });
 
@@ -127,7 +123,7 @@ describe("createAgentConfigEditor", () => {
       it("shows Enable, Edit, Delete for a disabled custom agent with file", async () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue({
             ...testCustomConfig,
-            enabled: false,
+            enabled: false
          });
          const { editor, ui } = setupDetail([undefined], { filePath: "/project/.pi/agents/test-agent.md" });
 
@@ -213,7 +209,7 @@ describe("createAgentConfigEditor", () => {
       it("writes ejected config to project directory", async () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue({
             ...testDefaultConfig,
-            builtinToolNames: ["read", "bash"],
+            builtinToolNames: ["read", "bash"]
          });
          const { fileOps, editor, ui } = setupDetail(["Eject (export as .md)", "Project (.pi/agents/)"]);
 
@@ -221,7 +217,7 @@ describe("createAgentConfigEditor", () => {
 
          expect(fileOps.write).toHaveBeenCalledWith(
             projectAgentPath("test-agent"),
-            expect.stringContaining("description: A test agent"),
+            expect.stringContaining("description: A test agent")
          );
          expect(testRegistry.reload).toHaveBeenCalled();
       });
@@ -244,14 +240,14 @@ describe("createAgentConfigEditor", () => {
          const filePath = "/project/.pi/agents/test-agent.md";
          const { fileOps, editor, ui } = setupDetail(["Disable"], {
             filePath,
-            fileContent: "---\ndescription: test\n---\n\nprompt\n",
+            fileContent: "---\ndescription: test\n---\n\nprompt\n"
          });
 
          await editor.showAgentDetail(ui, "test-agent");
 
          expect(fileOps.write).toHaveBeenCalledWith(
             filePath,
-            "---\nenabled: false\ndescription: test\n---\n\nprompt\n",
+            "---\nenabled: false\ndescription: test\n---\n\nprompt\n"
          );
          expect(testRegistry.reload).toHaveBeenCalled();
       });
@@ -260,7 +256,7 @@ describe("createAgentConfigEditor", () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue(testCustomConfig);
          const { fileOps, editor, ui } = setupDetail(["Disable"], {
             filePath: "/project/.pi/agents/test-agent.md",
-            fileContent: "---\nenabled: false\ndescription: test\n---\n",
+            fileContent: "---\nenabled: false\ndescription: test\n---\n"
          });
 
          await editor.showAgentDetail(ui, "test-agent");
@@ -282,12 +278,12 @@ describe("createAgentConfigEditor", () => {
       it("enables agent by removing enabled:false from file", async () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue({
             ...testCustomConfig,
-            enabled: false,
+            enabled: false
          });
          const filePath = "/project/.pi/agents/test-agent.md";
          const { fileOps, editor, ui } = setupDetail(["Enable"], {
             filePath,
-            fileContent: "---\nenabled: false\ndescription: test\n---\n\nprompt\n",
+            fileContent: "---\nenabled: false\ndescription: test\n---\n\nprompt\n"
          });
 
          await editor.showAgentDetail(ui, "test-agent");
@@ -299,12 +295,12 @@ describe("createAgentConfigEditor", () => {
       it("removes empty override file when enabling", async () => {
          vi.spyOn(testRegistry, "resolveAgentConfig").mockReturnValue({
             ...testDefaultConfig,
-            enabled: false,
+            enabled: false
          });
          const filePath = "/project/.pi/agents/test-agent.md";
          const { fileOps, editor, ui } = setupDetail(["Enable"], {
             filePath,
-            fileContent: "---\nenabled: false\n---\n",
+            fileContent: "---\nenabled: false\n---\n"
          });
 
          await editor.showAgentDetail(ui, "test-agent");
@@ -326,7 +322,7 @@ describe("buildMenuOptions", () => {
          "Disable",
          "Reset to default",
          "Delete",
-         "Back",
+         "Back"
       ]);
    });
 
@@ -335,7 +331,7 @@ describe("buildMenuOptions", () => {
          "Edit",
          "Disable",
          "Delete",
-         "Back",
+         "Back"
       ]);
    });
 
@@ -345,7 +341,7 @@ describe("buildMenuOptions", () => {
          "Edit",
          "Reset to default",
          "Delete",
-         "Back",
+         "Back"
       ]);
    });
 
@@ -354,7 +350,7 @@ describe("buildMenuOptions", () => {
          "Enable",
          "Edit",
          "Delete",
-         "Back",
+         "Back"
       ]);
    });
 });
@@ -366,7 +362,7 @@ describe("buildEjectContent", () => {
       systemPrompt: "You are a useful agent.",
       promptMode: "replace",
       extensions: true,
-      skills: true,
+      skills: true
    };
 
    it("produces minimal frontmatter for a config with no optional fields", () => {
@@ -379,8 +375,8 @@ describe("buildEjectContent", () => {
             "---",
             "",
             "You are a useful agent.",
-            "",
-         ].join("\n"),
+            ""
+         ].join("\n")
       );
    });
 
@@ -396,7 +392,7 @@ describe("buildEjectContent", () => {
          runInBackground: true,
          isolated: true,
          isolation: "worktree",
-         guidance: "Use this agent when focused guidance is needed.",
+         guidance: "Use this agent when focused guidance is needed."
       };
       const content = buildEjectContent(cfg);
       expect(content).toContain("display_name: My Agent");

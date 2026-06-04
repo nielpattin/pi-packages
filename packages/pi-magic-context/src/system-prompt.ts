@@ -205,7 +205,7 @@ export function buildMagicContextBlock(opts: BuildMagicContextBlockOptions): str
          sessionId,
          isCacheBusting,
          compute: () => readProjectDocs(opts.cwd),
-         describe: "project docs",
+         describe: "project docs"
       });
       if (docsBlock) sections.push(docsBlock);
    }
@@ -217,7 +217,7 @@ export function buildMagicContextBlock(opts: BuildMagicContextBlockOptions): str
          sessionId,
          isCacheBusting,
          compute: () => buildUserProfileBlock(opts.db),
-         describe: "user profile",
+         describe: "user profile"
       });
       if (profileBlock) sections.push(profileBlock);
    }
@@ -239,8 +239,8 @@ export function buildMagicContextBlock(opts: BuildMagicContextBlockOptions): str
               isCacheBusting,
               config: {
                  enabled: opts.pinKeyFilesEnabled,
-                 tokenBudget: opts.pinKeyFilesTokenBudget ?? 10_000,
-              },
+                 tokenBudget: opts.pinKeyFilesTokenBudget ?? 10_000
+              }
            })
          : null;
       if (keyFilesBlock) sections.push(keyFilesBlock);
@@ -260,7 +260,7 @@ export function buildMagicContextBlock(opts: BuildMagicContextBlockOptions): str
       opts.dreamerEnabled ?? false,
       opts.dropToolStructure ?? true,
       opts.temporalAwarenessEnabled ?? false,
-      opts.cavemanTextCompressionEnabled ?? false,
+      opts.cavemanTextCompressionEnabled ?? false
    );
 
    if (dataBlock) {
@@ -395,7 +395,7 @@ export function processSystemPromptForCache(args: {
    if (hashChanged) {
       sessionLog(
          sessionId,
-         `system prompt hash changed: ${previousHash} → ${currentHash} (len=${frozenPrompt.length})`,
+         `system prompt hash changed: ${previousHash} → ${currentHash} (len=${frozenPrompt.length})`
       );
    } else if (isFirstHash) {
       sessionLog(sessionId, `system prompt hash initialized: ${currentHash} (len=${frozenPrompt.length})`);
@@ -408,7 +408,7 @@ export function processSystemPromptForCache(args: {
       if (currentHash !== previousHash) {
          updateSessionMeta(db, sessionId, {
             systemPromptHash: currentHash,
-            systemPromptTokens,
+            systemPromptTokens
          });
       } else if (Math.abs(sessionMeta.systemPromptTokens - systemPromptTokens) > 50) {
          updateSessionMeta(db, sessionId, { systemPromptTokens });
@@ -418,7 +418,7 @@ export function processSystemPromptForCache(args: {
    return {
       systemPrompt: frozenPrompt,
       hashChanged,
-      currentHash,
+      currentHash
    };
 }
 

@@ -29,8 +29,8 @@ export function sendCtxStatusMessage(pi: PiMessageSender, content: CtxStatusMess
          customType: CTX_STATUS_CUSTOM_TYPE,
          content: content.text,
          display: true,
-         details: { ...content, details },
+         details: { ...content, details }
       } as never,
-      { triggerTurn: false },
+      { triggerTurn: false }
    );
 }

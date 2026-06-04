@@ -15,7 +15,7 @@ import type { ToolRegistry } from "#src/tool-registry";
 function makeEvents() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined),
+      on: vi.fn().mockReturnValue(() => undefined)
    };
 }
 
@@ -27,20 +27,20 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn(),
+         input: vi.fn()
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn(),
+         addEntry: vi.fn()
       },
-      ...overrides,
+      ...overrides
    } as unknown as ExtensionContext;
 }
 
 function makeSession(
    state: "allow" | "deny" | "ask" = "allow",
-   overrides: Partial<Record<keyof PermissionSession, unknown>> = {},
+   overrides: Partial<Record<keyof PermissionSession, unknown>> = {}
 ): PermissionSession {
    return {
       logger: { debug: vi.fn(), review: vi.fn(), warn: vi.fn() },
@@ -51,7 +51,7 @@ function makeSession(
          toolName: "skill",
          source: "skill",
          origin: "global",
-         matchedPattern: "*",
+         matchedPattern: "*"
       }),
       getToolPermission: vi.fn().mockReturnValue("allow"),
       getSessionRuleset: vi.fn().mockReturnValue([]),
@@ -59,20 +59,20 @@ function makeSession(
       canPrompt: vi.fn().mockReturnValue(true),
       prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
       createPermissionRequestId: vi.fn().mockReturnValue("req-id"),
-      ...overrides,
+      ...overrides
    } as unknown as PermissionSession;
 }
 
 function makeToolRegistry(): ToolRegistry {
    return {
       getAll: vi.fn().mockReturnValue([]),
-      setActive: vi.fn(),
+      setActive: vi.fn()
    };
 }
 
 function makeHandler(
    state: "allow" | "deny" | "ask" = "allow",
-   sessionOverrides: Partial<Record<keyof PermissionSession, unknown>> = {},
+   sessionOverrides: Partial<Record<keyof PermissionSession, unknown>> = {}
 ): {
    handler: PermissionGateHandler;
    events: ReturnType<typeof makeEvents>;
@@ -109,7 +109,7 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "librarian",
          result: "allow",
-         resolution: "policy_allow",
+         resolution: "policy_allow"
       });
    });
 
@@ -123,13 +123,13 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "restricted",
          result: "deny",
-         resolution: "policy_deny",
+         resolution: "policy_deny"
       });
    });
 
    it("emits allow with user_approved when state=ask and user approves", async () => {
       const { handler, events } = makeHandler("ask", {
-         prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
+         prompt: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
       });
       await handler.handleInput({ text: "/skill:explorer" }, makeCtx());
 
@@ -139,13 +139,13 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "explorer",
          result: "allow",
-         resolution: "user_approved",
+         resolution: "user_approved"
       });
    });
 
    it("emits deny with user_denied when state=ask and user denies", async () => {
       const { handler, events } = makeHandler("ask", {
-         prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" }),
+         prompt: vi.fn().mockResolvedValue({ approved: false, state: "denied" })
       });
       await handler.handleInput({ text: "/skill:explorer" }, makeCtx());
 
@@ -155,13 +155,13 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "explorer",
          result: "deny",
-         resolution: "user_denied",
+         resolution: "user_denied"
       });
    });
 
    it("emits deny with confirmation_unavailable when state=ask but no UI", async () => {
       const { handler, events } = makeHandler("ask", {
-         canPrompt: vi.fn().mockReturnValue(false),
+         canPrompt: vi.fn().mockReturnValue(false)
       });
       await handler.handleInput({ text: "/skill:explorer" }, makeCtx({ hasUI: false }));
 
@@ -171,7 +171,7 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "explorer",
          result: "deny",
-         resolution: "confirmation_unavailable",
+         resolution: "confirmation_unavailable"
       });
    });
 
@@ -180,8 +180,8 @@ describe("handleInput decision events — skill gate", () => {
          prompt: vi.fn().mockResolvedValue({
             approved: true,
             state: "approved",
-            autoApproved: true,
-         }),
+            autoApproved: true
+         })
       });
       await handler.handleInput({ text: "/skill:explorer" }, makeCtx());
 
@@ -191,7 +191,7 @@ describe("handleInput decision events — skill gate", () => {
          surface: "skill",
          value: "explorer",
          result: "allow",
-         resolution: "auto_approved",
+         resolution: "auto_approved"
       });
    });
 });

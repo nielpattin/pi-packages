@@ -12,8 +12,8 @@ const mockResolveAgentConfig = vi.fn(
       extensions: false,
       skills: false,
       systemPrompt: "You are Explore.",
-      promptMode: "replace",
-   }),
+      promptMode: "replace"
+   })
 );
 const mockGetToolNamesForType = vi.fn((): string[] => ["read"]);
 const mockBuildAgentPrompt: Mock<AssemblerIO["buildAgentPrompt"]> = vi.fn(() => "assembled system prompt");
@@ -22,7 +22,7 @@ const mockPreloadSkills = vi.fn((): PreloadedSkill[] => []);
 /** Mock registry injected into assembleSessionConfig instead of module-level free functions. */
 const mockAgentLookup: AgentConfigLookup = {
    resolveAgentConfig: mockResolveAgentConfig,
-   getToolNamesForType: mockGetToolNamesForType,
+   getToolNamesForType: mockGetToolNamesForType
 };
 
 import { assembleSessionConfig } from "#src/session/session-config";
@@ -31,19 +31,19 @@ const mockEnv = { isGitRepo: false, branch: "", platform: "linux" };
 
 const mockRegistry = {
    find: vi.fn((): unknown => undefined),
-   getAvailable: vi.fn((): Array<{ provider: string; id: string }> => []),
+   getAvailable: vi.fn((): Array<{ provider: string; id: string }> => [])
 };
 
 const ctx = {
    cwd: "/tmp",
    parentSystemPrompt: "parent prompt",
-   modelRegistry: mockRegistry,
+   modelRegistry: mockRegistry
 };
 
 /** IO stubs injected into assembleSessionConfig in place of module-level imports. */
 const mockIO = {
    preloadSkills: mockPreloadSkills,
-   buildAgentPrompt: mockBuildAgentPrompt,
+   buildAgentPrompt: mockBuildAgentPrompt
 };
 
 beforeEach(() => {
@@ -106,7 +106,7 @@ describe("assembleSessionConfig — model resolution", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         model: "anthropic/claude-haiku-4",
+         model: "anthropic/claude-haiku-4"
       });
 
       const result = assembleSessionConfig(
@@ -115,7 +115,7 @@ describe("assembleSessionConfig — model resolution", () => {
          { model: explicitModel },
          mockEnv,
          mockAgentLookup,
-         mockIO,
+         mockIO
       );
 
       expect(result.model).toBe(explicitModel);
@@ -130,7 +130,7 @@ describe("assembleSessionConfig — model resolution", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         model: "anthropic/claude-opus-4",
+         model: "anthropic/claude-opus-4"
       });
       mockRegistry.find.mockReturnValueOnce(resolvedModel);
       mockRegistry.getAvailable.mockReturnValueOnce([{ provider: "anthropic", id: "claude-opus-4" }]);
@@ -150,7 +150,7 @@ describe("assembleSessionConfig — model resolution", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         model: "anthropic/unknown-model",
+         model: "anthropic/unknown-model"
       });
       mockRegistry.find.mockReturnValueOnce(undefined);
       mockRegistry.getAvailable.mockReturnValueOnce([]);
@@ -170,7 +170,7 @@ describe("assembleSessionConfig — model resolution", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         model: "anthropic/claude-opus-4",
+         model: "anthropic/claude-opus-4"
       });
       // Model exists in registry but NOT in available set
       mockRegistry.find.mockReturnValueOnce(foundModel);
@@ -190,7 +190,7 @@ describe("assembleSessionConfig — model resolution", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         model: "claude-opus-4", // no provider/ prefix
+         model: "claude-opus-4" // no provider/ prefix
       });
 
       const result = assembleSessionConfig("Explore", { ...ctx, parentModel }, {}, mockEnv, mockAgentLookup, mockIO);
@@ -223,7 +223,7 @@ describe("assembleSessionConfig — skill preloading", () => {
          extensions: true as const,
          skills: true as const,
          systemPrompt: "",
-         promptMode: "append" as const,
+         promptMode: "append" as const
       });
 
       const result = assembleSessionConfig("general-purpose", ctx, {}, mockEnv, mockAgentLookup, mockIO);
@@ -242,18 +242,18 @@ describe("assembleSessionConfig — skill preloading", () => {
          extensions: false as const,
          skills: skillList,
          systemPrompt: "prompt",
-         promptMode: "replace" as const,
+         promptMode: "replace" as const
       });
       mockPreloadSkills.mockReturnValueOnce([
          { name: "code-style", content: "# Code Style" },
-         { name: "testing", content: "# Testing" },
+         { name: "testing", content: "# Testing" }
       ]);
 
       const result = assembleSessionConfig("Explore", ctx, {}, mockEnv, mockAgentLookup, mockIO);
 
       expect(result.extras.skillBlocks).toEqual([
          { name: "code-style", content: "# Code Style" },
-         { name: "testing", content: "# Testing" },
+         { name: "testing", content: "# Testing" }
       ]);
       expect(result.noSkills).toBe(true);
    });
@@ -267,7 +267,7 @@ describe("assembleSessionConfig — skill preloading", () => {
          extensions: false as const,
          skills: skillList,
          systemPrompt: "prompt",
-         promptMode: "replace" as const,
+         promptMode: "replace" as const
       });
       mockPreloadSkills.mockReturnValueOnce([]);
 
@@ -285,7 +285,7 @@ describe("assembleSessionConfig — skill preloading", () => {
          extensions: false as const,
          skills: ["code-style"],
          systemPrompt: "prompt",
-         promptMode: "replace" as const,
+         promptMode: "replace" as const
       });
 
       const result = assembleSessionConfig("Explore", ctx, { isolated: true }, mockEnv, mockAgentLookup, mockIO);
@@ -303,7 +303,7 @@ describe("assembleSessionConfig — isolated mode", () => {
          extensions: true as const,
          skills: true as const,
          systemPrompt: "",
-         promptMode: "append" as const,
+         promptMode: "append" as const
       });
 
       const result = assembleSessionConfig(
@@ -312,7 +312,7 @@ describe("assembleSessionConfig — isolated mode", () => {
          { isolated: true },
          mockEnv,
          mockAgentLookup,
-         mockIO,
+         mockIO
       );
 
       expect(result.extensions).toBe(false);
@@ -326,7 +326,7 @@ describe("assembleSessionConfig — isolated mode", () => {
          extensions: true as const,
          skills: true as const,
          systemPrompt: "",
-         promptMode: "append" as const,
+         promptMode: "append" as const
       });
 
       const result = assembleSessionConfig("general-purpose", ctx, {}, mockEnv, mockAgentLookup, mockIO);
@@ -342,7 +342,7 @@ describe("assembleSessionConfig — isolated mode", () => {
          extensions: true as const,
          skills: false as const,
          systemPrompt: "prompt",
-         promptMode: "replace" as const,
+         promptMode: "replace" as const
       });
 
       const result = assembleSessionConfig("Explore", ctx, { isolated: true }, mockEnv, mockAgentLookup, mockIO);
@@ -361,7 +361,7 @@ describe("assembleSessionConfig — unknown type fallback", () => {
          extensions: true as const,
          skills: true as const,
          systemPrompt: "",
-         promptMode: "append" as const,
+         promptMode: "append" as const
       });
 
       mockBuildAgentPrompt.mockImplementationOnce((config: { name: string }) => `resolved:${config.name}`);
@@ -387,7 +387,7 @@ describe("assembleSessionConfig — thinking level", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         thinking: "low" as const,
+         thinking: "low" as const
       });
 
       const result = assembleSessionConfig("Explore", ctx, { thinkingLevel: "high" }, mockEnv, mockAgentLookup, mockIO);
@@ -403,7 +403,7 @@ describe("assembleSessionConfig — thinking level", () => {
          skills: false as const,
          systemPrompt: "prompt",
          promptMode: "replace" as const,
-         thinking: "medium" as const,
+         thinking: "medium" as const
       });
 
       const result = assembleSessionConfig("Explore", ctx, {}, mockEnv, mockAgentLookup, mockIO);

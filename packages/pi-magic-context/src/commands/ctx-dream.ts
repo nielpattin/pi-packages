@@ -17,14 +17,14 @@ export function registerCtxDreamCommand(
       };
       dreamerEnabled?: boolean;
       onProjectSeen?: (projectIdentity: string) => void;
-   },
+   }
 ): void {
    pi.registerCommand("ctx-dream", {
       description: "Run a Magic Context dreamer cycle for this project now",
       handler: async (_args, ctx) => {
          const project = deps.resolveProject?.(ctx) ?? {
             projectDir: deps.projectDir,
-            projectIdentity: deps.projectIdentity,
+            projectIdentity: deps.projectIdentity
          };
          deps.onProjectSeen?.(project.projectIdentity);
          if (deps.dreamerEnabled === false) {
@@ -33,12 +33,12 @@ export function registerCtxDreamCommand(
                {
                   title: "/ctx-dream",
                   text: "## /ctx-dream\n\nDreamer is disabled for this project (`dreamer.disable=true`).",
-                  level: "info",
+                  level: "info"
                },
                {
                   projectDir: project.projectDir,
-                  projectIdentity: project.projectIdentity,
-               },
+                  projectIdentity: project.projectIdentity
+               }
             );
             return;
          }
@@ -52,15 +52,15 @@ export function registerCtxDreamCommand(
                {
                   title: "/ctx-dream",
                   text: ["## /ctx-dream", "", `Dream already queued or running for ${project.projectIdentity}.`].join(
-                     "\n",
+                     "\n"
                   ),
-                  level: "info",
+                  level: "info"
                },
                {
                   projectDir: project.projectDir,
                   projectIdentity: project.projectIdentity,
-                  entry: null,
-               },
+                  entry: null
+               }
             );
             return;
          }
@@ -74,15 +74,15 @@ export function registerCtxDreamCommand(
                   "## /ctx-dream",
                   "",
                   `Starting dream run #${enqueued.id} for ${project.projectIdentity}…`,
-                  `Project directory: ${project.projectDir}`,
+                  `Project directory: ${project.projectDir}`
                ].join("\n"),
-               level: "info",
+               level: "info"
             },
             {
                projectDir: project.projectDir,
                projectIdentity: project.projectIdentity,
-               entry: enqueued,
-            },
+               entry: enqueued
+            }
          );
 
          // Host parity (command-handler.ts:236-246): immediately drain
@@ -109,7 +109,7 @@ export function registerCtxDreamCommand(
                   `- Tasks: ${result.tasks.length} (${failureCount} failed)`,
                   `- Smart notes surfaced: ${result.smartNotesSurfaced}, pending: ${result.smartNotesPending}`,
                   "",
-                  taskLines,
+                  taskLines
                ].join("\n");
             }
 
@@ -118,13 +118,13 @@ export function registerCtxDreamCommand(
                {
                   title: "/ctx-dream",
                   text: ["## /ctx-dream", "", summary].join("\n"),
-                  level: result ? "success" : "info",
+                  level: result ? "success" : "info"
                },
                {
                   projectDir: project.projectDir,
                   projectIdentity: project.projectIdentity,
-                  entry: enqueued,
-               },
+                  entry: enqueued
+               }
             );
          } catch (error) {
             const message = error instanceof Error ? error.message : String(error);
@@ -137,17 +137,17 @@ export function registerCtxDreamCommand(
                      "## /ctx-dream",
                      "",
                      `Dream run failed: ${message}`,
-                     "The queued entry remains; the registered timer will retry on its next tick.",
+                     "The queued entry remains; the registered timer will retry on its next tick."
                   ].join("\n"),
-                  level: "error",
+                  level: "error"
                },
                {
                   projectDir: project.projectDir,
                   projectIdentity: project.projectIdentity,
-                  entry: enqueued,
-               },
+                  entry: enqueued
+               }
             );
          }
-      },
+      }
    });
 }

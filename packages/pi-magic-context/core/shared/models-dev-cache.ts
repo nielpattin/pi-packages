@@ -116,7 +116,7 @@ function setCachedModelMetadata(
            limit?: { context?: number; input?: number };
            experimental?: { modes?: Record<string, unknown> };
         }
-      | undefined,
+      | undefined
 ): void {
    const limit = resolveLimit(model?.limit);
 
@@ -172,7 +172,7 @@ function loadModelsDevMetadataFromFile(): Map<string, CachedModelMetadata> {
       sessionLog(
          "global",
          `models-dev-cache: failed to read models.json at ${modelsJsonPath}:`,
-         error instanceof Error ? error.message : String(error),
+         error instanceof Error ? error.message : String(error)
       );
    }
 
@@ -208,13 +208,13 @@ function loadModelsDevMetadataFromFile(): Map<string, CachedModelMetadata> {
       sessionLog(
          "global",
          "models-dev-cache: failed to read host config for custom models:",
-         error instanceof Error ? error.message : String(error),
+         error instanceof Error ? error.message : String(error)
       );
    }
 
    sessionLog(
       "global",
-      `models-dev-cache: file-layer loaded ${metadata.size} model metadata entries (modelsJsonPath=${modelsJsonPath}, found=${fileFound})`,
+      `models-dev-cache: file-layer loaded ${metadata.size} model metadata entries (modelsJsonPath=${modelsJsonPath}, found=${fileFound})`
    );
 
    return metadata;
@@ -268,14 +268,14 @@ export async function refreshModelLimitsFromApi(client: HostClientLike): Promise
       } else if (previousSize !== map.size) {
          sessionLog(
             "global",
-            `models-dev-cache: API layer loaded ${map.size} model metadata entries (was ${previousSize})`,
+            `models-dev-cache: API layer loaded ${map.size} model metadata entries (was ${previousSize})`
          );
       }
    } catch (error) {
       sessionLog(
          "global",
          "models-dev-cache: API refresh failed:",
-         error instanceof Error ? error.message : String(error),
+         error instanceof Error ? error.message : String(error)
       );
    }
 }
@@ -326,6 +326,6 @@ export function getModelsDevCacheState(): {
       apiLoaded: apiCache !== null,
       apiCount: apiCache?.size ?? 0,
       apiAgeMs: apiLoadedAt > 0 ? Date.now() - apiLoadedAt : -1,
-      fileCount: fileCache?.size ?? 0,
+      fileCount: fileCache?.size ?? 0
    };
 }

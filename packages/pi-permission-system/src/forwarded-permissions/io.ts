@@ -6,7 +6,7 @@ import {
    renameSync,
    rmdirSync,
    unlinkSync,
-   writeFileSync,
+   writeFileSync
 } from "node:fs";
 
 import { isPermissionDecisionState } from "#src/permission-dialog";
@@ -14,7 +14,7 @@ import {
    createPermissionForwardingLocation,
    type ForwardedPermissionRequest,
    type ForwardedPermissionResponse,
-   type PermissionForwardingLocation,
+   type PermissionForwardingLocation
 } from "#src/permission-forwarding";
 
 type LogFn = (event: string, details: Record<string, unknown>) => void;
@@ -42,7 +42,7 @@ export function isErrnoCode(error: unknown, code: string): boolean {
 export function logPermissionForwardingWarning(
    logger: ForwardedPermissionLogger | null,
    message: string,
-   error?: unknown,
+   error?: unknown
 ): void {
    const details = typeof error === "undefined" ? { message } : { message, error: formatUnknownErrorMessage(error) };
 
@@ -57,7 +57,7 @@ export function logPermissionForwardingWarning(
 export function logPermissionForwardingError(
    logger: ForwardedPermissionLogger | null,
    message: string,
-   error?: unknown,
+   error?: unknown
 ): void {
    const details = typeof error === "undefined" ? { message } : { message, error: formatUnknownErrorMessage(error) };
 
@@ -68,7 +68,7 @@ export function logPermissionForwardingError(
 export function ensureDirectoryExists(
    logger: ForwardedPermissionLogger | null,
    path: string,
-   description: string,
+   description: string
 ): boolean {
    try {
       mkdirSync(path, { recursive: true });
@@ -81,7 +81,7 @@ export function ensureDirectoryExists(
 
 export function getPermissionForwardingLocationForSession(
    forwardingDir: string,
-   sessionId: string,
+   sessionId: string
 ): PermissionForwardingLocation {
    return createPermissionForwardingLocation(forwardingDir, sessionId);
 }
@@ -89,7 +89,7 @@ export function getPermissionForwardingLocationForSession(
 export function ensurePermissionForwardingLocation(
    logger: ForwardedPermissionLogger | null,
    forwardingDir: string,
-   sessionId: string,
+   sessionId: string
 ): PermissionForwardingLocation | null {
    let location: PermissionForwardingLocation;
    try {
@@ -102,7 +102,7 @@ export function ensurePermissionForwardingLocation(
    const sessionRootReady = ensureDirectoryExists(
       logger,
       location.sessionRootDir,
-      "permission forwarding session root",
+      "permission forwarding session root"
    );
    const requestsReady = ensureDirectoryExists(logger, location.requestsDir, "permission forwarding requests");
    const responsesReady = ensureDirectoryExists(logger, location.responsesDir, "permission forwarding responses");
@@ -112,7 +112,7 @@ export function ensurePermissionForwardingLocation(
 
 export function getExistingPermissionForwardingLocation(
    forwardingDir: string,
-   sessionId: string,
+   sessionId: string
 ): PermissionForwardingLocation | null {
    let location: PermissionForwardingLocation;
    try {
@@ -127,7 +127,7 @@ export function getExistingPermissionForwardingLocation(
 export function tryRemoveDirectoryIfEmpty(
    logger: ForwardedPermissionLogger | null,
    path: string,
-   description: string,
+   description: string
 ): void {
    if (!existsSync(path)) {
       return;
@@ -158,7 +158,7 @@ export function tryRemoveDirectoryIfEmpty(
 
 export function cleanupPermissionForwardingLocationIfEmpty(
    logger: ForwardedPermissionLogger | null,
-   location: PermissionForwardingLocation,
+   location: PermissionForwardingLocation
 ): void {
    tryRemoveDirectoryIfEmpty(logger, location.requestsDir, `${location.label} permission forwarding requests`);
    tryRemoveDirectoryIfEmpty(logger, location.responsesDir, `${location.label} permission forwarding responses`);
@@ -191,7 +191,7 @@ export function writeJsonFileAtomic(logger: ForwardedPermissionLogger | null, fi
 
 export function readForwardedPermissionRequest(
    logger: ForwardedPermissionLogger | null,
-   filePath: string,
+   filePath: string
 ): ForwardedPermissionRequest | null {
    try {
       const raw = readFileSync(filePath, "utf-8");
@@ -208,7 +208,7 @@ export function readForwardedPermissionRequest(
       ) {
          logPermissionForwardingWarning(
             logger,
-            `Ignoring invalid forwarded permission request format in '${filePath}'`,
+            `Ignoring invalid forwarded permission request format in '${filePath}'`
          );
          return null;
       }
@@ -219,7 +219,7 @@ export function readForwardedPermissionRequest(
          requesterSessionId: parsed.requesterSessionId,
          targetSessionId: parsed.targetSessionId,
          requesterAgentName: parsed.requesterAgentName,
-         message: parsed.message,
+         message: parsed.message
       };
    } catch (error) {
       logPermissionForwardingWarning(logger, `Failed to read forwarded permission request '${filePath}'`, error);
@@ -229,7 +229,7 @@ export function readForwardedPermissionRequest(
 
 export function readForwardedPermissionResponse(
    logger: ForwardedPermissionLogger | null,
-   filePath: string,
+   filePath: string
 ): ForwardedPermissionResponse | null {
    try {
       const raw = readFileSync(filePath, "utf-8");
@@ -243,7 +243,7 @@ export function readForwardedPermissionResponse(
       ) {
          logPermissionForwardingWarning(
             logger,
-            `Ignoring invalid forwarded permission response format in '${filePath}'`,
+            `Ignoring invalid forwarded permission response format in '${filePath}'`
          );
          return null;
       }
@@ -253,7 +253,7 @@ export function readForwardedPermissionResponse(
          state: parsed.state,
          denialReason: typeof parsed.denialReason === "string" ? parsed.denialReason : undefined,
          responderSessionId: parsed.responderSessionId,
-         respondedAt: typeof parsed.respondedAt === "number" ? parsed.respondedAt : Date.now(),
+         respondedAt: typeof parsed.respondedAt === "number" ? parsed.respondedAt : Date.now()
       };
    } catch (error) {
       logPermissionForwardingWarning(logger, `Failed to read forwarded permission response '${filePath}'`, error);
@@ -270,7 +270,7 @@ export function listRequestFiles(logger: ForwardedPermissionLogger | null, reque
       logPermissionForwardingWarning(
          logger,
          `Failed to read permission forwarding requests from '${requestsDir}'`,
-         error,
+         error
       );
       return [];
    }

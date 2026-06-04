@@ -28,7 +28,7 @@ import {
    type Note,
    type NoteStatus,
    setNoteLastReadAt,
-   updateNote,
+   updateNote
 } from "#core/features/magic-context/storage";
 import { type Static, Type } from "typebox";
 
@@ -38,30 +38,30 @@ type CtxNoteReadFilter = (typeof FILTER_VALUES)[number];
 const ParamsSchema = Type.Object({
    action: Type.Optional(
       Type.Union([Type.Literal("write"), Type.Literal("read"), Type.Literal("dismiss"), Type.Literal("update")], {
-         description: "Operation to perform. Defaults to 'write' when content is provided, otherwise 'read'.",
-      }),
+         description: "Operation to perform. Defaults to 'write' when content is provided, otherwise 'read'."
+      })
    ),
    content: Type.Optional(Type.String({ description: "Note text to store when action is 'write'." })),
    surface_condition: Type.Optional(
       Type.String({
          description:
-            "Open-ended condition for smart notes. When provided, creates a project-scoped smart note that the dreamer evaluates nightly. The note surfaces when the condition is met.",
-      }),
+            "Open-ended condition for smart notes. When provided, creates a project-scoped smart note that the dreamer evaluates nightly. The note surfaces when the condition is met."
+      })
    ),
    note_id: Type.Optional(
       Type.Number({
-         description: "Note ID (required for 'dismiss' and 'update' actions).",
-      }),
+         description: "Note ID (required for 'dismiss' and 'update' actions)."
+      })
    ),
    filter: Type.Optional(
       Type.Union(
          FILTER_VALUES.map((value) => Type.Literal(value)),
          {
             description:
-               "Optional read filter. Defaults to active session notes + ready smart notes. Use 'all' to inspect every status or 'pending' to inspect unsurfaced smart notes.",
-         },
-      ),
-   ),
+               "Optional read filter. Defaults to active session notes + ready smart notes. Use 'all' to inspect every status or 'pending' to inspect unsurfaced smart notes."
+         }
+      )
+   )
 });
 
 type CtxNoteParams = Static<typeof ParamsSchema>;
@@ -74,7 +74,7 @@ function err(text: string) {
    return {
       content: [{ type: "text" as const, text }],
       details: undefined,
-      isError: true,
+      isError: true
    };
 }
 
@@ -134,7 +134,7 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
             if (surfaceCondition) {
                if (deps.dreamerEnabled !== true) {
                   return err(
-                     "Error: Smart notes require dreamer to be enabled. Enable dreamer in magic-context.jsonc to use surface_condition.",
+                     "Error: Smart notes require dreamer to be enabled. Enable dreamer in magic-context.jsonc to use surface_condition."
                   );
                }
                const projectIdentity = resolveProjectIdentity(ctx.cwd);
@@ -144,10 +144,10 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
                const note = addNote(deps.db, "smart", {
                   content,
                   projectPath: projectIdentity,
-                  surfaceCondition,
+                  surfaceCondition
                });
                return ok(
-                  `Created smart note #${note.id}. Dreamer will evaluate the condition during nightly runs:\n- Content: ${content}\n- Condition: ${surfaceCondition}`,
+                  `Created smart note #${note.id}. Dreamer will evaluate the condition during nightly runs:\n- Content: ${content}\n- Condition: ${surfaceCondition}`
                );
             }
 
@@ -165,7 +165,7 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
             }
             const dismissed = dismissNote(deps.db, params.note_id, {
                projectPath: projectIdentity,
-               sessionId,
+               sessionId
             });
             return dismissed
                ? ok(`Note #${params.note_id} dismissed.`)
@@ -188,7 +188,7 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
             }
             const updated = updateNote(deps.db, params.note_id, updates, {
                projectPath: projectIdentity,
-               sessionId,
+               sessionId
             });
             if (!updated) {
                return err(`Error: Note #${params.note_id} not found in your session/project.`);
@@ -211,7 +211,7 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
             db: deps.db,
             sessionId,
             cwd: ctx.cwd,
-            filter: params.filter,
+            filter: params.filter
          });
 
          // Best-effort watermark write so any future note nudge logic
@@ -227,7 +227,7 @@ export function createCtxNoteTool(deps: CtxNoteToolDeps): ToolDefinition<typeof 
          }
 
          return ok(`${sections.join("\n\n")}${DISMISS_FOOTER}`);
-      },
+      }
    };
 }
 
@@ -260,13 +260,13 @@ function readNotes(args: {
       const sessionNotes = getNotes(args.db, {
          sessionId: args.sessionId,
          type: "session",
-         status: "active",
+         status: "active"
       });
       const readySmartNotes = projectIdentity
          ? getNotes(args.db, {
               projectPath: projectIdentity,
               type: "smart",
-              status: "ready",
+              status: "ready"
            })
          : [];
       const sections: string[] = [];
@@ -287,20 +287,20 @@ function readNotes(args: {
       all: ["active", "pending", "ready", "dismissed"],
       dismissed: "dismissed",
       pending: "pending",
-      ready: "ready",
+      ready: "ready"
    };
    const status = statusByFilter[args.filter];
 
    const sessionNotes = getNotes(args.db, {
       sessionId: args.sessionId,
       type: "session",
-      status,
+      status
    });
    const smartNotes = projectIdentity
       ? getNotes(args.db, {
            projectPath: projectIdentity,
            type: "smart",
-           status,
+           status
         })
       : [];
 

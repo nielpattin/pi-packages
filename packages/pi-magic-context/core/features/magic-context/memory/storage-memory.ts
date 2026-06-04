@@ -24,7 +24,7 @@ export const COLUMN_MAP: Record<keyof Memory, string> = {
    verifiedAt: "verified_at",
    supersededByMemoryId: "superseded_by_memory_id",
    mergedFrom: "merged_from",
-   metadataJson: "metadata_json",
+   metadataJson: "metadata_json"
 };
 
 const MEMORY_CATEGORY_LOOKUP = {
@@ -36,27 +36,27 @@ const MEMORY_CATEGORY_LOOKUP = {
    USER_DIRECTIVES: true,
    ENVIRONMENT: true,
    WORKFLOW_RULES: true,
-   KNOWN_ISSUES: true,
+   KNOWN_ISSUES: true
 } satisfies Record<MemoryCategory, true>;
 
 const MEMORY_STATUS_LOOKUP = {
    active: true,
    permanent: true,
-   archived: true,
+   archived: true
 } satisfies Record<MemoryStatus, true>;
 
 const MEMORY_SOURCE_TYPE_LOOKUP = {
    historian: true,
    agent: true,
    dreamer: true,
-   user: true,
+   user: true
 } satisfies Record<MemorySourceType, true>;
 
 const VERIFICATION_STATUS_LOOKUP = {
    unverified: true,
    verified: true,
    stale: true,
-   flagged: true,
+   flagged: true
 } satisfies Record<VerificationStatus, true>;
 
 const insertMemoryStatements = new WeakMap<Database, PreparedStatement>();
@@ -185,7 +185,7 @@ export function toMemory(row: Memory): Memory {
       verifiedAt: row.verifiedAt,
       supersededByMemoryId: row.supersededByMemoryId,
       mergedFrom: row.mergedFrom,
-      metadataJson: row.metadataJson,
+      metadataJson: row.metadataJson
    };
 }
 
@@ -193,7 +193,7 @@ function getInsertMemoryStatement(db: Database): PreparedStatement {
    let stmt = insertMemoryStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO memories (project_path, category, content, normalized_hash, source_session_id, source_type, seen_count, retrieval_count, first_seen_at, created_at, updated_at, last_seen_at, last_retrieved_at, status, expires_at, verification_status, verified_at, superseded_by_memory_id, merged_from, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+         "INSERT INTO memories (project_path, category, content, normalized_hash, source_session_id, source_type, seen_count, retrieval_count, first_seen_at, created_at, updated_at, last_seen_at, last_retrieved_at, status, expires_at, verification_status, verified_at, superseded_by_memory_id, merged_from, metadata_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       );
       insertMemoryStatements.set(db, stmt);
    }
@@ -204,7 +204,7 @@ function getMemoryByHashStatement(db: Database): PreparedStatement {
    let stmt = getMemoryByHashStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         `SELECT ${getMemorySelectColumns()} FROM memories WHERE project_path = ? AND category = ? AND normalized_hash = ?`,
+         `SELECT ${getMemorySelectColumns()} FROM memories WHERE project_path = ? AND category = ? AND normalized_hash = ?`
       );
       getMemoryByHashStatements.set(db, stmt);
    }
@@ -232,7 +232,7 @@ function getMemoriesByProjectStatement(db: Database, statuses: MemoryStatus[]): 
    if (!stmt) {
       const placeholders = statuses.map(() => "?").join(", ");
       stmt = db.prepare(
-         `SELECT ${getMemorySelectColumns()} FROM memories WHERE project_path = ? AND status IN (${placeholders}) AND (expires_at IS NULL OR expires_at > ?) ORDER BY category ASC, updated_at DESC, id ASC`,
+         `SELECT ${getMemorySelectColumns()} FROM memories WHERE project_path = ? AND status IN (${placeholders}) AND (expires_at IS NULL OR expires_at > ?) ORDER BY category ASC, updated_at DESC, id ASC`
       );
       statements.set(db, stmt);
    }
@@ -244,7 +244,7 @@ function getUpdateMemorySeenCountStatement(db: Database): PreparedStatement {
    let stmt = updateMemorySeenCountStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "UPDATE memories SET seen_count = seen_count + 1, last_seen_at = ?, updated_at = ? WHERE id = ?",
+         "UPDATE memories SET seen_count = seen_count + 1, last_seen_at = ?, updated_at = ? WHERE id = ?"
       );
       updateMemorySeenCountStatements.set(db, stmt);
    }
@@ -255,7 +255,7 @@ function getUpdateMemoryRetrievalCountStatement(db: Database): PreparedStatement
    let stmt = updateMemoryRetrievalCountStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "UPDATE memories SET retrieval_count = retrieval_count + 1, last_retrieved_at = ?, updated_at = ? WHERE id = ?",
+         "UPDATE memories SET retrieval_count = retrieval_count + 1, last_retrieved_at = ?, updated_at = ? WHERE id = ?"
       );
       updateMemoryRetrievalCountStatements.set(db, stmt);
    }
@@ -284,7 +284,7 @@ function getUpdateMemoryVerificationStatement(db: Database): PreparedStatement {
    let stmt = updateMemoryVerificationStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "UPDATE memories SET verification_status = ?, verified_at = CASE WHEN ? = 'verified' THEN ? ELSE verified_at END, updated_at = ? WHERE id = ?",
+         "UPDATE memories SET verification_status = ?, verified_at = CASE WHEN ? = 'verified' THEN ? ELSE verified_at END, updated_at = ? WHERE id = ?"
       );
       updateMemoryVerificationStatements.set(db, stmt);
    }
@@ -304,7 +304,7 @@ function getSupersededMemoryStatement(db: Database): PreparedStatement {
    let stmt = supersededMemoryStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "UPDATE memories SET superseded_by_memory_id = ?, status = 'archived', updated_at = ? WHERE id = ?",
+         "UPDATE memories SET superseded_by_memory_id = ?, status = 'archived', updated_at = ? WHERE id = ?"
       );
       supersededMemoryStatements.set(db, stmt);
    }
@@ -315,7 +315,7 @@ function getMergeMemoryStatsStatement(db: Database): PreparedStatement {
    let stmt = mergeMemoryStatsStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "UPDATE memories SET seen_count = ?, retrieval_count = ?, merged_from = ?, status = ?, updated_at = ? WHERE id = ?",
+         "UPDATE memories SET seen_count = ?, retrieval_count = ?, merged_from = ?, status = ?, updated_at = ? WHERE id = ?"
       );
       mergeMemoryStatsStatements.set(db, stmt);
    }
@@ -390,7 +390,7 @@ export function insertMemory(db: Database, input: MemoryInput): Memory {
       null,
       null,
       null,
-      input.metadataJson ?? null,
+      input.metadataJson ?? null
    );
 
    const insertedResult = result as { lastInsertRowid?: number | bigint };
@@ -407,7 +407,7 @@ export function getMemoryByHash(
    db: Database,
    projectPath: string,
    category: MemoryCategory,
-   normalizedHash: string,
+   normalizedHash: string
 ): Memory | null {
    const result = getMemoryByHashStatement(db).get(projectPath, category, normalizedHash);
    if (!isMemoryRow(result)) {
@@ -419,7 +419,7 @@ export function getMemoryByHash(
 export function getMemoriesByProject(
    db: Database,
    projectPath: string,
-   statuses: MemoryStatus[] = ["active", "permanent"],
+   statuses: MemoryStatus[] = ["active", "permanent"]
 ): Memory[] {
    if (statuses.length === 0) {
       return [];
@@ -513,7 +513,7 @@ export function mergeMemoryStats(
    seenCount: number,
    retrievalCount: number,
    mergedFrom: string,
-   status: MemoryStatus,
+   status: MemoryStatus
 ): void {
    getMergeMemoryStatsStatement(db).run(seenCount, retrievalCount, mergedFrom, status, Date.now(), id);
 }
@@ -533,7 +533,7 @@ export function archiveMemory(db: Database, id: number, reason?: string): void {
    getUpdateArchivedMemoryStatement(db).run(
       mergeMetadataJson(memory.metadataJson, { archive_reason: trimmedReason }),
       Date.now(),
-      id,
+      id
    );
 }
 
@@ -574,7 +574,7 @@ export function getMemoryCountsByStatus(db: Database, projectPath: string): Memo
       merged: 0,
       ids: [],
       archivedIds: [],
-      mergedIds: [],
+      mergedIds: []
    };
 
    for (const row of rows) {

@@ -40,6 +40,6 @@ export function buildParentSnapshot(ctx: SessionContext, inheritContext?: boolea
 
       modelRegistry: ctx.modelRegistry!,
       // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- || intentional: converts empty string to undefined as well as null/undefined
-      parentContext: parentContext || undefined,
+      parentContext: parentContext || undefined
    };
 }

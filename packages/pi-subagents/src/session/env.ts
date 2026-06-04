@@ -35,6 +35,6 @@ export async function detectEnv(exec: ShellExec, cwd: string): Promise<EnvInfo> 
    return {
       isGitRepo,
       branch,
-      platform: process.platform,
+      platform: process.platform
    };
 }

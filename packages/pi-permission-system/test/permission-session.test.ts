@@ -7,19 +7,19 @@ const { mockGetActiveAgentName, mockGetActiveAgentNameFromSystemPrompt, mockCrea
    vi.hoisted(() => ({
       mockGetActiveAgentName: vi.fn<(ctx: ExtensionContext) => string | null>(),
       mockGetActiveAgentNameFromSystemPrompt: vi.fn<(systemPrompt?: string) => string | null>(),
-      mockCreatePermissionManagerForCwd: vi.fn(),
+      mockCreatePermissionManagerForCwd: vi.fn()
    }));
 
 vi.mock("../src/active-agent", () => ({
    getActiveAgentName: mockGetActiveAgentName,
-   getActiveAgentNameFromSystemPrompt: mockGetActiveAgentNameFromSystemPrompt,
+   getActiveAgentNameFromSystemPrompt: mockGetActiveAgentNameFromSystemPrompt
 }));
 
 vi.mock("../src/runtime", async (importOriginal) => {
    const original = await importOriginal<typeof import("../src/runtime")>();
    return {
       ...original,
-      createPermissionManagerForCwd: mockCreatePermissionManagerForCwd,
+      createPermissionManagerForCwd: mockCreatePermissionManagerForCwd
    };
 });
 
@@ -40,7 +40,7 @@ function makeSkillEntry(name: string, overrides: Partial<SkillPromptEntry> = {})
       state: "allow",
       normalizedLocation: `/${name}/SKILL.md`,
       normalizedBaseDir: `/${name}`,
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -52,7 +52,7 @@ function makePaths(overrides: Partial<ExtensionPaths> = {}): ExtensionPaths {
       forwardingDir: "/test/agent/sessions/permission-forwarding",
       globalLogsDir: "/test/agent/logs",
       piInfrastructureDirs: ["/test/agent", "/test/agent/git"],
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -60,7 +60,7 @@ function makeLogger(): SessionLogger {
    return {
       debug: vi.fn(),
       review: vi.fn(),
-      warn: vi.fn(),
+      warn: vi.fn()
    };
 }
 
@@ -70,14 +70,14 @@ function makeRuntimeDeps(): PermissionSessionRuntimeDeps {
       logResolvedConfigPaths: vi.fn(),
       getConfig: vi.fn().mockReturnValue({}),
       canRequestPermissionConfirmation: vi.fn().mockReturnValue(true),
-      promptPermission: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
+      promptPermission: vi.fn().mockResolvedValue({ approved: true, state: "approved" })
    };
 }
 
 function makeForwarding(): ForwardingController {
    return {
       start: vi.fn(),
-      stop: vi.fn(),
+      stop: vi.fn()
    };
 }
 
@@ -89,14 +89,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn(),
+         input: vi.fn()
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn(),
+         addEntry: vi.fn()
       },
-      ...overrides,
+      ...overrides
    } as unknown as ExtensionContext;
 }
 
@@ -106,14 +106,14 @@ function makePermissionManager(overrides: Partial<PermissionManager> = {}): Perm
          state: "allow",
          toolName: "read",
          source: "tool",
-         origin: "builtin",
+         origin: "builtin"
       }),
       getToolPermission: vi.fn().mockReturnValue("allow"),
       getConfigIssues: vi.fn().mockReturnValue([]),
       getPolicyCacheStamp: vi.fn().mockReturnValue("stamp-1"),
       getComposedConfigRules: vi.fn().mockReturnValue([]),
       getResolvedPolicyPaths: vi.fn().mockReturnValue({}),
-      ...overrides,
+      ...overrides
    } as unknown as PermissionManager;
 }
 
@@ -176,7 +176,7 @@ describe("PermissionSession", () => {
 
       it("delegates getConfigIssues to internal PermissionManager", () => {
          const pm = makePermissionManager({
-            getConfigIssues: vi.fn().mockReturnValue(["issue1"]),
+            getConfigIssues: vi.fn().mockReturnValue(["issue1"])
          });
          mockCreatePermissionManagerForCwd.mockReturnValue(pm);
          const { session } = createSession();
@@ -208,7 +208,7 @@ describe("PermissionSession", () => {
          expect(rules[0]).toMatchObject({
             surface: "bash",
             pattern: "/usr/bin/*",
-            action: "allow",
+            action: "allow"
          });
       });
    });
@@ -239,8 +239,8 @@ describe("PermissionSession", () => {
                state: "deny",
                toolName: "bash",
                source: "bash",
-               origin: "global",
-            }),
+               origin: "global"
+            })
          });
          mockCreatePermissionManagerForCwd.mockReturnValue(pm2);
          const { session } = createSession();
@@ -431,7 +431,7 @@ describe("PermissionSession", () => {
       it("getInfrastructureReadPaths returns config paths", () => {
          const runtimeDeps = makeRuntimeDeps();
          (runtimeDeps.getConfig as ReturnType<typeof vi.fn>).mockReturnValue({
-            piInfrastructureReadPaths: ["/extra/path"],
+            piInfrastructureReadPaths: ["/extra/path"]
          });
          const { session } = createSession({ runtimeDeps });
          expect(session.getInfrastructureReadPaths()).toEqual(["/extra/path"]);
@@ -543,7 +543,7 @@ describe("PermissionSession", () => {
             requestId: "req-1",
             source: "tool_call" as const,
             agentName: null,
-            message: "Allow?",
+            message: "Allow?"
          };
 
          const result = await session.prompt(ctx, details);

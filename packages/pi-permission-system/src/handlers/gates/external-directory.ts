@@ -2,7 +2,7 @@ import {
    getPathBearingToolPath,
    isPathOutsideWorkingDirectory,
    isPiInfrastructureRead,
-   normalizePathForComparison,
+   normalizePathForComparison
 } from "#src/path-utils";
 import { deriveApprovalPattern } from "#src/session-rules";
 import type { GateResult } from "./descriptor";
@@ -40,8 +40,8 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
                toolCallId: tcc.toolCallId,
                toolName: tcc.toolName,
                agentName: tcc.agentName,
-               path: externalDirectoryPath,
-            },
+               path: externalDirectoryPath
+            }
          },
          decision: {
             surface: tcc.toolName,
@@ -50,8 +50,8 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
             resolution: "infrastructure_auto_allowed",
             origin: null,
             agentName: tcc.agentName ?? null,
-            matchedPattern: null,
-         },
+            matchedPattern: null
+         }
       };
    }
 
@@ -60,7 +60,7 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
       tcc.toolName,
       externalDirectoryPath,
       tcc.cwd,
-      tcc.agentName ?? undefined,
+      tcc.agentName ?? undefined
    );
 
    const pattern = deriveApprovalPattern(normalizedExtPath);
@@ -73,11 +73,11 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
          toolName: tcc.toolName,
          pathValue: externalDirectoryPath,
          cwd: tcc.cwd,
-         agentName: tcc.agentName ?? undefined,
+         agentName: tcc.agentName ?? undefined
       },
       sessionApproval: {
          surface: "external_directory",
-         pattern,
+         pattern
       },
       promptDetails: {
          source: "tool_call",
@@ -85,7 +85,7 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
          message: extDirMessage,
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
-         path: externalDirectoryPath,
+         path: externalDirectoryPath
       },
       logContext: {
          source: "tool_call",
@@ -93,11 +93,11 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
          toolName: tcc.toolName,
          agentName: tcc.agentName,
          path: externalDirectoryPath,
-         message: extDirMessage,
+         message: extDirMessage
       },
       decision: {
          surface: "external_directory",
-         value: externalDirectoryPath,
-      },
+         value: externalDirectoryPath
+      }
    };
 }

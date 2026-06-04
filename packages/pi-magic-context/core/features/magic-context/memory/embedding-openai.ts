@@ -75,7 +75,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
          provider: "openai-compatible",
          endpoint: this.endpoint,
          model: this.model,
-         ...(this.apiKey ? { api_key: this.apiKey } : {}),
+         ...(this.apiKey ? { api_key: this.apiKey } : {})
       });
    }
 
@@ -143,18 +143,18 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
             method: "POST",
             headers: {
                "content-type": "application/json",
-               ...(this.apiKey ? { authorization: `Bearer ${this.apiKey}` } : {}),
+               ...(this.apiKey ? { authorization: `Bearer ${this.apiKey}` } : {})
             },
             body: JSON.stringify({
                model: this.model,
-               input: texts,
+               input: texts
             }),
-            signal: internalController.signal,
+            signal: internalController.signal
          });
 
          if (!response.ok) {
             log(
-               `[magic-context] openai-compatible embedding request failed: ${response.status} ${response.statusText}`,
+               `[magic-context] openai-compatible embedding request failed: ${response.status} ${response.statusText}`
             );
             this.recordFailure(isProbe);
             return Array.from({ length: texts.length }, () => null);
@@ -167,7 +167,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
          const rawBody = await response.text();
          if (rawBody.trim().length === 0) {
             log(
-               `[magic-context] openai-compatible embedding request returned empty body (status=${response.status}, content-type=${response.headers.get("content-type") ?? "none"})`,
+               `[magic-context] openai-compatible embedding request returned empty body (status=${response.status}, content-type=${response.headers.get("content-type") ?? "none"})`
             );
             this.recordFailure(isProbe);
             return Array.from({ length: texts.length }, () => null);
@@ -179,7 +179,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
             const snippet = rawBody.slice(0, 200).replace(/\s+/g, " ");
             log(
                `[magic-context] openai-compatible embedding response was not JSON (status=${response.status}, ${rawBody.length}B body, snippet="${snippet}"):`,
-               parseError instanceof Error ? parseError.message : parseError,
+               parseError instanceof Error ? parseError.message : parseError
             );
             this.recordFailure(isProbe);
             return Array.from({ length: texts.length }, () => null);
@@ -277,7 +277,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
          this.circuitOpenUntil = Date.now() + OPEN_DURATION_MS;
          if (!this.openLogged) {
             log(
-               `[magic-context] openai-compatible embedding: probe failed, re-opening circuit for ${OPEN_DURATION_MS / 60_000}min`,
+               `[magic-context] openai-compatible embedding: probe failed, re-opening circuit for ${OPEN_DURATION_MS / 60_000}min`
             );
             this.openLogged = true;
          }
@@ -294,7 +294,7 @@ export class OpenAICompatibleEmbeddingProvider implements EmbeddingProvider {
          this.circuitOpenUntil = now + OPEN_DURATION_MS;
          if (!this.openLogged) {
             log(
-               `[magic-context] openai-compatible embedding: opening circuit for ${OPEN_DURATION_MS / 60_000}min after ${this.failureTimes.length} failures in ${FAILURE_WINDOW_MS / 1_000}s`,
+               `[magic-context] openai-compatible embedding: opening circuit for ${OPEN_DURATION_MS / 60_000}min after ${this.failureTimes.length} failures in ${FAILURE_WINDOW_MS / 1_000}s`
             );
             this.openLogged = true;
          }

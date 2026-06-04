@@ -72,13 +72,13 @@ export function injectPiTemporalMarkers(messages: unknown[]): number {
                   const body = userMsg.content.slice(tagPrefix.length);
                   (messages as PiAgentMessage[])[i] = {
                      ...userMsg,
-                     content: tagPrefix + prefix + body,
+                     content: tagPrefix + prefix + body
                   };
                   injected++;
                }
             } else if (Array.isArray(userMsg.content)) {
                const firstTextIndex = userMsg.content.findIndex(
-                  (p) => p && typeof p === "object" && (p as { type?: unknown }).type === "text",
+                  (p) => p && typeof p === "object" && (p as { type?: unknown }).type === "text"
                );
                if (firstTextIndex >= 0) {
                   const existing = userMsg.content[firstTextIndex] as PiTextContent;
@@ -89,11 +89,11 @@ export function injectPiTemporalMarkers(messages: unknown[]): number {
                      const newContent = userMsg.content.slice();
                      newContent[firstTextIndex] = {
                         ...existing,
-                        text: tagPrefix + prefix + body,
+                        text: tagPrefix + prefix + body
                      };
                      (messages as PiAgentMessage[])[i] = {
                         ...userMsg,
-                        content: newContent,
+                        content: newContent
                      };
                      injected++;
                   }

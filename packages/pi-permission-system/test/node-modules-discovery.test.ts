@@ -3,19 +3,19 @@ import { beforeEach, describe, expect, test, vi } from "vitest";
 // Hoisted stubs for mocks that reference them in vi.mock factories.
 const { mockSpawnSync, mockExistsSync } = vi.hoisted(() => ({
    mockSpawnSync: vi.fn(),
-   mockExistsSync: vi.fn(),
+   mockExistsSync: vi.fn()
 }));
 
 // Mock node:child_process so tests don't spawn real subprocesses.
 vi.mock("node:child_process", () => ({
    spawnSync: mockSpawnSync,
-   default: { spawnSync: mockSpawnSync },
+   default: { spawnSync: mockSpawnSync }
 }));
 
 // Mock node:fs so existsSync is controllable.
 vi.mock("node:fs", () => ({
    existsSync: mockExistsSync,
-   default: { existsSync: mockExistsSync },
+   default: { existsSync: mockExistsSync }
 }));
 
 import { discoverGlobalNodeModulesRoot } from "#src/node-modules-discovery";
@@ -38,7 +38,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
       const npmRootPath = "/opt/homebrew/lib/node_modules";
       mockSpawnSync.mockReturnValue({
          status: 0,
-         stdout: `${npmRootPath}\n`,
+         stdout: `${npmRootPath}\n`
       });
       mockExistsSync.mockReturnValue(true);
 
@@ -72,7 +72,7 @@ describe("discoverGlobalNodeModulesRoot", () => {
    test("returns null when walk-up fails and npm root -g returns non-existent path", () => {
       mockSpawnSync.mockReturnValue({
          status: 0,
-         stdout: "/some/nonexistent/node_modules\n",
+         stdout: "/some/nonexistent/node_modules\n"
       });
       mockExistsSync.mockReturnValue(false);
 

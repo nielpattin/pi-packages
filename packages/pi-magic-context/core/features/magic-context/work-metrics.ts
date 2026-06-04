@@ -90,7 +90,7 @@ function getPiUsage(entry: unknown): PiUsage | null {
       input: asNumber(usage.input),
       output: asNumber(usage.output),
       cacheRead: asNumber(usage.cacheRead ?? usage.cache_read),
-      cacheWrite: asNumber(usage.cacheWrite ?? usage.cache_write),
+      cacheWrite: asNumber(usage.cacheWrite ?? usage.cache_write)
    };
 }
 
@@ -98,7 +98,7 @@ export function computeHostWorkMetrics(hostDb: Database, sessionId: string): Wor
    const row = hostDb.prepare(OPEN_CODE_WORK_METRICS_SQL).get(sessionId) as WorkMetricsRow | null;
    return {
       newWorkTokens: Math.max(0, Math.floor(row?.new_work_tokens ?? 0)),
-      totalInputTokens: Math.max(0, Math.floor(row?.total_input_tokens ?? 0)),
+      totalInputTokens: Math.max(0, Math.floor(row?.total_input_tokens ?? 0))
    };
 }
 

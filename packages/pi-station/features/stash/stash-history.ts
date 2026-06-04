@@ -96,7 +96,7 @@ export function persistStashHistory(history: string[]): void {
    const stashHistoryPath = getStashHistoryPath();
    const payload = {
       history: history.slice(0, STASH_HISTORY_LIMIT),
-      version: 1,
+      version: 1
    };
 
    try {

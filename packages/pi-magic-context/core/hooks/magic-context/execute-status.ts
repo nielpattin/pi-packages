@@ -16,7 +16,7 @@ import { estimateTokens } from "./read-session-formatting";
 function formatExecuteThreshold(
    thresholdPercentage: number,
    mode: "tokens" | "percentage",
-   contextLimit: number,
+   contextLimit: number
 ): string {
    if (mode === "tokens" && contextLimit > 0) {
       const tokens = Math.floor((thresholdPercentage / 100) * contextLimit);
@@ -47,7 +47,7 @@ export function executeStatus(
       default?: number;
       [modelKey: string]: number | undefined;
    },
-   contextLimit?: number,
+   contextLimit?: number
 ): string {
    // Single source of truth — resolver tells us both the effective percentage AND
    // which config source won (tokens vs percentage). Previously /ctx-status
@@ -60,8 +60,8 @@ export function executeStatus(
       {
          tokensConfig: executeThresholdTokens,
          contextLimit,
-         sessionId,
-      },
+         sessionId
+      }
    );
    const executeThresholdPercentage = thresholdDetail.percentage;
    const thresholdMode: "tokens" | "percentage" = thresholdDetail.mode;
@@ -89,7 +89,7 @@ export function executeStatus(
       const nudgeInterval = getRollingNudgeIntervalTokens(nudgeIntervalTokens, currentBand);
       const proactiveCompartmentTrigger = getProactiveCompartmentTriggerPercentage(
          executeThresholdPercentage,
-         contextLimit,
+         contextLimit
       );
 
       const displayContextLimit =
@@ -131,7 +131,7 @@ export function executeStatus(
          `- Last input tokens: ${meta.lastInputTokens.toLocaleString()} tokens`,
          "",
          `**Protected tags:** ${protectedTags}`,
-         `**Subagent session:** ${meta.isSubagent}`,
+         `**Subagent session:** ${meta.isSubagent}`
       ];
 
       if (meta.lastContextPercentage > 0 || meta.lastInputTokens > 0) {
@@ -143,7 +143,7 @@ export function executeStatus(
             `- Resolved context limit: ${displayContextLimit > 0 ? displayContextLimit.toLocaleString() : "unknown"}`,
             `- Proactive compartment evaluation: ${proactiveCompartmentTrigger}%`,
             `- Post-drop target for historian: ${(executeThresholdPercentage * POST_DROP_TARGET_RATIO).toFixed(0)}% (${executeThresholdPercentage}% * ${POST_DROP_TARGET_RATIO})`,
-            `- Commit cluster trigger: ${commitClusterTrigger?.enabled !== false ? `enabled (min ${commitClusterTrigger?.min_clusters ?? 3} clusters)` : "disabled"}, tail-size trigger: > 3x compartment budget`,
+            `- Commit cluster trigger: ${commitClusterTrigger?.enabled !== false ? `enabled (min ${commitClusterTrigger?.min_clusters ?? 3} clusters)` : "disabled"}, tail-size trigger: > 3x compartment budget`
          );
       }
 
@@ -153,7 +153,7 @@ export function executeStatus(
       let historyBlockTokens = 0;
       for (const c of compartments) {
          historyBlockTokens += estimateTokens(
-            `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`,
+            `<compartment start="${c.startMessage}" end="${c.endMessage}" title="${c.title}">\n${c.content}\n</compartment>\n`
          );
       }
       for (const f of facts) {
@@ -163,7 +163,7 @@ export function executeStatus(
       const budgetTokens =
          historyBudgetPercentage && displayContextLimit > 0
             ? Math.floor(
-                 displayContextLimit * (Math.min(executeThresholdPercentage, 80) / 100) * historyBudgetPercentage,
+                 displayContextLimit * (Math.min(executeThresholdPercentage, 80) / 100) * historyBudgetPercentage
               )
             : null;
       const budgetUsage = budgetTokens ? ((historyBlockTokens / budgetTokens) * 100).toFixed(0) : null;
@@ -177,9 +177,9 @@ export function executeStatus(
          ...(budgetTokens
             ? [
                  `- Compression budget: ~${budgetTokens.toLocaleString()} tokens (${budgetUsage}% used)`,
-                 `- Compressor fires: when history block exceeds budget after historian run`,
+                 `- Compressor fires: when history block exceeds budget after historian run`
               ]
-            : [`- Compression budget: not configured (history_budget_percentage not set)`]),
+            : [`- Compression budget: not configured (history_budget_percentage not set)`])
       );
 
       if (pendingOps.length > 0) {

@@ -13,7 +13,7 @@ function makeService(overrides: Partial<PermissionsService> = {}): PermissionsSe
       registerSubagentSession: vi.fn(),
       unregisterSubagentSession: vi.fn(),
       getToolPermission: vi.fn(),
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -67,7 +67,7 @@ describe("service adapter delegation", () => {
       state: "allow",
       matchedPattern: "git *",
       source: "bash",
-      origin: "global",
+      origin: "global"
    };
 
    it("checkPermission delegates surface and value through buildInputForSurface", () => {
@@ -78,8 +78,8 @@ describe("service adapter delegation", () => {
             pattern: "*",
             action: "allow" as const,
             layer: "session" as const,
-            origin: "session" as const,
-         },
+            origin: "session" as const
+         }
       ];
 
       // Build the adapter the same way index.ts will
@@ -87,7 +87,7 @@ describe("service adapter delegation", () => {
          checkPermission(surface, value, agentName) {
             const input = buildInputForSurface(surface, value);
             return checkPermission(surface, input, agentName, sessionRules);
-         },
+         }
       });
 
       publishPermissionsService(service);
@@ -105,7 +105,7 @@ describe("service adapter delegation", () => {
          checkPermission(surface, value, agentName) {
             const input = buildInputForSurface(surface, value);
             return checkPermission(surface, input, agentName, []);
-         },
+         }
       });
 
       publishPermissionsService(service);
@@ -124,19 +124,19 @@ describe("service adapter delegation", () => {
          unregisterSubagentSession(key) {
             registry.unregister(key);
          },
-         getToolPermission: vi.fn((): "allow" => "allow"),
+         getToolPermission: vi.fn((): "allow" => "allow")
       };
 
       publishPermissionsService(service);
       getPermissionsService()!.registerSubagentSession("/sessions/task-1", {
          agentName: "Explore",
-         parentSessionId: "parent-abc",
+         parentSessionId: "parent-abc"
       });
 
       expect(registry.has("/sessions/task-1")).toBe(true);
       expect(registry.get("/sessions/task-1")).toEqual({
          agentName: "Explore",
-         parentSessionId: "parent-abc",
+         parentSessionId: "parent-abc"
       });
    });
 
@@ -150,7 +150,7 @@ describe("service adapter delegation", () => {
          unregisterSubagentSession(key) {
             registry.unregister(key);
          },
-         getToolPermission: vi.fn((): "allow" => "allow"),
+         getToolPermission: vi.fn((): "allow" => "allow")
       };
 
       publishPermissionsService(service);
@@ -169,7 +169,7 @@ describe("service adapter delegation", () => {
          unregisterSubagentSession: vi.fn(),
          getToolPermission(toolName, agentName) {
             return getToolPermissionFn(toolName, agentName);
-         },
+         }
       };
 
       publishPermissionsService(service);
@@ -187,7 +187,7 @@ describe("service adapter delegation", () => {
          unregisterSubagentSession: vi.fn(),
          getToolPermission(toolName, agentName) {
             return getToolPermissionFn(toolName, agentName);
-         },
+         }
       };
 
       publishPermissionsService(service);
@@ -204,7 +204,7 @@ describe("service adapter delegation", () => {
          checkPermission(surface, value, agentName) {
             const input = buildInputForSurface(surface, value);
             return checkPermission(surface, input, agentName, []);
-         },
+         }
       });
 
       publishPermissionsService(service);

@@ -9,7 +9,7 @@ function makeRecord(overrides?: Partial<ConstructorParameters<typeof Agent>[0]>)
       type: "general-purpose",
       description: "test",
       status: "running",
-      ...overrides,
+      ...overrides
    });
 }
 
@@ -33,13 +33,13 @@ describe("subscribeAgentObserver", () => {
 
       session.emit({
          type: "message_end",
-         message: { role: "assistant", usage: { input: 100, output: 50, cacheWrite: 10 } },
+         message: { role: "assistant", usage: { input: 100, output: 50, cacheWrite: 10 } }
       });
       expect(record.lifetimeUsage).toEqual({ input: 100, output: 50, cacheWrite: 10 });
 
       session.emit({
          type: "message_end",
-         message: { role: "assistant", usage: { input: 200, output: 80, cacheWrite: 20 } },
+         message: { role: "assistant", usage: { input: 200, output: 80, cacheWrite: 20 } }
       });
       expect(record.lifetimeUsage).toEqual({ input: 300, output: 130, cacheWrite: 30 });
    });
@@ -51,7 +51,7 @@ describe("subscribeAgentObserver", () => {
 
       session.emit({
          type: "message_end",
-         message: { role: "user", usage: { input: 999, output: 999, cacheWrite: 999 } },
+         message: { role: "user", usage: { input: 999, output: 999, cacheWrite: 999 } }
       });
       expect(record.lifetimeUsage).toEqual({ input: 0, output: 0, cacheWrite: 0 });
    });
@@ -65,7 +65,7 @@ describe("subscribeAgentObserver", () => {
          type: "compaction_end",
          aborted: false,
          result: { tokensBefore: 12345 },
-         reason: "threshold",
+         reason: "threshold"
       });
       expect(record.compactionCount).toBe(1);
 
@@ -73,7 +73,7 @@ describe("subscribeAgentObserver", () => {
          type: "compaction_end",
          aborted: false,
          result: { tokensBefore: 22222 },
-         reason: "manual",
+         reason: "manual"
       });
       expect(record.compactionCount).toBe(2);
    });
@@ -88,12 +88,12 @@ describe("subscribeAgentObserver", () => {
          type: "compaction_end",
          aborted: false,
          result: { tokensBefore: 12345 },
-         reason: "threshold",
+         reason: "threshold"
       });
 
       expect(onCompact).toHaveBeenCalledWith(record, {
          reason: "threshold",
-         tokensBefore: 12345,
+         tokensBefore: 12345
       });
    });
 
@@ -107,7 +107,7 @@ describe("subscribeAgentObserver", () => {
          type: "compaction_end",
          aborted: true,
          result: { tokensBefore: 5000 },
-         reason: "overflow",
+         reason: "overflow"
       });
       expect(record.compactionCount).toBe(0);
       expect(onCompact).not.toHaveBeenCalled();
@@ -121,7 +121,7 @@ describe("subscribeAgentObserver", () => {
       session.emit({
          type: "compaction_end",
          aborted: false,
-         reason: "threshold",
+         reason: "threshold"
       });
       expect(record.compactionCount).toBe(0);
    });

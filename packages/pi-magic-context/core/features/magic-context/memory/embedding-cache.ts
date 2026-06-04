@@ -35,7 +35,7 @@ export function getProjectEmbeddings(db: Database, projectPath: string): Map<num
    const embeddings = loadAllEmbeddings(db, projectPath);
    projectEmbeddingCache.set(projectPath, {
       embeddings,
-      expiresAt: Date.now() + embeddingCacheTtlMs,
+      expiresAt: Date.now() + embeddingCacheTtlMs
    });
    return embeddings;
 }

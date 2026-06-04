@@ -35,7 +35,7 @@ export const ANNOUNCEMENT_FEATURES: ReadonlyArray<string> = [
    "trimPiMessagesToBoundary now sweeps non-contiguous tool-result orphans, fixing provider 400s after compaction in long Pi sessions.",
    "Hidden subagent tool isolation: historian, dreamer, and sidekick can no longer spawn subagents or run unsafe tools.",
    "TUI sidebar and /ctx-status header now show execute threshold inline: '47.5% / 65%' on the left, '475K / 1.0M' on the right.",
-   "doctor --issue now caps GitHub issue bodies at ~60KB with a dedicated 'Recent errors' section so reports stay submittable.",
+   "doctor --issue now caps GitHub issue bodies at ~60KB with a dedicated 'Recent errors' section so reports stay submittable."
 ];
 
 /**

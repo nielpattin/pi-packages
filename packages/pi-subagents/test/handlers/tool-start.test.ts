@@ -13,7 +13,7 @@ describe("ToolStartHandler", () => {
       mockOnTurnStart = vi.fn();
       runtime = {
          setUICtx: mockSetUICtx,
-         onTurnStart: mockOnTurnStart,
+         onTurnStart: mockOnTurnStart
       };
       handler = new ToolStartHandler(runtime);
    });

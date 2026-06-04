@@ -100,7 +100,7 @@ export class SettingsManager {
       return {
          maxConcurrent: this._maxConcurrent,
          defaultMaxTurns: this._defaultMaxTurns ?? 0,
-         graceTurns: this._graceTurns,
+         graceTurns: this._graceTurns
       };
    }
 
@@ -232,7 +232,7 @@ export function saveSettings(s: SubagentsSettings, cwd: string = process.cwd()):
  */
 export function persistToastFor(
    successMsg: string,
-   persisted: boolean,
+   persisted: boolean
 ): { message: string; level: "info" | "warning" } {
    return persisted
       ? { message: successMsg, level: "info" }

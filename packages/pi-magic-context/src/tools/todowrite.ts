@@ -37,14 +37,14 @@ const TodoItem = Type.Object({
    content: Type.String({ description: "Brief description of the task" }),
    status: Type.Union(STATUS_VALUES.map((v) => Type.Literal(v))),
    priority: Type.Optional(Type.Union(PRIORITY_VALUES.map((v) => Type.Literal(v)))),
-   id: Type.Optional(Type.String({ description: "Optional stable id for the todo" })),
+   id: Type.Optional(Type.String({ description: "Optional stable id for the todo" }))
 });
 
 const TodowriteParams = Type.Object({
    todos: Type.Array(TodoItem, {
       description:
-         "Replace the current task list with this complete set of todos. Include every task you intend to track this turn — pending, in_progress, completed, or cancelled — because the list overwrites previous state.",
-   }),
+         "Replace the current task list with this complete set of todos. Include every task you intend to track this turn — pending, in_progress, completed, or cancelled — because the list overwrites previous state."
+   })
 });
 
 type TodowriteParamsT = Static<typeof TodowriteParams>;
@@ -64,7 +64,7 @@ const TOOL_DESCRIPTION = [
    "  - cancelled: no longer needed",
    "",
    "Use this tool proactively for non-trivial work spanning 3+ steps.",
-   "Skip it for single-shot answers or trivial 1-2 step tasks.",
+   "Skip it for single-shot answers or trivial 1-2 step tasks."
 ].join("\n");
 
 export function createTodowriteTool(): ToolDefinition<typeof TodowriteParams> {
@@ -86,15 +86,15 @@ export function createTodowriteTool(): ToolDefinition<typeof TodowriteParams> {
             content: [
                {
                   type: "text",
-                  text: JSON.stringify(todos, null, 2),
-               },
+                  text: JSON.stringify(todos, null, 2)
+               }
             ],
             details: {
                todos,
                title: `${active} todos`,
-               truncated: false,
-            },
+               truncated: false
+            }
          };
-      },
+      }
    };
 }

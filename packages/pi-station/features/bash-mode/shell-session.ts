@@ -107,7 +107,7 @@ export class ManagedShellSession {
       cwd: string,
       transcript: BashTranscriptStore,
       onStateChange: () => void,
-      onCommandSuccess: (command: string, cwd: string) => void,
+      onCommandSuccess: (command: string, cwd: string) => void
    ) {
       this.shellPath = shellPath;
       this.transcript = transcript;
@@ -120,7 +120,7 @@ export class ManagedShellSession {
          ready: false,
          running: false,
          shellName,
-         shellPath,
+         shellPath
       };
    }
 
@@ -143,9 +143,9 @@ export class ManagedShellSession {
          env: {
             ...process.env,
             DISABLE_AUTO_UPDATE: "true",
-            DISABLE_UPDATE_PROMPT: "true",
+            DISABLE_UPDATE_PROMPT: "true"
          },
-         stdio: ["pipe", "pipe", "pipe"],
+         stdio: ["pipe", "pipe", "pipe"]
       });
 
       this.process.stdout.setEncoding("utf8");

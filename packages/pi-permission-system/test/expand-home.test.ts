@@ -5,7 +5,7 @@ const mockHomedir = vi.hoisted(() => vi.fn(() => "/home/testuser"));
 
 vi.mock("node:os", () => ({
    homedir: mockHomedir,
-   default: { homedir: mockHomedir },
+   default: { homedir: mockHomedir }
 }));
 
 import { expandHomePath } from "#src/expand-home";

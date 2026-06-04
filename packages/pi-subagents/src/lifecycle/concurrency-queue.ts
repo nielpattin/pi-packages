@@ -11,7 +11,7 @@ export class ConcurrencyQueue {
 
    constructor(
       private readonly getMaxConcurrent: () => number,
-      private readonly startAgent: (id: string) => void,
+      private readonly startAgent: (id: string) => void
    ) {}
 
    /** Whether the concurrency limit has been reached. */

@@ -4,7 +4,7 @@ import type { Database } from "../../shared/sqlite";
 import {
    recordSubagentInvocation,
    type SubagentInvocationStatus,
-   type SubagentKind,
+   type SubagentKind
 } from "./storage-subagent-invocations";
 
 export interface TokenTotals {
@@ -76,7 +76,7 @@ function modelFromMessage(message: Record<string, unknown>): LastAssistantModel 
             ? source.modelID
             : typeof source.modelId === "string"
               ? source.modelId
-              : null,
+              : null
    };
 }
 
@@ -129,7 +129,7 @@ export function recordChildInvocation(input: ChildInvocationRecordInput): number
          cacheReadTokens: tokens.cacheRead,
          cacheWriteTokens: tokens.cacheWrite,
          error: input.error ? describeError(input.error).brief : null,
-         parentInvocationId: input.parentInvocationId ?? null,
+         parentInvocationId: input.parentInvocationId ?? null
       });
    } catch (error) {
       sessionLog(input.parentSessionId, "subagent token accounting failed:", describeError(error).brief);

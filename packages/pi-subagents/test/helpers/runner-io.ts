@@ -15,7 +15,7 @@ const DEFAULT_AGENT_CONFIG: AgentConfig = {
    promptMode: "replace",
    inheritContext: false,
    runInBackground: false,
-   isolated: false,
+   isolated: false
 };
 
 /**
@@ -40,14 +40,14 @@ export function createRunnerIO() {
       deriveSessionDir: vi.fn().mockReturnValue("/mock/session-dir/tasks"),
       createSessionManager: vi.fn().mockReturnValue({
          newSession: vi.fn(),
-         getSessionFile: vi.fn().mockReturnValue("/sessions/child.jsonl"),
+         getSessionFile: vi.fn().mockReturnValue("/sessions/child.jsonl")
       }),
       createSettingsManager: vi.fn().mockReturnValue({}),
       createSession: vi.fn(),
       assemblerIO: {
          preloadSkills: vi.fn((_skills: string[], _cwd: string): PreloadedSkill[] => []),
-         buildAgentPrompt: vi.fn((..._args: unknown[]): string => "system prompt"),
-      },
+         buildAgentPrompt: vi.fn((..._args: unknown[]): string => "system prompt")
+      }
    };
 }
 
@@ -66,7 +66,7 @@ export function createAgentLookup(configOverrides?: Partial<AgentConfig>) {
    const config: AgentConfig = { ...DEFAULT_AGENT_CONFIG, ...configOverrides };
    return {
       resolveAgentConfig: vi.fn((_type: string): AgentConfig => config),
-      getToolNamesForType: vi.fn((_type: string): string[] => config.builtinToolNames ?? ["read"]),
+      getToolNamesForType: vi.fn((_type: string): string[] => config.builtinToolNames ?? ["read"])
    };
 }
 
@@ -91,7 +91,7 @@ export function createRunnerDeps(overrides?: {
       io: overrides?.io ?? createRunnerIO(),
       exec: overrides?.exec ?? vi.fn(),
       registry: overrides?.registry ?? createAgentLookup(),
-      lifecycle: overrides?.lifecycle ?? createChildLifecycleMock(),
+      lifecycle: overrides?.lifecycle ?? createChildLifecycleMock()
    };
 }
 
@@ -107,7 +107,7 @@ export function createChildLifecycleMock() {
       spawning: vi.fn<ChildLifecyclePublisher["spawning"]>(),
       sessionCreated: vi.fn<ChildLifecyclePublisher["sessionCreated"]>(),
       completed: vi.fn<ChildLifecyclePublisher["completed"]>(),
-      disposed: vi.fn<ChildLifecyclePublisher["disposed"]>(),
+      disposed: vi.fn<ChildLifecyclePublisher["disposed"]>()
    };
 }
 

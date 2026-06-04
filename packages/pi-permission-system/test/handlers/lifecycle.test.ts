@@ -7,7 +7,7 @@ import type { PermissionSession } from "#src/permission-session";
 vi.mock("../../src/status", () => ({
    PERMISSION_SYSTEM_STATUS_KEY: "permission-system",
    syncPermissionSystemStatus: vi.fn(),
-   getPermissionSystemStatus: vi.fn(),
+   getPermissionSystemStatus: vi.fn()
 }));
 
 // ── helpers ────────────────────────────────────────────────────────────────
@@ -20,14 +20,14 @@ function makeCtx(overrides: Partial<ExtensionContext> = {}): ExtensionContext {
          setStatus: vi.fn(),
          notify: vi.fn(),
          select: vi.fn(),
-         input: vi.fn(),
+         input: vi.fn()
       },
       sessionManager: {
          getEntries: vi.fn().mockReturnValue([]),
          getSessionDir: vi.fn().mockReturnValue("/sessions/test"),
-         addEntry: vi.fn(),
+         addEntry: vi.fn()
       },
-      ...overrides,
+      ...overrides
    } as unknown as ExtensionContext;
 }
 
@@ -42,7 +42,7 @@ function makeSession(overrides: Partial<Record<keyof PermissionSession, unknown>
       reload: vi.fn(),
       getRuntimeContext: vi.fn().mockReturnValue(null),
       shutdown: vi.fn(),
-      ...overrides,
+      ...overrides
    } as unknown as PermissionSession;
 }
 
@@ -89,7 +89,7 @@ describe("handleSessionStart", () => {
 
    it("notifies each policy issue", async () => {
       const { handler, session } = makeHandler({
-         getConfigIssues: vi.fn().mockReturnValue(["issue A", "issue B"]),
+         getConfigIssues: vi.fn().mockReturnValue(["issue A", "issue B"])
       });
       await handler.handleSessionStart({ reason: "startup" }, makeCtx());
       expect(session.logger.warn).toHaveBeenCalledWith("issue A");
@@ -109,7 +109,7 @@ describe("handleSessionStart", () => {
       expect(session.logger.debug).toHaveBeenCalledWith("lifecycle.reload", {
          triggeredBy: "session_start",
          reason: "reload",
-         cwd: "/proj",
+         cwd: "/proj"
       });
    });
 
@@ -123,7 +123,7 @@ describe("handleSessionStart", () => {
       const callOrder: string[] = [];
       const { handler } = makeHandler({
          refreshConfig: vi.fn(() => callOrder.push("refreshConfig")),
-         resetForNewSession: vi.fn(() => callOrder.push("resetForNewSession")),
+         resetForNewSession: vi.fn(() => callOrder.push("resetForNewSession"))
       });
       await handler.handleSessionStart({ reason: "startup" }, makeCtx());
       expect(callOrder).toEqual(["refreshConfig", "resetForNewSession"]);
@@ -148,13 +148,13 @@ describe("handleResourcesDiscover", () => {
    it("writes lifecycle.reload debug log on reload", async () => {
       const ctx = makeCtx({ cwd: "/proj" });
       const { handler, session } = makeHandler({
-         getRuntimeContext: vi.fn().mockReturnValue(ctx),
+         getRuntimeContext: vi.fn().mockReturnValue(ctx)
       });
       await handler.handleResourcesDiscover({ reason: "reload" });
       expect(session.logger.debug).toHaveBeenCalledWith("lifecycle.reload", {
          triggeredBy: "resources_discover",
          reason: "reload",
-         cwd: "/proj",
+         cwd: "/proj"
       });
    });
 
@@ -164,7 +164,7 @@ describe("handleResourcesDiscover", () => {
       expect(session.logger.debug).toHaveBeenCalledWith("lifecycle.reload", {
          triggeredBy: "resources_discover",
          reason: "reload",
-         cwd: null,
+         cwd: null
       });
    });
 });
@@ -175,7 +175,7 @@ describe("handleSessionShutdown", () => {
    it("clears UI status when runtime context is present", async () => {
       const ctx = makeCtx();
       const { handler } = makeHandler({
-         getRuntimeContext: vi.fn().mockReturnValue(ctx),
+         getRuntimeContext: vi.fn().mockReturnValue(ctx)
       });
       await handler.handleSessionShutdown();
       expect(ctx.ui.setStatus).toHaveBeenCalledWith("permission-system", undefined);

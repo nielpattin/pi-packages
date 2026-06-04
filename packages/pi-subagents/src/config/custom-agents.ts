@@ -71,7 +71,7 @@ function loadFromDir(dir: string, agents: Map<string, AgentConfig>, source: "pro
          isolation: fm.isolation === "worktree" ? "worktree" : undefined,
          guidance: str(fm.guidance),
          enabled: fm.enabled !== false, // default true; explicitly false disables
-         source,
+         source
       });
    }
 }
@@ -122,7 +122,7 @@ function resolveBoolExtensions(val: unknown): boolean {
    const result = inheritField(val);
    if (Array.isArray(result)) {
       console.warn(
-         "[pi-subagents] extensions allowlist syntax is deprecated. Treating as true and inheriting all extension tools.",
+         "[pi-subagents] extensions allowlist syntax is deprecated. Treating as true and inheriting all extension tools."
       );
       return true;
    }

@@ -115,7 +115,7 @@ function toNote(row: NoteRow): Note {
       updatedAt: row.updated_at,
       lastCheckedAt: toNullableNumber(row.last_checked_at),
       readyAt: toNullableNumber(row.ready_at),
-      readyReason: toNullableString(row.ready_reason),
+      readyReason: toNullableString(row.ready_reason)
    };
 }
 
@@ -146,7 +146,7 @@ function buildStatusClause(status: GetNotesOptions["status"]): {
    const placeholders = statuses.map(() => "?").join(", ");
    return {
       sql: `status IN (${placeholders})`,
-      params: statuses,
+      params: statuses
    };
 }
 
@@ -187,12 +187,12 @@ export function addNote(db: Database, type: NoteType, options: SessionNoteInput 
       type === "session"
          ? db
               .prepare(
-                 "INSERT INTO notes (type, status, content, session_id, created_at, updated_at, harness) VALUES ('session', 'active', ?, ?, ?, ?, ?) RETURNING *",
+                 "INSERT INTO notes (type, status, content, session_id, created_at, updated_at, harness) VALUES ('session', 'active', ?, ?, ?, ?, ?) RETURNING *"
               )
               .get(options.content, (options as SessionNoteInput).sessionId, now, now, getHarness())
          : db
               .prepare(
-                 "INSERT INTO notes (type, status, content, session_id, project_path, surface_condition, created_at, updated_at, harness) VALUES ('smart', 'pending', ?, ?, ?, ?, ?, ?, ?) RETURNING *",
+                 "INSERT INTO notes (type, status, content, session_id, project_path, surface_condition, created_at, updated_at, harness) VALUES ('smart', 'pending', ?, ?, ?, ?, ?, ?, ?) RETURNING *"
               )
               .get(
                  options.content,
@@ -201,7 +201,7 @@ export function addNote(db: Database, type: NoteType, options: SessionNoteInput 
                  (options as SmartNoteInput).surfaceCondition,
                  now,
                  now,
-                 getHarness(),
+                 getHarness()
               );
 
    if (!isNoteRow(result)) {
@@ -219,7 +219,7 @@ export function getSmartNotes(db: Database, projectPath: string, status?: NoteSt
    return getNotes(db, {
       projectPath,
       type: "smart",
-      status: status ?? DEFAULT_SMART_STATUSES,
+      status: status ?? DEFAULT_SMART_STATUSES
    });
 }
 
@@ -235,7 +235,7 @@ export function updateNote(
    db: Database,
    noteId: number,
    updates: UpdateNoteOptions,
-   scope: NoteMutationScope,
+   scope: NoteMutationScope
 ): Note | null {
    const existing = getNoteById(db, noteId);
    if (!existing || !noteBelongsToScope(existing, scope)) {
@@ -306,7 +306,7 @@ export function dismissNote(db: Database, noteId: number, scope: NoteMutationSco
 export function markNoteReady(db: Database, noteId: number, reason?: string): void {
    const now = Date.now();
    db.prepare(
-      "UPDATE notes SET status = 'ready', ready_at = ?, ready_reason = ?, updated_at = ?, last_checked_at = ? WHERE id = ? AND type = 'smart'",
+      "UPDATE notes SET status = 'ready', ready_at = ?, ready_reason = ?, updated_at = ?, last_checked_at = ? WHERE id = ? AND type = 'smart'"
    ).run(now, reason ?? null, now, now, noteId);
 }
 
@@ -315,7 +315,7 @@ export function markNoteChecked(db: Database, noteId: number): void {
    db.prepare("UPDATE notes SET last_checked_at = ?, updated_at = ? WHERE id = ? AND type = 'smart'").run(
       now,
       now,
-      noteId,
+      noteId
    );
 }
 
@@ -329,7 +329,7 @@ export function replaceAllSessionNotes(db: Database, sessionId: string, notes: s
    db.transaction(() => {
       db.prepare("DELETE FROM notes WHERE session_id = ? AND type = 'session'").run(sessionId);
       const insert = db.prepare(
-         "INSERT INTO notes (type, status, content, session_id, created_at, updated_at, harness) VALUES ('session', 'active', ?, ?, ?, ?, ?)",
+         "INSERT INTO notes (type, status, content, session_id, created_at, updated_at, harness) VALUES ('session', 'active', ?, ?, ?, ?, ?)"
       );
       for (const note of notes) {
          insert.run(note, sessionId, now, now, getHarness());

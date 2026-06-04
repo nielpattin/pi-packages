@@ -12,7 +12,7 @@ import {
    hasMeaningfulUserText,
    mergeCommitHashes,
    normalizeText,
-   type SessionChunkLine,
+   type SessionChunkLine
 } from "./read-session-formatting";
 import { type RawMessage, readRawSessionMessageByIdFromDb, readRawSessionMessagesFromDb } from "./read-session-raw";
 import { isFilePart, isTextPart } from "./tag-part-guards";
@@ -265,7 +265,7 @@ export function readSessionChunk(
    sessionId: string,
    tokenBudget: number,
    offset: number = 1,
-   eligibleEndOrdinal?: number,
+   eligibleEndOrdinal?: number
 ): SessionChunk {
    const messages = readRawSessionMessages(sessionId);
    const startOrdinal = Math.max(1, offset);
@@ -314,7 +314,7 @@ export function readSessionChunk(
       if (currentBlock.isToolOnly) {
          flushedToolOnlyBlocks.push({
             start: currentBlock.startOrdinal,
-            end: currentBlock.endOrdinal,
+            end: currentBlock.endOrdinal
          });
       }
 
@@ -359,7 +359,7 @@ export function readSessionChunk(
                meta: [...pendingNoiseMeta, meta],
                commitHashes: [],
                // Pure TC-only block — no narrative from text parts.
-               isToolOnly: true,
+               isToolOnly: true
             };
             pendingNoiseMeta = [];
          }
@@ -411,7 +411,7 @@ export function readSessionChunk(
          parts: [text],
          meta: [...pendingNoiseMeta, meta],
          commitHashes: [...compacted.commitHashes],
-         isToolOnly: !msgHasNarrative,
+         isToolOnly: !msgHasNarrative
       };
       pendingNoiseMeta = [];
    }
@@ -445,7 +445,7 @@ export function readSessionChunk(
       text: lines.join("\n"),
       lines: lineMeta,
       commitClusterCount: commitClusters,
-      toolOnlyRanges,
+      toolOnlyRanges
    };
 }
 

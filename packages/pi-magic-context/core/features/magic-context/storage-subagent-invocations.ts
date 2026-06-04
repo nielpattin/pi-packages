@@ -96,7 +96,7 @@ function toRow(row: SubagentInvocationDbRow): SubagentInvocationRow {
       cacheReadTokens: row.cache_read_tokens,
       cacheWriteTokens: row.cache_write_tokens,
       error: row.error,
-      parentInvocationId: row.parent_invocation_id,
+      parentInvocationId: row.parent_invocation_id
    };
 }
 
@@ -108,7 +108,7 @@ export function recordSubagentInvocation(db: Database, input: SubagentInvocation
                 started_at, ended_at, status,
                 input_tokens, output_tokens, cache_read_tokens, cache_write_tokens,
                 error, parent_invocation_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
          input.sessionId,
@@ -125,7 +125,7 @@ export function recordSubagentInvocation(db: Database, input: SubagentInvocation
          clampToken(input.cacheReadTokens),
          clampToken(input.cacheWriteTokens),
          input.error ?? null,
-         input.parentInvocationId ?? null,
+         input.parentInvocationId ?? null
       );
    return Number(result.lastInsertRowid);
 }
@@ -133,7 +133,7 @@ export function recordSubagentInvocation(db: Database, input: SubagentInvocation
 export function getSubagentInvocations(
    db: Database,
    sessionId: string,
-   opts: { subagent?: SubagentKind; limit?: number } = {},
+   opts: { subagent?: SubagentKind; limit?: number } = {}
 ): SubagentInvocationRow[] {
    const limit = Math.max(1, Math.min(opts.limit ?? 500, 5000));
    const rows = opts.subagent
@@ -142,7 +142,7 @@ export function getSubagentInvocations(
               `SELECT * FROM subagent_invocations
                    WHERE session_id = ? AND subagent = ?
                    ORDER BY started_at DESC
-                   LIMIT ?`,
+                   LIMIT ?`
            )
            .all(sessionId, opts.subagent, limit) as SubagentInvocationDbRow[])
       : (db
@@ -150,7 +150,7 @@ export function getSubagentInvocations(
               `SELECT * FROM subagent_invocations
                    WHERE session_id = ?
                    ORDER BY started_at DESC
-                   LIMIT ?`,
+                   LIMIT ?`
            )
            .all(sessionId, limit) as SubagentInvocationDbRow[]);
    return rows.map(toRow);
@@ -158,7 +158,7 @@ export function getSubagentInvocations(
 
 export function getSubagentTotalsBySubagent(
    db: Database,
-   sessionId: string,
+   sessionId: string
 ): Partial<Record<SubagentKind, SubagentTotals>> {
    const rows = db
       .prepare(
@@ -170,7 +170,7 @@ export function getSubagentTotalsBySubagent(
                     COALESCE(SUM(cache_write_tokens), 0) AS totalCacheWrite
              FROM subagent_invocations
              WHERE session_id = ?
-             GROUP BY subagent`,
+             GROUP BY subagent`
       )
       .all(sessionId) as Array<SubagentTotals & { subagent: SubagentKind }>;
    const result: Partial<Record<SubagentKind, SubagentTotals>> = {};
@@ -180,7 +180,7 @@ export function getSubagentTotalsBySubagent(
          totalInput: row.totalInput,
          totalOutput: row.totalOutput,
          totalCacheRead: row.totalCacheRead,
-         totalCacheWrite: row.totalCacheWrite,
+         totalCacheWrite: row.totalCacheWrite
       };
    }
    return result;

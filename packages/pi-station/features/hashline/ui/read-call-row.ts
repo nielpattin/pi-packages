@@ -32,7 +32,7 @@ function middleTruncatePath(path: string, maxWidth = READ_PATH_DISPLAY_WIDTH): s
       tailSource.slice(Math.max(0, visibleWidth(tailSource) - tailWidth)),
       tailWidth,
       "",
-      true,
+      true
    );
    return `${head}…${tail}`;
 }
@@ -77,7 +77,7 @@ export class ReadCallRow implements Component {
    constructor(
       private readonly args: unknown,
       private readonly theme: Theme,
-      private readonly cwd: string,
+      private readonly cwd: string
    ) {}
 
    render(width: number): string[] {

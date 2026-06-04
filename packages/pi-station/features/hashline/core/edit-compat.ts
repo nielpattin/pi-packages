@@ -21,7 +21,7 @@ export function extractLegacyTopLevelReplace(request: Record<string, unknown>): 
       return {
          oldText: request.oldText,
          newText: request.newText,
-         strategy: "legacy-top-level-replace",
+         strategy: "legacy-top-level-replace"
       };
    }
 
@@ -29,7 +29,7 @@ export function extractLegacyTopLevelReplace(request: Record<string, unknown>): 
       return {
          oldText: request.old_text,
          newText: request.new_text,
-         strategy: "legacy-top-level-replace",
+         strategy: "legacy-top-level-replace"
       };
    }
 
@@ -39,7 +39,7 @@ export function extractLegacyTopLevelReplace(request: Record<string, unknown>): 
 export function applyExactUniqueLegacyReplace(
    content: string,
    oldText: string,
-   newText: string,
+   newText: string
 ): {
    content: string;
    matchCount: 1;
@@ -77,7 +77,7 @@ export function applyExactUniqueLegacyReplace(
       return {
          content: content.slice(0, index) + newText + content.slice(index + oldText.length),
          matchCount: 1,
-         usedFuzzyMatch: false,
+         usedFuzzyMatch: false
       };
    }
 
@@ -95,6 +95,6 @@ export function applyExactUniqueLegacyReplace(
    return {
       content: fuzzyReplaced.content,
       matchCount: 1,
-      usedFuzzyMatch: true,
+      usedFuzzyMatch: true
    };
 }

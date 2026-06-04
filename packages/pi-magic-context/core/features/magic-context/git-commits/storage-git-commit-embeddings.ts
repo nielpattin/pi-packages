@@ -40,7 +40,7 @@ function getSaveStatement(db: Database): PreparedStatement {
              ON CONFLICT(sha) DO UPDATE SET
                  embedding = excluded.embedding,
                  model_id = excluded.model_id,
-                 created_at = excluded.created_at`,
+                 created_at = excluded.created_at`
       );
       saveStatements.set(db, stmt);
    }
@@ -54,7 +54,7 @@ function getLoadProjectStatement(db: Database): PreparedStatement {
          `SELECT e.sha AS sha, e.embedding AS embedding, e.model_id AS model_id
              FROM git_commit_embeddings e
              JOIN git_commits c ON c.sha = e.sha
-             WHERE c.project_path = ?`,
+             WHERE c.project_path = ?`
       );
       loadProjectStatements.set(db, stmt);
    }
@@ -70,7 +70,7 @@ function getLoadUnembeddedStatement(db: Database): PreparedStatement {
              LEFT JOIN git_commit_embeddings e ON c.sha = e.sha
              WHERE c.project_path = ? AND e.sha IS NULL
              ORDER BY c.committed_at DESC
-             LIMIT ?`,
+             LIMIT ?`
       );
       loadUnembeddedStatements.set(db, stmt);
    }
@@ -82,7 +82,7 @@ function getCountEmbeddedStatement(db: Database): PreparedStatement {
    if (!stmt) {
       stmt = db.prepare(
          `SELECT COUNT(*) AS count FROM git_commit_embeddings e
-             JOIN git_commits c ON c.sha = e.sha WHERE c.project_path = ?`,
+             JOIN git_commits c ON c.sha = e.sha WHERE c.project_path = ?`
       );
       countEmbeddedStatements.set(db, stmt);
    }
@@ -94,7 +94,7 @@ function getClearProjectStatement(db: Database): PreparedStatement {
    if (!stmt) {
       stmt = db.prepare(
          `DELETE FROM git_commit_embeddings
-             WHERE sha IN (SELECT sha FROM git_commits WHERE project_path = ?)`,
+             WHERE sha IN (SELECT sha FROM git_commits WHERE project_path = ?)`
       );
       clearProjectStatements.set(db, stmt);
    }
@@ -108,7 +108,7 @@ function getDistinctModelIdStatement(db: Database): PreparedStatement {
          `SELECT DISTINCT e.model_id AS modelId
              FROM git_commit_embeddings e
              JOIN git_commits c ON c.sha = e.sha
-             WHERE c.project_path = ?`,
+             WHERE c.project_path = ?`
       );
       distinctModelIdStatements.set(db, stmt);
    }
@@ -126,7 +126,7 @@ export function loadProjectCommitEmbeddings(db: Database, projectPath: string): 
    for (const row of rows) {
       const buffer = row.embedding.buffer.slice(
          row.embedding.byteOffset,
-         row.embedding.byteOffset + row.embedding.byteLength,
+         row.embedding.byteOffset + row.embedding.byteLength
       );
       map.set(row.sha, new Float32Array(buffer));
    }
@@ -136,7 +136,7 @@ export function loadProjectCommitEmbeddings(db: Database, projectPath: string): 
 export function loadUnembeddedCommits(
    db: Database,
    projectPath: string,
-   limit: number,
+   limit: number
 ): Array<{ sha: string; message: string }> {
    return getLoadUnembeddedStatement(db).all(projectPath, limit) as UnembeddedRow[];
 }

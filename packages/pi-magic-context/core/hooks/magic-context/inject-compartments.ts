@@ -3,7 +3,7 @@ import {
    type CompartmentDateRanges,
    escapeXmlContent,
    getCompartments,
-   getSessionFacts,
+   getSessionFacts
 } from "../../features/magic-context/compartment-storage";
 import { CATEGORY_PRIORITY } from "../../features/magic-context/memory/constants";
 import { getMemoriesByProject } from "../../features/magic-context/memory/storage-memory";
@@ -110,7 +110,7 @@ export function renderMemoryBlock(memories: Memory[]): string | null {
       sections.push(
          `<${category}>`,
          ...categoryMemories.map((m) => `- ${escapeXmlContent(m.content)}`),
-         `</${category}>`,
+         `</${category}>`
       );
    }
 
@@ -192,7 +192,7 @@ export function trimMemoriesToBudget(sessionId: string, memories: Memory[], budg
    if (result.length < memories.length) {
       sessionLog(
          sessionId,
-         `trimmed memories from ${memories.length} to ${result.length} to fit injection budget of ${budgetTokens} tokens`,
+         `trimmed memories from ${memories.length} to ${result.length} to fit injection budget of ${budgetTokens} tokens`
       );
    }
 
@@ -206,7 +206,7 @@ export function prepareCompartmentInjection(
    isCacheBusting: boolean,
    projectPath?: string,
    injectionBudgetTokens?: number,
-   temporalAwareness?: boolean,
+   temporalAwareness?: boolean
 ): PreparedCompartmentInjection | null {
    // On defer (cache-safe) passes, replay the cached injection result so that
    // historian publications between passes do not bust the prompt-cache prefix.
@@ -233,7 +233,7 @@ export function prepareCompartmentInjection(
                // defer passes instead of alternating between injected/not-injected.
                sessionLog(
                   sessionId,
-                  `compartment injection: cached boundary ${prepared.compartmentEndMessageId} not in messages (already trimmed), reusing cache`,
+                  `compartment injection: cached boundary ${prepared.compartmentEndMessageId} not in messages (already trimmed), reusing cache`
                );
             }
          }
@@ -280,7 +280,7 @@ export function prepareCompartmentInjection(
          // Issue: upstream issue #23
          try {
             db.prepare(
-               "UPDATE session_meta SET memory_block_cache = ?, memory_block_count = ?, memory_block_ids = ? WHERE session_id = ?",
+               "UPDATE session_meta SET memory_block_cache = ?, memory_block_count = ?, memory_block_ids = ? WHERE session_id = ?"
             ).run(memoryBlock ?? "", memoryCount, JSON.stringify(renderedIds), sessionId);
          } catch (error) {
             const code = (error as { code?: string } | null)?.code;
@@ -298,7 +298,7 @@ export function prepareCompartmentInjection(
       injectionCache.set(sessionId, {
          kind: "empty",
          compartmentEndMessageId: "",
-         renderedBytes: 0,
+         renderedBytes: 0
       });
       return null;
    }
@@ -338,7 +338,7 @@ export function prepareCompartmentInjection(
          skippedVisibleMessages: 0,
          factCount: facts.length,
          memoryCount,
-         rebuiltFromDb: true,
+         rebuiltFromDb: true
       };
       injectionCache.set(sessionId, { kind: "populated", injection: result });
       return result;
@@ -354,8 +354,8 @@ export function prepareCompartmentInjection(
          "injecting legacy compartments without visible-prefix trimming because latest stored compartment has no end_message_id",
          {
             compartmentCount: compartments.length,
-            compartmentEndMessage: lastEnd,
-         },
+            compartmentEndMessage: lastEnd
+         }
       );
       const result: PreparedCompartmentInjection = {
          block,
@@ -365,7 +365,7 @@ export function prepareCompartmentInjection(
          skippedVisibleMessages: 0,
          factCount: facts.length,
          memoryCount,
-         rebuiltFromDb: true,
+         rebuiltFromDb: true
       };
       injectionCache.set(sessionId, { kind: "populated", injection: result });
       return result;
@@ -380,7 +380,7 @@ export function prepareCompartmentInjection(
    } else {
       sessionLog(
          sessionId,
-         `compartment injection entering degraded mode: boundary ${lastEndMessageId} not in visible messages`,
+         `compartment injection entering degraded mode: boundary ${lastEndMessageId} not in visible messages`
       );
    }
 
@@ -392,7 +392,7 @@ export function prepareCompartmentInjection(
       skippedVisibleMessages,
       factCount: facts.length,
       memoryCount,
-      rebuiltFromDb: true,
+      rebuiltFromDb: true
    };
    injectionCache.set(sessionId, { kind: "populated", injection: result });
    return result;
@@ -401,7 +401,7 @@ export function prepareCompartmentInjection(
 export function renderCompartmentInjection(
    sessionId: string,
    messages: MessageLike[],
-   prepared: PreparedCompartmentInjection,
+   prepared: PreparedCompartmentInjection
 ): CompartmentInjectionResult {
    const historyBlock = `<session-history>\n${prepared.block}\n</session-history>`;
    const firstMessage = messages[0];
@@ -409,7 +409,7 @@ export function renderCompartmentInjection(
    if (!firstMessage || !textPart || isDroppedPlaceholder(textPart.text)) {
       messages.unshift({
          info: { role: "user", sessionID: sessionId },
-         parts: [{ type: "text", text: historyBlock }],
+         parts: [{ type: "text", text: historyBlock }]
       });
    } else {
       textPart.text = `${historyBlock}\n\n${textPart.text}`;
@@ -419,7 +419,7 @@ export function renderCompartmentInjection(
    if (prepared.compartmentCount > 0) {
       sessionLog(
          sessionId,
-         `injected ${prepared.compartmentCount} compartments + ${prepared.factCount} facts${memoryLabel} into message[0]`,
+         `injected ${prepared.compartmentCount} compartments + ${prepared.factCount} facts${memoryLabel} into message[0]`
       );
    } else {
       sessionLog(sessionId, `injected ${prepared.factCount} facts${memoryLabel} into message[0] (no compartments yet)`);
@@ -429,7 +429,7 @@ export function renderCompartmentInjection(
       injected: true,
       compartmentEndMessage: prepared.compartmentEndMessage,
       compartmentCount: prepared.compartmentCount,
-      skippedVisibleMessages: prepared.skippedVisibleMessages,
+      skippedVisibleMessages: prepared.skippedVisibleMessages
    };
 }
 

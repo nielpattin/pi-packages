@@ -12,7 +12,7 @@ interface AgentInvocationParams {
 
 export function resolveAgentInvocationConfig(
    agentConfig: AgentConfig | undefined,
-   params: AgentInvocationParams,
+   params: AgentInvocationParams
 ): {
    modelInput?: string;
    modelFromParams: boolean;
@@ -31,6 +31,6 @@ export function resolveAgentInvocationConfig(
       inheritContext: agentConfig?.inheritContext ?? params.inherit_context ?? false,
       runInBackground: agentConfig?.runInBackground ?? params.run_in_background ?? false,
       isolated: agentConfig?.isolated ?? params.isolated ?? false,
-      isolation: agentConfig?.isolation ?? params.isolation,
+      isolation: agentConfig?.isolation ?? params.isolation
    };
 }

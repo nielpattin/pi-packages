@@ -17,7 +17,7 @@ export interface PermissionSystemExtensionConfig {
 export const DEFAULT_EXTENSION_CONFIG: PermissionSystemExtensionConfig = {
    debugLog: false,
    permissionReviewLog: true,
-   yoloMode: false,
+   yoloMode: false
 };
 
 function resolveExtensionRoot(moduleUrl = import.meta.url): string {
@@ -33,7 +33,7 @@ const PERMISSION_POLICY_KEYS: ReadonlySet<string> = new Set([
    "mcp",
    "skills",
    "special",
-   "external_directory",
+   "external_directory"
 ]);
 
 export function detectMisplacedPermissionKeys(raw: Record<string, unknown>): string[] {
@@ -48,7 +48,7 @@ export function normalizePermissionSystemConfig(raw: unknown): PermissionSystemE
    const result: PermissionSystemExtensionConfig = {
       debugLog: record.debugLog === true,
       permissionReviewLog: record.permissionReviewLog !== false,
-      yoloMode: record.yoloMode === true,
+      yoloMode: record.yoloMode === true
    };
    if (piInfrastructureReadPaths !== undefined) {
       result.piInfrastructureReadPaths = piInfrastructureReadPaths;

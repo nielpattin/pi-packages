@@ -41,7 +41,7 @@ function migrateLegacyStorageIfNeeded(targetDbPath: string, targetDbDir: string)
    if (!existsSync(legacyDbPath)) return;
 
    log(
-      `[magic-context] migrating legacy plugin storage: ${legacyDir} -> ${targetDbDir} (legacy left in place as backup)`,
+      `[magic-context] migrating legacy plugin storage: ${legacyDir} -> ${targetDbDir} (legacy left in place as backup)`
    );
    mkdirSync(targetDbDir, { recursive: true });
 
@@ -545,120 +545,6 @@ CREATE INDEX IF NOT EXISTS idx_dream_queue_pending ON dream_queue(started_at, en
    // here. Migration v6 handles `notes` separately (see migrations.ts).
 }
 
-/**
- * Heal NULL columns added via ensureColumn against pre-existing rows.
- *
- * SQLite does NOT backfill column defaults when ALTER TABLE ADD COLUMN runs
- * on an already-populated table — old rows get NULL regardless of the
- * DEFAULT clause. isSessionMetaRow used to require strict typeof === "string"
- * / "number", which NULL fails, so rows with NULL columns were rejected,
- * getOrCreateSessionMeta returned zeroed defaults (lastResponseTime=0,
- * cacheTtl="5m"), the scheduler returned "execute" forever, and every
- * execute pass mutated message content — a sustained cache-bust cascade.
- *
- * The validator now tolerates NULL, but we normalize the data too so every
- * code path sees well-formed values. Each UPDATE is best-effort: if a column
- * doesn't exist yet (migration ran on a DB older than the ensureColumn call),
- * the UPDATE throws and we move on — the next schema upgrade runs ensureColumn
- * first, then this heal again.
- *
- * Exported so migration v5 can call it. Not exported from any barrel.
- */
-export function healAllNullColumns(db: Database): void {
-   healNullTextColumns(db);
-   healNullIntegerColumns(db);
-   healMissingMemoryBlockIds(db);
-}
-
-/**
- * One-shot heal for sessions upgraded from a build without memory_block_ids.
- *
- * Those sessions have a populated memory_block_cache but no ids — ctx_search's
- * visible-memory filter then silently no-ops. Clearing the cache forces the
- * next transform pass to regenerate BOTH cache + ids in one UPDATE. The
- * regenerated block is byte-identical (renderMemoryBlock is deterministic
- * over the same memory set in stable id order), so this does NOT cause an
- * Anthropic prompt-cache bust.
- *
- * Best-effort — wrapped because the columns may not exist on a brand-new DB
- * that hasn't finished ensureColumn yet.
- */
-function healMissingMemoryBlockIds(db: Database): void {
-   try {
-      db.prepare(
-         "UPDATE session_meta SET memory_block_cache = '' WHERE memory_block_cache != '' AND (memory_block_ids IS NULL OR memory_block_ids = '') AND memory_block_count > 0",
-      ).run();
-   } catch {
-      // Column missing on very fresh DBs — next startup reruns this after
-      // ensureColumn adds the column.
-   }
-}
-
-function healNullTextColumns(db: Database): void {
-   const columns: Array<[string, string]> = [
-      ["cache_ttl", ""],
-      ["last_nudge_band", ""],
-      ["last_transform_error", ""],
-      ["nudge_anchor_message_id", ""],
-      ["nudge_anchor_text", ""],
-      ["sticky_turn_reminder_text", ""],
-      ["sticky_turn_reminder_message_id", ""],
-      ["note_nudge_trigger_message_id", ""],
-      ["note_nudge_sticky_text", ""],
-      ["note_nudge_sticky_message_id", ""],
-      ["last_todo_state", ""],
-      ["todo_synthetic_call_id", ""],
-      ["todo_synthetic_anchor_message_id", ""],
-      ["todo_synthetic_state_json", ""],
-      ["system_prompt_hash", ""],
-      ["stripped_placeholder_ids", ""],
-      ["memory_block_cache", ""],
-      ["memory_block_ids", ""],
-      ["compaction_marker_state", ""],
-      ["key_files", ""],
-   ];
-   for (const [column, fallback] of columns) {
-      try {
-         db.prepare(`UPDATE session_meta SET ${column} = ? WHERE ${column} IS NULL`).run(fallback);
-      } catch {
-         // Ignore — the column may not exist yet on a brand-new DB that
-         // hasn't gone through all ensureColumn calls yet. The heal runs
-         // again on next startup.
-      }
-   }
-}
-
-function healNullIntegerColumns(db: Database): void {
-   // INTEGER columns added via ensureColumn against pre-existing rows.
-   // SQLite does not backfill the DEFAULT on ALTER TABLE, so old rows have
-   // NULL. The validator tolerates null as of this release, but we still
-   // normalize to 0 so subsequent reads from any path (including paths
-   // that bypass toSessionMeta) see a well-formed row.
-   const columns: Array<[string, number]> = [
-      ["times_execute_threshold_reached", 0],
-      ["compartment_in_progress", 0],
-      ["historian_failure_count", 0],
-      ["cleared_reasoning_through_tag", 0],
-      ["memory_block_count", 0],
-      ["system_prompt_tokens", 0],
-      ["conversation_tokens", 0],
-      ["tool_call_tokens", 0],
-      ["note_nudge_trigger_pending", 0],
-      ["observed_safe_input_tokens", 0],
-      ["cache_alert_sent", 0],
-      ["new_work_tokens", 0],
-      ["total_input_tokens", 0],
-   ];
-   for (const [column, fallback] of columns) {
-      try {
-         db.prepare(`UPDATE session_meta SET ${column} = ? WHERE ${column} IS NULL`).run(fallback);
-      } catch {
-         // Same rationale as the text heal — swallow missing-column errors
-         // on brand-new DBs; next startup reruns this.
-      }
-   }
-}
-
 // Intentional: the definition regex allows single quotes and parens because SQLite column
 // defaults use them (e.g. TEXT DEFAULT '', INTEGER DEFAULT 0). All callsites pass hardcoded
 // string literals — no user input reaches this function, so the regex is sufficient.
@@ -740,7 +626,7 @@ export function openDatabase(): Database {
       // No silent in-memory fallback — see comment above. Caller must
       // catch and disable Magic Context for this run.
       throw new Error(
-         `[magic-context] storage unavailable: ${detail}. Magic Context is disabled for this run; check log for details.`,
+         `[magic-context] storage unavailable: ${detail}. Magic Context is disabled for this run; check log for details.`
       );
    }
 }

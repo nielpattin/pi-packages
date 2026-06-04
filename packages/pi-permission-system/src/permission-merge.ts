@@ -14,7 +14,7 @@ export function mergeFlatPermissions(base: FlatPermissionConfig, override: FlatP
          /* eslint-enable @typescript-eslint/no-unnecessary-condition */
          merged[key] = {
             ...baseVal,
-            ...value,
+            ...value
          };
       } else {
          merged[key] = value;

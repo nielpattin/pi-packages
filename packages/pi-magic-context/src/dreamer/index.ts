@@ -108,14 +108,14 @@ export function registerPiDreamerProject(opts: PiDreamerOptions): void {
    const experimentalUserMemories = opts.config.user_memories.enabled
       ? {
            enabled: true,
-           promotionThreshold: opts.config.user_memories.promotion_threshold,
+           promotionThreshold: opts.config.user_memories.promotion_threshold
         }
       : undefined;
    const experimentalPinKeyFiles = opts.config.pin_key_files.enabled
       ? {
            enabled: true,
            token_budget: opts.config.pin_key_files.token_budget,
-           min_reads: opts.config.pin_key_files.min_reads,
+           min_reads: opts.config.pin_key_files.min_reads
         }
       : undefined;
 
@@ -129,7 +129,7 @@ export function registerPiDreamerProject(opts: PiDreamerOptions): void {
       experimentalUserMemories,
       experimentalPinKeyFiles,
       gitCommitIndexing: opts.gitCommitIndexing,
-      ensureRegistered: ensureProjectRegisteredFromPiDirectory,
+      ensureRegistered: ensureProjectRegisteredFromPiDirectory
    }).then((timerCleanup) => {
       if (cancelled) {
          // Registration was cancelled before timer setup completed —
@@ -165,7 +165,7 @@ export function registerPiDreamerProject(opts: PiDreamerOptions): void {
          // queue entry, not whatever happens to be at the queue head
          // (which could belong to an Host-only project Pi can't
          // possibly dream).
-         projectIdentity: opts.projectIdentity,
+         projectIdentity: opts.projectIdentity
       });
 
    registeredProjects.set(opts.projectIdentity, {
@@ -173,7 +173,7 @@ export function registerPiDreamerProject(opts: PiDreamerOptions): void {
          cancelled = true;
          cleanup?.();
       },
-      runOnce,
+      runOnce
    });
 }
 
@@ -194,7 +194,7 @@ export async function runPiDreamForProject(projectIdentity: string): Promise<Dre
    const registration = registeredProjects.get(projectIdentity);
    if (!registration) {
       throw new Error(
-         `Pi dreamer not registered for project ${projectIdentity}; call registerPiDreamerProject() first`,
+         `Pi dreamer not registered for project ${projectIdentity}; call registerPiDreamerProject() first`
       );
    }
    return registration.runOnce();
@@ -234,7 +234,7 @@ function createPiDreamerClient(opts: PiDreamerOptions): DreamTimerClient {
             id: sessionId,
             directory: readDirectory(args) ?? opts.projectDir,
             title: readSessionTitle(args),
-            messages: [],
+            messages: []
          });
          return { id: sessionId };
       },
@@ -257,7 +257,7 @@ function createPiDreamerClient(opts: PiDreamerOptions): DreamTimerClient {
             timeoutMs: opts.config.task_timeout_minutes * 60 * 1000,
             cwd: dreamSession.directory,
             signal: args.signal ?? undefined,
-            thinkingLevel: opts.config.thinking_level,
+            thinkingLevel: opts.config.thinking_level
          });
          inFlightDreams.add(runPromise);
          try {
@@ -267,7 +267,7 @@ function createPiDreamerClient(opts: PiDreamerOptions): DreamTimerClient {
             }
             dreamSession.messages = [
                makeMessage("user", [{ type: "text", text: userMessage }]),
-               makeMessage("assistant", [{ type: "text", text: result.assistantText }]),
+               makeMessage("assistant", [{ type: "text", text: result.assistantText }])
             ];
             // G5: fire conservatively after every successful dreamer task. Many
             // dreamer tasks (consolidate, verify, decay) don't touch the system-
@@ -287,7 +287,7 @@ function createPiDreamerClient(opts: PiDreamerOptions): DreamTimerClient {
       delete: async (args: SessionDeleteArgs) => {
          sessionsById.delete(args.path.id);
          return {};
-      },
+      }
    };
 
    return { session } as unknown as DreamTimerClient;
@@ -360,9 +360,9 @@ function makeMessage(role: "user" | "assistant", parts: Array<{ type: "text"; te
    return {
       info: {
          role,
-         time: { created: Date.now() },
+         time: { created: Date.now() }
       },
-      parts,
+      parts
    };
 }
 
@@ -385,5 +385,5 @@ export const __test = {
       sessionCounter = 0;
       piSubagentRunnerFactory = () => new PiSubagentRunner();
       startDreamScheduleTimerFn = defaultStartDreamScheduleTimer;
-   },
+   }
 };

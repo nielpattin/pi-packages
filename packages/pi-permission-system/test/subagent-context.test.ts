@@ -12,8 +12,8 @@ afterEach(() => {
 function makeCtx(sessionDir: string | null): ExtensionContext {
    return {
       sessionManager: {
-         getSessionDir: vi.fn(() => sessionDir),
-      },
+         getSessionDir: vi.fn(() => sessionDir)
+      }
    } as unknown as ExtensionContext;
 }
 
@@ -168,7 +168,7 @@ describe("isSubagentExecutionContext — registry detection", () => {
       const registry = new SubagentSessionRegistry();
       registry.register(outsideDir, {
          agentName: "Plan",
-         parentSessionId: "parent-123",
+         parentSessionId: "parent-123"
       });
       expect(isSubagentExecutionContext(makeCtx(outsideDir), subagentRoot, registry)).toBe(true);
    });

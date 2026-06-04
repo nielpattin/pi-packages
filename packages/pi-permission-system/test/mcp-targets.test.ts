@@ -5,14 +5,14 @@ describe("parseQualifiedMcpToolName", () => {
    it("returns server and tool for a valid qualified name", () => {
       expect(parseQualifiedMcpToolName("exa:search")).toEqual({
          server: "exa",
-         tool: "search",
+         tool: "search"
       });
    });
 
    it("returns server and tool with surrounding whitespace trimmed", () => {
       expect(parseQualifiedMcpToolName("  exa : search  ")).toEqual({
          server: "exa",
-         tool: "search",
+         tool: "search"
       });
    });
 

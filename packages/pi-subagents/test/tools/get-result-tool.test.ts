@@ -12,7 +12,7 @@ const testRegistry = new AgentTypeRegistry(() => new Map());
 function makeTheme() {
    return {
       fg: (color: string, text: string) => `[${color}:${text}]`,
-      bold: (text: string) => `**${text}**`,
+      bold: (text: string) => `**${text}**`
    };
 }
 
@@ -27,7 +27,7 @@ function makeNotifications() {
 async function execute(
    manager: GetResultToolManager,
    notifications: GetResultToolNotifications,
-   params: { agent_id: string; wait?: boolean },
+   params: { agent_id: string; wait?: boolean }
 ) {
    const tool = new GetResultTool(manager, notifications, testRegistry);
    return tool.execute("tc-1", params, new AbortController().signal, undefined, STUB_CTX);
@@ -42,7 +42,7 @@ describe("GetResultTool", () => {
    it("includes promptSnippet", () => {
       const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
       expect(tool.toToolDefinition().promptSnippet).toBe(
-         "get_subagent_result: Check status and retrieve results from a background agent.",
+         "get_subagent_result: Check status and retrieve results from a background agent."
       );
    });
 
@@ -64,10 +64,10 @@ describe("GetResultTool", () => {
       };
 
       expect(tool.toToolDefinition().description).toBe(
-         "Check status and retrieve results from a background agent. Use wait: true only when the user asked to wait for completion.",
+         "Check status and retrieve results from a background agent. Use wait: true only when the user asked to wait for completion."
       );
       expect(parameters.properties.wait?.description).toBe(
-         "If true, block until completion. Use only when the user asked to wait. Default: false.",
+         "If true, block until completion. Use only when the user asked to wait. Default: false."
       );
    });
 
@@ -79,7 +79,7 @@ describe("GetResultTool", () => {
          { agent_id: "agent-1" },
          new AbortController().signal,
          undefined,
-         STUB_CTX,
+         STUB_CTX
       );
       const renderResult = tool.toToolDefinition().renderResult;
 
@@ -107,7 +107,7 @@ describe("GetResultTool", () => {
          { agent_id: "agent-1" },
          new AbortController().signal,
          undefined,
-         STUB_CTX,
+         STUB_CTX
       );
       const renderResult = tool.toToolDefinition().renderResult;
 
@@ -141,7 +141,7 @@ describe("GetResultTool", () => {
       const records = new Map([["agent-1", createTestAgent({ status: "running", completedAt: undefined })]]);
       const result = await execute(makeManager(records), makeNotifications(), { agent_id: "agent-1" });
       expect(result.content[0].text).toContain(
-         "Agent is still running. Check back later, or use wait: true only if the user asked to wait.",
+         "Agent is still running. Check back later, or use wait: true only if the user asked to wait."
       );
    });
 
@@ -180,7 +180,7 @@ describe("GetResultTool", () => {
    it("waits for promise when wait=true and agent is running", async () => {
       const record = createTestAgent({
          status: "running",
-         completedAt: undefined,
+         completedAt: undefined
       });
       record.promise = Promise.resolve().then(() => {
          record.markCompleted("Finished after wait.");
@@ -209,7 +209,7 @@ describe("GetResultTool", () => {
          { agent_id: "agent-1", verbose: true } as never,
          new AbortController().signal,
          undefined,
-         STUB_CTX,
+         STUB_CTX
       );
 
       expect(result.content[0].text).toContain("All done.");

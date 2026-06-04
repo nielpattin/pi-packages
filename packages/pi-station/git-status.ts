@@ -69,7 +69,7 @@ function parseGitStatusOutput(output: string): {
 function runGit(args: string[], timeoutMs = 200): Promise<string | null> {
    return new Promise((resolve) => {
       const proc = spawn("git", args, {
-         stdio: ["ignore", "pipe", "pipe"],
+         stdio: ["ignore", "pipe", "pipe"]
       });
 
       let stdout = "";
@@ -155,7 +155,7 @@ export function getCurrentBranch(providerBranch: string | null): string | null {
          if (fetchId === branchInvalidationCounter) {
             cachedBranch = {
                branch: result,
-               timestamp: Date.now(),
+               timestamp: Date.now()
             };
          }
          pendingBranchFetch = null;
@@ -182,7 +182,7 @@ export function getGitStatus(providerBranch: string | null): GitStatus {
          branch,
          staged: cachedStatus.staged,
          unstaged: cachedStatus.unstaged,
-         untracked: cachedStatus.untracked,
+         untracked: cachedStatus.untracked
       };
    }
 
@@ -197,7 +197,7 @@ export function getGitStatus(providerBranch: string | null): GitStatus {
                     staged: result.staged,
                     timestamp: Date.now(),
                     unstaged: result.unstaged,
-                    untracked: result.untracked,
+                    untracked: result.untracked
                  }
                : { staged: 0, timestamp: Date.now(), unstaged: 0, untracked: 0 };
          }
@@ -211,7 +211,7 @@ export function getGitStatus(providerBranch: string | null): GitStatus {
          branch,
          staged: cachedStatus.staged,
          unstaged: cachedStatus.unstaged,
-         untracked: cachedStatus.untracked,
+         untracked: cachedStatus.untracked
       };
    }
 

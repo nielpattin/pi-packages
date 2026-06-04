@@ -9,7 +9,7 @@ import type { PermissionCheckResult } from "#src/types";
 export function deriveDecisionValue(
    toolName: string,
    check: Pick<PermissionCheckResult, "command" | "target">,
-   path?: string,
+   path?: string
 ): string {
    if (toolName === "bash") return check.command ?? toolName;
    if (toolName === "mcp") return check.target ?? toolName;
@@ -31,7 +31,7 @@ export function deriveResolution(
    action: "allow" | "block",
    hasSession: boolean,
    canConfirm: boolean,
-   autoApproved = false,
+   autoApproved = false
 ): PermissionDecisionResolution {
    if (state === "allow") return "policy_allow";
    if (state === "deny") return "policy_deny";

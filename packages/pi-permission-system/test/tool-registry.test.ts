@@ -44,8 +44,8 @@ describe("getToolNameFromValue", () => {
          getToolNameFromValue({
             toolName: "first",
             name: "second",
-            tool: "third",
-         }),
+            tool: "third"
+         })
       ).toBe("first");
    });
 

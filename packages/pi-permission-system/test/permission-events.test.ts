@@ -13,7 +13,7 @@ import type {
    PermissionsPromptReplyData,
    PermissionsPromptRequest,
    PermissionsReadyEvent,
-   PermissionsRpcReply,
+   PermissionsRpcReply
 } from "#src/permission-events";
 import {
    emitDecisionEvent,
@@ -22,7 +22,7 @@ import {
    PERMISSIONS_PROTOCOL_VERSION,
    PERMISSIONS_READY_CHANNEL,
    PERMISSIONS_RPC_CHECK_CHANNEL,
-   PERMISSIONS_RPC_PROMPT_CHANNEL,
+   PERMISSIONS_RPC_PROMPT_CHANNEL
 } from "#src/permission-events";
 
 // ── Minimal EventBus stub ──────────────────────────────────────────────────
@@ -30,7 +30,7 @@ import {
 function makeEventBus() {
    return {
       emit: vi.fn(),
-      on: vi.fn().mockReturnValue(() => undefined),
+      on: vi.fn().mockReturnValue(() => undefined)
    };
 }
 
@@ -57,7 +57,7 @@ describe("emitReadyEvent", () => {
       emitReadyEvent(bus);
       expect(bus.emit).toHaveBeenCalledOnce();
       expect(bus.emit).toHaveBeenCalledWith("permissions:ready", {
-         protocolVersion: 1,
+         protocolVersion: 1
       });
    });
 
@@ -81,7 +81,7 @@ describe("emitDecisionEvent", () => {
          origin: "global",
          agentName: null,
          matchedPattern: "*",
-         ...overrides,
+         ...overrides
       };
    }
 
@@ -101,7 +101,7 @@ describe("emitDecisionEvent", () => {
          resolution: "policy_deny",
          origin: "project",
          agentName: "Worker",
-         matchedPattern: "exa:*",
+         matchedPattern: "exa:*"
       });
       emitDecisionEvent(bus, event);
       expect(bus.emit.mock.calls[0][1]).toEqual(event);
@@ -117,7 +117,7 @@ describe("emitDecisionEvent", () => {
          "user_approved_for_session",
          "user_denied",
          "auto_approved",
-         "confirmation_unavailable",
+         "confirmation_unavailable"
       ];
       const bus = makeEventBus();
       for (const resolution of resolutions) {
@@ -133,8 +133,8 @@ describe("emitDecisionEvent", () => {
          makeDecisionEvent({
             origin: null,
             agentName: null,
-            matchedPattern: null,
-         }),
+            matchedPattern: null
+         })
       );
       const payload = bus.emit.mock.calls[0][1] as PermissionDecisionEvent;
       expect(payload.origin).toBeNull();
@@ -150,7 +150,7 @@ describe("type shapes (PermissionsRpcReply)", () => {
       const reply: PermissionsRpcReply<{ result: "allow" }> = {
          success: true,
          protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
-         data: { result: "allow" },
+         data: { result: "allow" }
       };
       expect(reply.success).toBe(true);
       expect(reply.protocolVersion).toBe(1);
@@ -160,7 +160,7 @@ describe("type shapes (PermissionsRpcReply)", () => {
       const reply: PermissionsRpcReply = {
          success: false,
          protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
-         error: "no_ui",
+         error: "no_ui"
       };
       expect(reply.success).toBe(false);
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- narrowing on discriminated union
@@ -174,7 +174,7 @@ describe("type shapes (PermissionsCheckRequest)", () => {
    it("minimal request requires requestId and surface", () => {
       const req: PermissionsCheckRequest = {
          requestId: "abc-123",
-         surface: "bash",
+         surface: "bash"
       };
       expect(req.requestId).toBe("abc-123");
       expect(req.surface).toBe("bash");
@@ -185,7 +185,7 @@ describe("type shapes (PermissionsCheckRequest)", () => {
          requestId: "abc-123",
          surface: "bash",
          value: "git status",
-         agentName: "Worker",
+         agentName: "Worker"
       };
       expect(req.value).toBe("git status");
       expect(req.agentName).toBe("Worker");
@@ -197,7 +197,7 @@ describe("type shapes (PermissionsCheckReplyData)", () => {
       const data: PermissionsCheckReplyData = {
          result: "ask",
          matchedPattern: null,
-         origin: "builtin",
+         origin: "builtin"
       };
       expect(data.result).toBe("ask");
    });
@@ -209,7 +209,7 @@ describe("type shapes (PermissionsPromptRequest)", () => {
          requestId: "def-456",
          surface: "bash",
          value: "rm -rf /tmp",
-         message: "Allow rm -rf /tmp?",
+         message: "Allow rm -rf /tmp?"
       };
       expect(req.requestId).toBe("def-456");
    });
@@ -221,7 +221,7 @@ describe("type shapes (PermissionsPromptRequest)", () => {
          value: "rm -rf /tmp",
          message: "Allow rm -rf /tmp?",
          agentName: "Explore",
-         sessionLabel: "Allow rm *",
+         sessionLabel: "Allow rm *"
       };
       expect(req.agentName).toBe("Explore");
       expect(req.sessionLabel).toBe("Allow rm *");
@@ -232,7 +232,7 @@ describe("type shapes (PermissionsPromptReplyData)", () => {
    it("approved reply has approved=true and state", () => {
       const data: PermissionsPromptReplyData = {
          approved: true,
-         state: "approved_for_session",
+         state: "approved_for_session"
       };
       expect(data.approved).toBe(true);
       expect(data.state).toBe("approved_for_session");
@@ -242,7 +242,7 @@ describe("type shapes (PermissionsPromptReplyData)", () => {
       const data: PermissionsPromptReplyData = {
          approved: false,
          state: "denied_with_reason",
-         denialReason: "Too risky",
+         denialReason: "Too risky"
       };
       expect(data.denialReason).toBe("Too risky");
    });
@@ -281,13 +281,13 @@ describe("piPermissionSystemExtension ready event wiring", () => {
          getAllTools: vi.fn().mockReturnValue([]),
          setActiveTools: vi.fn(),
          registerProvider: vi.fn(),
-         events: { emit: emitSpy, on: vi.fn().mockReturnValue(() => undefined) },
+         events: { emit: emitSpy, on: vi.fn().mockReturnValue(() => undefined) }
       } as never);
 
       const readyCalls = emitSpy.mock.calls.filter(([channel]) => channel === PERMISSIONS_READY_CHANNEL);
       expect(readyCalls).toHaveLength(1);
       expect(readyCalls[0][1]).toEqual({
-         protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
+         protocolVersion: PERMISSIONS_PROTOCOL_VERSION
       });
    });
 });

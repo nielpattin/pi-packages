@@ -105,7 +105,7 @@ export function parseAllSkillPromptSections(prompt: string): SkillPromptSection[
       sections.push({
          start,
          end,
-         entries: parseSkillEntries(sectionBody),
+         entries: parseSkillEntries(sectionBody)
       });
       searchStart = end;
    }
@@ -117,7 +117,7 @@ function resolvePermissionState(
    skillName: string,
    permissionManager: SkillPermissionChecker,
    agentName: string | null,
-   cache: Map<string, PermissionState>,
+   cache: Map<string, PermissionState>
 ): PermissionState {
    const cachedState = cache.get(skillName);
    if (cachedState) {
@@ -132,7 +132,7 @@ function resolvePermissionState(
 function createResolvedSkillEntry(
    entry: ParsedSkillPromptEntry,
    state: PermissionState,
-   cwd: string,
+   cwd: string
 ): SkillPromptEntry {
    return {
       name: entry.name,
@@ -140,7 +140,7 @@ function createResolvedSkillEntry(
       location: entry.location,
       state,
       normalizedLocation: normalizePathForComparison(entry.location, cwd),
-      normalizedBaseDir: normalizePathForComparison(dirname(entry.location), cwd),
+      normalizedBaseDir: normalizePathForComparison(dirname(entry.location), cwd)
    };
 }
 
@@ -152,9 +152,9 @@ function renderAvailableSkillsSection(entries: readonly SkillPromptEntry[]): str
          `    <name>${encodeXml(entry.name)}</name>`,
          `    <description>${encodeXml(entry.description)}</description>`,
          `    <location>${encodeXml(entry.location)}</location>`,
-         "  </skill>",
+         "  </skill>"
       ]),
-      AVAILABLE_SKILLS_CLOSE_TAG,
+      AVAILABLE_SKILLS_CLOSE_TAG
    ].join("\n");
 }
 
@@ -168,7 +168,7 @@ export function resolveSkillPromptEntries(
    prompt: string,
    permissionManager: SkillPermissionChecker,
    agentName: string | null,
-   cwd: string,
+   cwd: string
 ): { prompt: string; entries: SkillPromptEntry[] } {
    const sections = parseAllSkillPromptSections(prompt);
    if (sections.length === 0) {
@@ -195,7 +195,7 @@ export function resolveSkillPromptEntries(
       replacements.push({
          start: section.start,
          end: section.end,
-         content: visibleSectionEntries.length > 0 ? renderAvailableSkillsSection(visibleSectionEntries) : "",
+         content: visibleSectionEntries.length > 0 ? renderAvailableSkillsSection(visibleSectionEntries) : ""
       });
    }
 
@@ -214,13 +214,13 @@ export function resolveSkillPromptEntries(
 
    return {
       prompt: sanitizedPrompt,
-      entries: visibleEntries,
+      entries: visibleEntries
    };
 }
 
 export function findSkillPathMatch(
    normalizedPath: string,
-   entries: readonly SkillPromptEntry[],
+   entries: readonly SkillPromptEntry[]
 ): SkillPromptEntry | null {
    if (!normalizedPath || entries.length === 0) {
       return null;

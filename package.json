@@ -7,9 +7,8 @@
    "scripts": {
       "test": "vitest run",
       "coverage": "vitest run --coverage",
-      "lint": "oxlint --fix .",
-      "fmt": "oxfmt --write .",
-      "check": "oxlint . && oxfmt --check . && tsc --noEmit -p tsconfig.json",
+      "check": "biome check .",
+      "check:fix": "biome check --write .",
       "typecheck": "tsc --noEmit -p tsconfig.json",
       "prepare": "husky",
       "changeset": "changeset",
@@ -19,6 +18,7 @@
       "changeset:check": "node scripts/require-changeset.mjs"
    },
    "devDependencies": {
+      "@biomejs/biome": "^2.4.16",
       "@changesets/changelog-git": "^0.2.1",
       "@changesets/cli": "^2.31.0",
       "@earendil-works/pi-ai": "^0.78.0",
@@ -30,19 +30,13 @@
       "@vitest/coverage-v8": "^4.1.6",
       "husky": "^9.1.7",
       "lint-staged": "^17.0.5",
-      "oxfmt": "^0.51.0",
-      "oxlint": "^1.66.0",
-      "oxlint-tsgolint": "^0.23.0",
       "typescript": "^6.0.3",
       "vitest": "^4.1.6"
    },
    "lint-staged": {
-      "**/!(*.test).{js,jsx,mjs,cjs,ts,tsx}": [
-         "oxlint",
-         "oxfmt --check"
-      ],
-      "**/*.test.{js,jsx,mjs,cjs,ts,tsx}": "oxfmt --check",
-      "*.{json,jsonc,md,yaml,yml}": "oxfmt --check"
+      "**/*.{js,jsx,mjs,cjs,ts,tsx,json,jsonc}": [
+         "biome check --write"
+      ]
    },
    "engines": {
       "node": ">=24"

@@ -12,7 +12,7 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
          subagentType: "general-purpose",
          rawType: "general-purpose",
          fellBack: false,
-         displayName: "Agent",
+         displayName: "Agent"
       },
       execution: {
          prompt: "do the task",
@@ -31,8 +31,8 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
             isolated: false,
             inheritContext: false,
             runInBackground: false,
-            isolation: undefined,
-         },
+            isolation: undefined
+         }
       },
       presentation: {
          modelName: undefined,
@@ -42,10 +42,10 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
             description: "fg task",
             subagentType: "general-purpose",
             modelName: undefined,
-            tags: undefined,
-         },
+            tags: undefined
+         }
       },
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -54,7 +54,7 @@ function makeParams(overrides: Partial<ForegroundParams> = {}): ForegroundParams
       config: makeConfig(),
       snapshot: STUB_SNAPSHOT,
       parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "session-1" },
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -81,8 +81,8 @@ describe("runForeground", () => {
             ...createToolDeps().manager,
             spawnAndWait: vi
                .fn()
-               .mockResolvedValue(createTestAgent({ status: "error", error: "Context window exceeded" })),
-         },
+               .mockResolvedValue(createTestAgent({ status: "error", error: "Context window exceeded" }))
+         }
       });
       const result = await runForeground(
          deps.manager,
@@ -90,7 +90,7 @@ describe("runForeground", () => {
          deps.runtime.agentActivity,
          makeParams(),
          undefined,
-         undefined,
+         undefined
       );
       expect(result.content[0].text).toContain("Agent failed");
       expect(result.content[0].text).toContain("Context window exceeded");
@@ -100,8 +100,8 @@ describe("runForeground", () => {
       const deps = createToolDeps({
          manager: {
             ...createToolDeps().manager,
-            spawnAndWait: vi.fn().mockRejectedValue(new Error("runner crashed")),
-         },
+            spawnAndWait: vi.fn().mockRejectedValue(new Error("runner crashed"))
+         }
       });
       const result = await runForeground(
          deps.manager,
@@ -109,7 +109,7 @@ describe("runForeground", () => {
          deps.runtime.agentActivity,
          makeParams(),
          undefined,
-         undefined,
+         undefined
       );
       expect(result.content[0].text).toContain("runner crashed");
    });
@@ -126,12 +126,12 @@ describe("runForeground", () => {
                   subagentType: "general-purpose",
                   rawType: "unknown-type",
                   fellBack: true,
-                  displayName: "Agent",
-               },
-            }),
+                  displayName: "Agent"
+               }
+            })
          }),
          undefined,
-         undefined,
+         undefined
       );
       expect(result.content[0].text).toContain('Unknown agent type "unknown-type"');
    });
@@ -146,8 +146,8 @@ describe("runForeground", () => {
                const record = createTestAgent({ result: "done" });
                opts.observer?.onSessionCreated?.(record, mockSess);
                return record;
-            }),
-         },
+            })
+         }
       });
       const signal = new AbortController().signal;
       await runForeground(deps.manager, deps.runtime, deps.runtime.agentActivity, makeParams(), signal, undefined);
@@ -165,8 +165,8 @@ describe("runForeground", () => {
                record.execution = { session: toAgentSession(createMockSession()), outputFile: undefined };
                opts.observer?.onSessionCreated?.(record, mockSess);
                return record;
-            }),
-         },
+            })
+         }
       });
       await runForeground(deps.manager, deps.runtime, deps.runtime.agentActivity, makeParams(), undefined, undefined);
       // Activity is registered during observer.onSessionCreated and removed on cleanup —
@@ -182,8 +182,8 @@ describe("runForeground", () => {
       const deps = createToolDeps({
          manager: {
             ...createToolDeps().manager,
-            spawnAndWait: vi.fn().mockReturnValue(promise),
-         },
+            spawnAndWait: vi.fn().mockReturnValue(promise)
+         }
       });
       const onUpdate = vi.fn();
       const runPromise = runForeground(
@@ -192,7 +192,7 @@ describe("runForeground", () => {
          deps.runtime.agentActivity,
          makeParams(),
          undefined,
-         onUpdate,
+         onUpdate
       );
 
       // Advance timer to trigger a spinner tick
@@ -207,8 +207,8 @@ describe("runForeground", () => {
       const deps = createToolDeps({
          manager: {
             ...createToolDeps().manager,
-            spawnAndWait: vi.fn().mockRejectedValue(new Error("fail")),
-         },
+            spawnAndWait: vi.fn().mockRejectedValue(new Error("fail"))
+         }
       });
       const onUpdate = vi.fn();
       await runForeground(deps.manager, deps.runtime, deps.runtime.agentActivity, makeParams(), undefined, onUpdate);

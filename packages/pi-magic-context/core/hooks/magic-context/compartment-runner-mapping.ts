@@ -13,7 +13,7 @@ export function mapParsedCompartmentsToChunk(
       endIndex: number;
       lines: Array<{ ordinal: number; messageId: string }>;
    },
-   sequenceOffset: number,
+   sequenceOffset: number
 ): { ok: true; compartments: CandidateCompartment[] } | { ok: false; error: string } {
    const mapped: CandidateCompartment[] = [];
    for (const [index, compartment] of compartments.entries()) {
@@ -22,7 +22,7 @@ export function mapParsedCompartmentsToChunk(
       if (!startLine || !endLine) {
          return {
             ok: false,
-            error: `Compartment range ${compartment.startMessage}-${compartment.endMessage} does not map to raw session lines ${chunk.startIndex}-${chunk.endIndex}`,
+            error: `Compartment range ${compartment.startMessage}-${compartment.endMessage} does not map to raw session lines ${chunk.startIndex}-${chunk.endIndex}`
          };
       }
       mapped.push({
@@ -32,7 +32,7 @@ export function mapParsedCompartmentsToChunk(
          startMessageId: startLine.messageId,
          endMessageId: endLine.messageId,
          title: compartment.title,
-         content: compartment.content,
+         content: compartment.content
       });
    }
 
@@ -46,7 +46,7 @@ export function mapParsedCompartmentsToSession(
       title: string;
       content: string;
    }>,
-   sessionId: string,
+   sessionId: string
 ): { ok: true; compartments: CandidateCompartment[] } | { ok: false; error: string } {
    const maxEndMessage = compartments.reduce((max, compartment) => Math.max(max, compartment.endMessage), 0);
    const rawMessageIds = getRawSessionMessageIdsThrough(sessionId, maxEndMessage);
@@ -58,7 +58,7 @@ export function mapParsedCompartmentsToSession(
       if (!startMessageId || !endMessageId) {
          return {
             ok: false,
-            error: `Compartment range ${compartment.startMessage}-${compartment.endMessage} does not map to raw session history`,
+            error: `Compartment range ${compartment.startMessage}-${compartment.endMessage} does not map to raw session history`
          };
       }
 
@@ -69,7 +69,7 @@ export function mapParsedCompartmentsToSession(
          startMessageId,
          endMessageId,
          title: compartment.title,
-         content: compartment.content,
+         content: compartment.content
       });
    }
 

@@ -11,7 +11,7 @@ const PermissionSchema = z
       bash: z.union([PermissionValueSchema, z.record(z.string(), PermissionValueSchema)]).optional(),
       webfetch: PermissionValueSchema.optional(),
       doom_loop: PermissionValueSchema.optional(),
-      external_directory: PermissionValueSchema.optional(),
+      external_directory: PermissionValueSchema.optional()
    })
    .optional();
 
@@ -32,7 +32,7 @@ export const AgentOverrideConfigSchema = z.object({
    permission: PermissionSchema,
    maxTokens: z.number().optional(),
    variant: z.string().optional(),
-   fallback_models: z.union([z.string(), z.array(z.string())]).optional(),
+   fallback_models: z.union([z.string(), z.array(z.string())]).optional()
 });
 
 export type AgentOverrideConfig = z.infer<typeof AgentOverrideConfigSchema> & Partial<AgentConfig>;

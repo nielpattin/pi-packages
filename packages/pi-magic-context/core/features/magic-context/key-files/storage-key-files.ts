@@ -27,7 +27,7 @@ export function getKeyFiles(db: Database, sessionId: string): KeyFileEntry[] {
             typeof e === "object" &&
             e !== null &&
             typeof (e as KeyFileEntry).filePath === "string" &&
-            typeof (e as KeyFileEntry).tokens === "number",
+            typeof (e as KeyFileEntry).tokens === "number"
       );
    } catch {
       return [];
@@ -55,7 +55,7 @@ export function setKeyFiles(db: Database, sessionId: string, files: KeyFileEntry
  */
 export function greedyFitFiles(
    rankedFiles: Array<{ filePath: string; tokens: number }>,
-   tokenBudget: number,
+   tokenBudget: number
 ): KeyFileEntry[] {
    const selected: KeyFileEntry[] = [];
    let remainingBudget = tokenBudget;

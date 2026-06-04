@@ -46,7 +46,7 @@ export const META_COLUMNS: Record<string, string> = {
    conversationTokens: "conversation_tokens",
    toolCallTokens: "tool_call_tokens",
    clearedReasoningThroughTag: "cleared_reasoning_through_tag",
-   lastTodoState: "last_todo_state",
+   lastTodoState: "last_todo_state"
 };
 
 export const BOOLEAN_META_KEYS = new Set(["isSubagent", "compartmentInProgress", "cacheAlertSent"]);
@@ -120,7 +120,7 @@ export function getDefaultSessionMeta(sessionId: string): SessionMeta {
       conversationTokens: 0,
       toolCallTokens: 0,
       clearedReasoningThroughTag: 0,
-      lastTodoState: "",
+      lastTodoState: ""
    };
 }
 
@@ -129,7 +129,7 @@ export function ensureSessionMetaRow(db: Database, sessionId: string): void {
    // Note-nudge persistence columns rely on session_meta defaults and are updated
    // through storage-meta-persisted helpers, not SessionMeta writes.
    db.prepare(
-      "INSERT OR IGNORE INTO session_meta (session_id, harness, last_response_time, cache_ttl, counter, last_nudge_tokens, last_nudge_band, last_transform_error, is_subagent, last_context_percentage, last_input_tokens, observed_safe_input_tokens, cache_alert_sent, times_execute_threshold_reached, compartment_in_progress, system_prompt_hash, cleared_reasoning_through_tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+      "INSERT OR IGNORE INTO session_meta (session_id, harness, last_response_time, cache_ttl, counter, last_nudge_tokens, last_nudge_band, last_transform_error, is_subagent, last_context_percentage, last_input_tokens, observed_safe_input_tokens, cache_alert_sent, times_execute_threshold_reached, compartment_in_progress, system_prompt_hash, cleared_reasoning_through_tag) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
    ).run(
       sessionId,
       getHarness(),
@@ -147,7 +147,7 @@ export function ensureSessionMetaRow(db: Database, sessionId: string): void {
       defaults.timesExecuteThresholdReached,
       defaults.compartmentInProgress ? 1 : 0,
       defaults.systemPromptHash ?? "",
-      defaults.clearedReasoningThroughTag,
+      defaults.clearedReasoningThroughTag
    );
 }
 
@@ -185,6 +185,6 @@ export function toSessionMeta(row: SessionMetaRow): SessionMeta {
       conversationTokens: numOrZero(row.conversation_tokens),
       toolCallTokens: numOrZero(row.tool_call_tokens),
       clearedReasoningThroughTag: numOrZero(row.cleared_reasoning_through_tag),
-      lastTodoState: lastTodoStateRaw,
+      lastTodoState: lastTodoStateRaw
    };
 }

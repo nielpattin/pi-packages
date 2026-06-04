@@ -24,7 +24,7 @@ export class GetResultTool {
    constructor(
       private readonly manager: GetResultToolManager,
       private readonly notifications: GetResultToolNotifications,
-      private readonly registry: AgentConfigLookup,
+      private readonly registry: AgentConfigLookup
    ) {}
 
    async execute(
@@ -32,7 +32,7 @@ export class GetResultTool {
       params: { agent_id: string; wait?: boolean },
       _signal: AbortSignal,
       _onUpdate: unknown,
-      _ctx: unknown,
+      _ctx: unknown
    ) {
       const record = this.manager.getRecord(params.agent_id);
       if (!record) {
@@ -86,11 +86,11 @@ export class GetResultTool {
             displayName,
             description: record.description,
             subagentType: record.type,
-            ...invocationTags,
+            ...invocationTags
          },
          record,
          undefined,
-         { activity: record.status === "queued" ? "queued…" : undefined },
+         { activity: record.status === "queued" ? "queued…" : undefined }
       );
 
       return textResult(output, details);
@@ -105,13 +105,13 @@ export class GetResultTool {
             "Check status and retrieve results from a background agent. Use wait: true only when the user asked to wait for completion.",
          parameters: Type.Object({
             agent_id: Type.String({
-               description: "The agent ID to check.",
+               description: "The agent ID to check."
             }),
             wait: Type.Optional(
                Type.Boolean({
-                  description: "If true, block until completion. Use only when the user asked to wait. Default: false.",
-               }),
-            ),
+                  description: "If true, block until completion. Use only when the user asked to wait. Default: false."
+               })
+            )
          }),
          renderResult(result: any, { expanded, isPartial }: any, theme: any) {
             const details = result.details;
@@ -123,10 +123,10 @@ export class GetResultTool {
             return new Text(
                renderAgentResult(details, resultText, expanded, isPartial, theme, {
                   expandedLineLimit: null,
-                  overflowHint: null,
+                  overflowHint: null
                }),
                0,
-               0,
+               0
             );
          },
          execute: (
@@ -134,8 +134,8 @@ export class GetResultTool {
             params: { agent_id: string; wait?: boolean },
             signal: AbortSignal,
             onUpdate: unknown,
-            ctx: unknown,
-         ) => this.execute(toolCallId, params, signal, onUpdate, ctx),
+            ctx: unknown
+         ) => this.execute(toolCallId, params, signal, onUpdate, ctx)
       });
    }
 }

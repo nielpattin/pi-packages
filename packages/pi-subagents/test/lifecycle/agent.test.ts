@@ -12,7 +12,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "abc-123",
          type: "Explore",
-         description: "Find stale TODOs",
+         description: "Find stale TODOs"
       });
       expect(record.id).toBe("abc-123");
       expect(record.type).toBe("Explore");
@@ -23,7 +23,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "1",
          type: "general-purpose",
-         description: "test",
+         description: "test"
       });
       expect(record.status).toBe("queued");
    });
@@ -32,7 +32,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "1",
          type: "general-purpose",
-         description: "test",
+         description: "test"
       });
       expect(record.toolUses).toBe(0);
       expect(record.compactionCount).toBe(0);
@@ -48,7 +48,7 @@ describe("Agent — constructor", () => {
          result: "done",
          error: "oops",
          startedAt: 1000,
-         completedAt: 2000,
+         completedAt: 2000
       });
       expect(record.status).toBe("completed");
       expect(record.result).toBe("done");
@@ -62,7 +62,7 @@ describe("Agent — constructor", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         invocation: { modelName: "haiku" },
+         invocation: { modelName: "haiku" }
       });
       expect(record.abortController).toBeInstanceOf(AbortController);
       expect(record.invocation).toEqual({ modelName: "haiku" });
@@ -76,7 +76,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "1",
          type: "general-purpose",
-         description: "test",
+         description: "test"
       });
       expect(record.result).toBeUndefined();
       expect(record.error).toBeUndefined();
@@ -91,7 +91,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "1",
          type: "general-purpose",
-         description: "test",
+         description: "test"
       });
       expect(record.abortController).toBeInstanceOf(AbortController);
       expect(record.abortController.signal.aborted).toBe(false);
@@ -102,7 +102,7 @@ describe("Agent — constructor", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         parentSession: { toolCallId: "tc-42" },
+         parentSession: { toolCallId: "tc-42" }
       });
       expect(record.notification).toBeDefined();
       expect(record.notification!.toolCallId).toBe("tc-42");
@@ -113,7 +113,7 @@ describe("Agent — constructor", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         parentSession: { parentSessionFile: "/sessions/p.jsonl" },
+         parentSession: { parentSessionFile: "/sessions/p.jsonl" }
       });
       expect(record.notification).toBeUndefined();
    });
@@ -122,7 +122,7 @@ describe("Agent — constructor", () => {
       const record = new Agent({
          id: "1",
          type: "general-purpose",
-         description: "test",
+         description: "test"
       });
       expect(record.notification).toBeUndefined();
    });
@@ -135,7 +135,7 @@ describe("Agent — markRunning", () => {
          type: "general-purpose",
          description: "test",
          status: "queued",
-         startedAt: 1000,
+         startedAt: 1000
       });
       record.markRunning(2000);
       expect(record.status).toBe("running");
@@ -149,7 +149,7 @@ describe("Agent — markCompleted", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markCompleted("all done", 5000);
       expect(record.status).toBe("completed");
@@ -162,7 +162,7 @@ describe("Agent — markCompleted", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       const before = Date.now();
       record.markCompleted("done");
@@ -177,7 +177,7 @@ describe("Agent — markCompleted", () => {
          type: "general-purpose",
          description: "test",
          status: "running",
-         completedAt: 1000,
+         completedAt: 1000
       });
       record.markCompleted("done", 9999);
       expect(record.completedAt).toBe(1000);
@@ -189,7 +189,7 @@ describe("Agent — markCompleted", () => {
          type: "general-purpose",
          description: "test",
          status: "stopped",
-         completedAt: 1000,
+         completedAt: 1000
       });
       record.markCompleted("late result", 2000);
       expect(record.status).toBe("stopped");
@@ -205,7 +205,7 @@ describe("Agent — markAborted", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markAborted("partial result", 3000);
       expect(record.status).toBe("aborted");
@@ -219,7 +219,7 @@ describe("Agent — markAborted", () => {
          type: "general-purpose",
          description: "test",
          status: "stopped",
-         completedAt: 500,
+         completedAt: 500
       });
       record.markAborted("partial", 2000);
       expect(record.status).toBe("stopped");
@@ -234,7 +234,7 @@ describe("Agent — markSteered", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markSteered("redirected", 4000);
       expect(record.status).toBe("steered");
@@ -248,7 +248,7 @@ describe("Agent — markSteered", () => {
          type: "general-purpose",
          description: "test",
          status: "stopped",
-         completedAt: 500,
+         completedAt: 500
       });
       record.markSteered("redirected", 2000);
       expect(record.status).toBe("stopped");
@@ -263,7 +263,7 @@ describe("Agent — markError", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markError(new Error("something broke"), 6000);
       expect(record.status).toBe("error");
@@ -276,7 +276,7 @@ describe("Agent — markError", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markError(42, 6000);
       expect(record.error).toBe("42");
@@ -288,7 +288,7 @@ describe("Agent — markError", () => {
          type: "general-purpose",
          description: "test",
          status: "stopped",
-         completedAt: 1000,
+         completedAt: 1000
       });
       record.markError(new Error("late error"), 2000);
       expect(record.status).toBe("stopped");
@@ -302,7 +302,7 @@ describe("Agent — markError", () => {
          type: "general-purpose",
          description: "test",
          status: "running",
-         completedAt: 1000,
+         completedAt: 1000
       });
       record.markError(new Error("err"), 9999);
       expect(record.completedAt).toBe(1000);
@@ -315,7 +315,7 @@ describe("Agent — markStopped", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       record.markStopped(7000);
       expect(record.status).toBe("stopped");
@@ -327,7 +327,7 @@ describe("Agent — markStopped", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "running",
+         status: "running"
       });
       const before = Date.now();
       record.markStopped();
@@ -341,7 +341,7 @@ describe("Agent — markStopped", () => {
          id: "1",
          type: "general-purpose",
          description: "test",
-         status: "completed",
+         status: "completed"
       });
       record.markStopped(8000);
       expect(record.status).toBe("stopped");
@@ -388,7 +388,7 @@ describe("Agent — resetForResume", () => {
          type: "general-purpose",
          description: "test",
          status: "completed",
-         startedAt: 1000,
+         startedAt: 1000
       });
       record.resetForResume(9000);
       expect(record.status).toBe("running");
@@ -403,7 +403,7 @@ describe("Agent — resetForResume", () => {
          status: "error",
          result: "old result",
          error: "old error",
-         completedAt: 5000,
+         completedAt: 5000
       });
       record.resetForResume(9000);
       expect(record.completedAt).toBeUndefined();
@@ -503,7 +503,7 @@ describe("Agent — flushPendingSteers", () => {
          steer: (m: string) => {
             steered.push(m);
             return Promise.resolve();
-         },
+         }
       };
       record.flushPendingSteers(session as any);
 
@@ -524,7 +524,7 @@ function createMockWorktrees(cleanupResult = { hasChanges: false }) {
    return {
       create: vi.fn(() => ({ path: "/tmp/wt", branch: "pi-agent-x" })),
       cleanup: vi.fn(() => cleanupResult),
-      prune: vi.fn(),
+      prune: vi.fn()
    };
 }
 
@@ -544,8 +544,8 @@ function createAgentWithWorktrees(overrides?: { worktree?: WorktreeIsolation; ob
          description: "test",
          status: "running",
          worktree: overrides?.worktree,
-         observer: overrides?.observer,
-      }),
+         observer: overrides?.observer
+      })
    };
 }
 
@@ -555,7 +555,7 @@ function createRunResult(overrides?: Partial<RunResult>): RunResult {
       session: {} as any,
       aborted: false,
       steered: false,
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -731,11 +731,11 @@ function createMockRunner(overrides?: Partial<AgentRunner>): AgentRunner {
             responseText: "done",
             session: toAgentSession(session),
             aborted: false,
-            steered: false,
+            steered: false
          });
       }) as AgentRunner["run"],
       resume: vi.fn().mockResolvedValue("resumed"),
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -755,7 +755,7 @@ function createRunnableAgent(overrides?: {
    const worktrees: WorktreeManager = overrides?.worktrees ?? {
       create: vi.fn(),
       cleanup: vi.fn(() => ({ hasChanges: false })),
-      prune: vi.fn(),
+      prune: vi.fn()
    };
    const observer = overrides?.observer ?? {};
    const worktree = overrides?.isolation === "worktree" ? new WorktreeIsolation(worktrees, "run-1") : undefined;
@@ -773,7 +773,7 @@ function createRunnableAgent(overrides?: {
       parentSession: overrides?.parentSession,
       signal: overrides?.signal,
       baseCwd: overrides?.baseCwd ?? "/base",
-      getWorkspaceProvider: provider ? () => provider : undefined,
+      getWorkspaceProvider: provider ? () => provider : undefined
    });
 }
 
@@ -800,7 +800,7 @@ describe("Agent.run() — happy path", () => {
       const observer: AgentLifecycleObserver = {
          onStarted: () => callOrder.push("started"),
          onSessionCreated: () => callOrder.push("sessionCreated"),
-         onRunFinished: () => callOrder.push("runFinished"),
+         onRunFinished: () => callOrder.push("runFinished")
       };
       const agent = createRunnableAgent({ observer });
       await agent.run();
@@ -828,7 +828,7 @@ describe("Agent.run() — worktree", () => {
       const worktrees: WorktreeManager = {
          create: vi.fn(() => ({ path: "/tmp/wt", branch: "pi-agent-run-1" })),
          cleanup: vi.fn(() => ({ hasChanges: false })),
-         prune: vi.fn(),
+         prune: vi.fn()
       };
       const agent = createRunnableAgent({ worktrees, isolation: "worktree" });
       await agent.run();
@@ -841,7 +841,7 @@ describe("Agent.run() — worktree", () => {
       const worktrees: WorktreeManager = {
          create: vi.fn(() => undefined),
          cleanup: vi.fn(() => ({ hasChanges: false })),
-         prune: vi.fn(),
+         prune: vi.fn()
       };
       const onRunFinished = vi.fn();
       const agent = createRunnableAgent({ worktrees, isolation: "worktree", observer: { onRunFinished } });
@@ -855,7 +855,7 @@ describe("Agent.run() — worktree", () => {
       const worktrees: WorktreeManager = {
          create: vi.fn(() => undefined),
          cleanup: vi.fn(() => ({ hasChanges: false })),
-         prune: vi.fn(),
+         prune: vi.fn()
       };
       const controller = new AbortController();
       const removeSpy = vi.spyOn(controller.signal, "removeEventListener");
@@ -886,7 +886,7 @@ describe("Agent.run() — workspace provider", () => {
          agentId: "run-1",
          agentType: "general-purpose",
          baseCwd: "/parent",
-         invocation: undefined,
+         invocation: undefined
       });
    });
 
@@ -933,7 +933,7 @@ describe("Agent.run() — workspace provider", () => {
       const worktrees: WorktreeManager = {
          create: vi.fn(() => ({ path: "/tmp/wt", branch: "pi-agent-run-1" })),
          cleanup: vi.fn(() => ({ hasChanges: false })),
-         prune: vi.fn(),
+         prune: vi.fn()
       };
       const provider = makeWorkspaceProvider(makeWorkspace("/ws/dir"));
       const agent = createRunnableAgent({ worktrees, isolation: "worktree", workspaceProvider: provider });
@@ -959,7 +959,7 @@ describe("Agent.run() — error handling", () => {
          type: "general-purpose",
          description: "test",
          snapshot: STUB_SNAPSHOT,
-         prompt: "go",
+         prompt: "go"
       });
       await expect(agent.run()).rejects.toThrow(/missing runner/);
    });
@@ -972,7 +972,7 @@ describe("Agent.run() — abort signal forwarding", () => {
          run: vi.fn(() => {
             parentController.abort();
             return Promise.reject(new Error("aborted"));
-         }),
+         })
       });
       const agent = createRunnableAgent({ runner, signal: parentController.signal });
       await agent.run();
@@ -1008,7 +1008,7 @@ function createResumableAgent(overrides?: {
       status: "completed",
       result: "first",
       runner,
-      observer: overrides?.observer ?? {},
+      observer: overrides?.observer ?? {}
    });
    agent.execution = { session: toAgentSession(session), outputFile: undefined };
    return { agent, session, runner };
@@ -1047,11 +1047,11 @@ describe("Agent.resume() — observer lifecycle", () => {
          resume: vi.fn().mockImplementation(async () => {
             session.emit({
                type: "message_end",
-               message: { role: "assistant", usage: { input: 70, output: 30, cacheWrite: 5 } },
+               message: { role: "assistant", usage: { input: 70, output: 30, cacheWrite: 5 } }
             });
             session.emit({ type: "compaction_end", aborted: false, result: { tokensBefore: 999 }, reason: "overflow" });
             return "second";
-         }),
+         })
       });
       const { agent } = createResumableAgent({ runner, session });
       await agent.resume("more");
@@ -1063,7 +1063,7 @@ describe("Agent.resume() — observer lifecycle", () => {
       const session = createMockSession();
       const seen: Array<{ reason: string; tokensBefore: number }> = [];
       const observer: AgentLifecycleObserver = {
-         onCompacted: (_agent, info) => seen.push({ reason: info.reason, tokensBefore: info.tokensBefore }),
+         onCompacted: (_agent, info) => seen.push({ reason: info.reason, tokensBefore: info.tokensBefore })
       };
       const runner = createMockRunner({
          resume: vi.fn().mockImplementation(async () => {
@@ -1071,10 +1071,10 @@ describe("Agent.resume() — observer lifecycle", () => {
                type: "compaction_end",
                aborted: false,
                result: { tokensBefore: 123 },
-               reason: "threshold",
+               reason: "threshold"
             });
             return "second";
-         }),
+         })
       });
       const { agent } = createResumableAgent({ runner, observer, session });
       await agent.resume("more");
@@ -1094,7 +1094,7 @@ describe("Agent.resume() — observer lifecycle", () => {
 describe("Agent.resume() — error handling", () => {
    it("transitions to error without throwing when runner.resume rejects", async () => {
       const runner = createMockRunner({
-         resume: vi.fn().mockRejectedValue(new Error("resume exploded")),
+         resume: vi.fn().mockRejectedValue(new Error("resume exploded"))
       });
       const { agent } = createResumableAgent({ runner });
       await agent.resume("more");
@@ -1105,7 +1105,7 @@ describe("Agent.resume() — error handling", () => {
    it("releases the observer subscription after resume errors", async () => {
       const session = createMockSession();
       const runner = createMockRunner({
-         resume: vi.fn().mockRejectedValue(new Error("boom")),
+         resume: vi.fn().mockRejectedValue(new Error("boom"))
       });
       const { agent } = createResumableAgent({ runner, session });
       await agent.resume("more");

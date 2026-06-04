@@ -13,19 +13,19 @@ test("resolveStationShortcuts applies user overrides", () => {
       resolveStationShortcuts({
          bashMode: "ctrl+shift+b",
          stash: "ctrl+shift+s",
-         stashHistory: "ctrl+shift+h",
+         stashHistory: "ctrl+shift+h"
       }),
       {
          bashMode: "ctrl+shift+b",
          stash: "ctrl+shift+s",
-         stashHistory: "ctrl+shift+h",
-      },
+         stashHistory: "ctrl+shift+h"
+      }
    );
 });
 
 test("resolveStationShortcuts ignores blank or unknown overrides", () => {
    assert.deepEqual(resolveStationShortcuts({ bashMode: " ", bogus: "ctrl+x", stash: "alt+x" }), {
       ...DEFAULT_STATION_SHORTCUTS,
-      stash: "alt+x",
+      stash: "alt+x"
    });
 });

@@ -128,7 +128,7 @@ function isDocumentationOrMetaFile(rel: string): boolean {
       "cargo.lock",
       "uv.lock",
       "poetry.lock",
-      "gemfile.lock",
+      "gemfile.lock"
    ]);
    return META_BASENAMES.has(base) || META_BASENAMES.has(baseNoExt);
 }
@@ -166,7 +166,7 @@ export function collectKeyFileCandidates(args: {
                FROM part p
               WHERE json_extract(p.data, '$.type') = 'tool'
                 AND json_extract(p.data, '$.tool') = 'read'
-                AND json_extract(json_extract(p.data, '$.state'), '$.input.filePath') IS NOT NULL`,
+                AND json_extract(json_extract(p.data, '$.state'), '$.input.filePath') IS NOT NULL`
       )
       .all() as RawReadRow[];
 
@@ -193,7 +193,7 @@ export function collectKeyFileCandidates(args: {
             firstReadAt: timestamp || Date.now(),
             lastReadAt: 0,
             ranges: [],
-            rangeMap: new Map<string, ReadRange>(),
+            rangeMap: new Map<string, ReadRange>()
          } satisfies KeyFileCandidate & { rangeMap: Map<string, ReadRange> });
       candidate.totalReads++;
       candidate.firstReadAt = Math.min(candidate.firstReadAt, timestamp || candidate.firstReadAt);
@@ -229,7 +229,7 @@ export function collectKeyFileCandidates(args: {
               WHERE json_extract(p.data, '$.type') = 'tool'
                 AND json_extract(p.data, '$.tool') IN ('edit', 'write', 'mcp_edit', 'mcp_write')
                 AND json_extract(json_extract(p.data, '$.state'), '$.input.filePath') IS NOT NULL
-              GROUP BY p.session_id, file_path`,
+              GROUP BY p.session_id, file_path`
       )
       .all() as Array<{ session_id: string; file_path: string | null; edit_count: number }>;
    for (const row of edits) {
@@ -244,7 +244,7 @@ export function collectKeyFileCandidates(args: {
       .filter((candidate) => candidate.totalReads >= args.minReads)
       .map(({ rangeMap, ...candidate }) => ({
          ...candidate,
-         ranges: coalesceRanges([...rangeMap.values()]),
+         ranges: coalesceRanges([...rangeMap.values()])
       }))
       .sort((a, b) => b.totalReads - a.totalReads || b.lastReadAt - a.lastReadAt)
       .slice(0, 200);

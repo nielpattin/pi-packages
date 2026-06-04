@@ -63,7 +63,7 @@ function rowToProjectKeyFile(row: Record<string, unknown>): ProjectKeyFileRow {
       generatedAt: Number(row.generated_at),
       generatedByModel: typeof row.generated_by_model === "string" ? row.generated_by_model : null,
       generationConfigHash: String(row.generation_config_hash),
-      staleReason: typeof row.stale_reason === "string" ? (row.stale_reason as KeyFileStaleReason) : null,
+      staleReason: typeof row.stale_reason === "string" ? (row.stale_reason as KeyFileStaleReason) : null
    };
 }
 
@@ -75,7 +75,7 @@ export function readCurrentKeyFiles(db: Database, projectPath: string): ProjectK
                     generated_at, generated_by_model, generation_config_hash, stale_reason
                FROM project_key_files
               WHERE project_path = ?
-              ORDER BY generated_at DESC, path ASC`,
+              ORDER BY generated_at DESC, path ASC`
       )
       .all(resolvedProjectPath) as Record<string, unknown>[];
    return rows.map(rowToProjectKeyFile);
@@ -94,7 +94,7 @@ export function bumpKeyFilesVersion(db: Database, projectPath: string): number {
    db.prepare(
       `INSERT INTO project_key_files_version (project_path, version)
          VALUES (?, 1)
-         ON CONFLICT(project_path) DO UPDATE SET version = version + 1`,
+         ON CONFLICT(project_path) DO UPDATE SET version = version + 1`
    ).run(resolvedProjectPath);
    return getKeyFilesVersion(db, resolvedProjectPath);
 }
@@ -106,13 +106,13 @@ export function resolveCommitFiles(projectPath: string, files: CommitKeyFile[]):
          return {
             ...file,
             contentHash: sha256(disk),
-            staleReason: null,
+            staleReason: null
          };
       } catch {
          return {
             ...file,
             contentHash: MISSING_CONTENT_HASH,
-            staleReason: "missing",
+            staleReason: "missing"
          };
       }
    });
@@ -122,7 +122,7 @@ export function replaceProjectKeyFiles(
    db: Database,
    projectPath: string,
    files: ReplacementKeyFile[],
-   generatedAt = Date.now(),
+   generatedAt = Date.now()
 ): number {
    const resolvedProjectPath = resolveProjectPath(projectPath) ?? projectPath;
    const resolved = resolveCommitFiles(
@@ -130,8 +130,8 @@ export function replaceProjectKeyFiles(
       files.map((file) => ({
          path: file.path,
          content: file.content,
-         localTokenEstimate: file.localTokenEstimate,
-      })),
+         localTokenEstimate: file.localTokenEstimate
+      }))
    );
    const generatedByModel = files[0]?.generatedByModel ?? null;
    const configHash = files[0]?.generationConfigHash ?? sha256("{}");
@@ -162,13 +162,13 @@ export function insertResolvedKeyFiles(
    files: ResolvedCommitKeyFile[],
    generatedAt: number,
    generatedByModel: string | null,
-   generationConfigHash: string,
+   generationConfigHash: string
 ): void {
    const insert = db.prepare(
       `INSERT INTO project_key_files
            (project_path, path, content, content_hash, local_token_estimate,
             generated_at, generated_by_model, generation_config_hash, stale_reason)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
    );
    for (const file of files) {
       insert.run(
@@ -180,7 +180,7 @@ export function insertResolvedKeyFiles(
          generatedAt,
          generatedByModel,
          generationConfigHash,
-         file.staleReason,
+         file.staleReason
       );
    }
 }
@@ -192,7 +192,7 @@ export function deleteOrphanProjectKeyFiles(db: Database, now = Date.now()): num
          `SELECT project_path AS projectPath, MAX(generated_at) AS lastGen
                FROM project_key_files
               GROUP BY project_path
-             HAVING lastGen < ?`,
+             HAVING lastGen < ?`
       )
       .all(cutoff) as Array<{ projectPath: string; lastGen: number }>;
 

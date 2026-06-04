@@ -19,7 +19,7 @@ export interface LayoutResult {
 
 function renderSegmentWithWidth(
    segId: StatusLineSegmentId,
-   ctx: SegmentContext,
+   ctx: SegmentContext
 ): { content: string; width: number; visible: boolean } {
    const rendered = renderSegment(segId, ctx);
    if (!rendered.visible || !rendered.content) {
@@ -44,7 +44,7 @@ function buildContentFromParts(parts: string[]): string {
 export function computeResponsiveLayout(
    ctx: SegmentContext,
    availableWidth: number,
-   customItems: CustomStatusItem[],
+   customItems: CustomStatusItem[]
 ): LayoutResult {
    const separatorDef = getSeparator();
    const sepWidth = visibleWidth(separatorDef.left) + 2;
@@ -207,6 +207,6 @@ export function computeResponsiveLayout(
    return {
       secondaryContent,
       tertiaryContent: buildContentFromParts(tertiarySegments),
-      topContent,
+      topContent
    };
 }

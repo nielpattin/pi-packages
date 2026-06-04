@@ -4,7 +4,7 @@ import {
    ACTIVE_AGENT_TAG_REGEX,
    getActiveAgentName,
    getActiveAgentNameFromSystemPrompt,
-   normalizeAgentName,
+   normalizeAgentName
 } from "#src/active-agent";
 
 afterEach(() => {
@@ -20,8 +20,8 @@ type SessionEntry = {
 function makeCtx(entries: SessionEntry[]): ExtensionContext {
    return {
       sessionManager: {
-         getEntries: vi.fn(() => entries),
-      },
+         getEntries: vi.fn(() => entries)
+      }
    } as unknown as ExtensionContext;
 }
 
@@ -85,7 +85,7 @@ describe("getActiveAgentName", () => {
    test("last-entry-wins: returns name from the last matching entry", () => {
       const ctx = makeCtx([
          { type: "custom", customType: "active_agent", data: { name: "first" } },
-         { type: "custom", customType: "active_agent", data: { name: "last" } },
+         { type: "custom", customType: "active_agent", data: { name: "last" } }
       ]);
       expect(getActiveAgentName(ctx)).toBe("last");
    });
@@ -93,7 +93,7 @@ describe("getActiveAgentName", () => {
    test("entry with name: null resets agent name to null", () => {
       const ctx = makeCtx([
          { type: "custom", customType: "active_agent", data: { name: "bot" } },
-         { type: "custom", customType: "active_agent", data: { name: null } },
+         { type: "custom", customType: "active_agent", data: { name: null } }
       ]);
       expect(getActiveAgentName(ctx)).toBeNull();
    });
@@ -101,7 +101,7 @@ describe("getActiveAgentName", () => {
    test("skips entries with whitespace-only name and continues scanning", () => {
       const ctx = makeCtx([
          { type: "custom", customType: "active_agent", data: { name: "first" } },
-         { type: "custom", customType: "active_agent", data: { name: "   " } },
+         { type: "custom", customType: "active_agent", data: { name: "   " } }
       ]);
       // "   " normalizes to null — not a sentinel reset, keeps scanning backwards
       expect(getActiveAgentName(ctx)).toBe("first");

@@ -6,7 +6,7 @@ describe("deriveSubagentSessionDir", () => {
    it("returns a tasks/ subdirectory nested under the parent session basename", () => {
       const result = deriveSubagentSessionDir(
          "/home/user/.pi/agent/sessions/--project--/2026-05-20T12-00-00Z_.jsonl",
-         "/home/user/project",
+         "/home/user/project"
       );
       expect(result).toBe(join("/home/user/.pi/agent/sessions/--project--", "2026-05-20T12-00-00Z_", "tasks"));
    });

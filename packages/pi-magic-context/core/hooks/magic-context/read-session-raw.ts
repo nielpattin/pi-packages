@@ -88,7 +88,7 @@ export function readRawSessionMessagesFromDb(db: Database, sessionId: string): R
          ordinal: index + 1,
          id: row.id,
          role,
-         parts: partsByMessageId.get(row.id) ?? [],
+         parts: partsByMessageId.get(row.id) ?? []
       };
    });
 }
@@ -112,7 +112,7 @@ export function readRawSessionMessageByIdFromDb(db: Database, sessionId: string,
              WHERE session_id = ?
                AND NOT (COALESCE(json_extract(data, '$.summary'), 0) = 1
                         AND COALESCE(json_extract(data, '$.finish'), '') = 'stop')
-               AND (time_created < ? OR (time_created = ? AND id <= ?))`,
+               AND (time_created < ? OR (time_created = ? AND id <= ?))`
       )
       .get(sessionId, row.time_created, row.time_created, messageId) as OrdinalRow | null;
    const ordinal = typeof ordinalRow?.ordinal === "number" ? ordinalRow.ordinal : 0;
@@ -122,7 +122,7 @@ export function readRawSessionMessageByIdFromDb(db: Database, sessionId: string,
 
    const partRows = db
       .prepare(
-         "SELECT message_id, data FROM part WHERE session_id = ? AND message_id = ? ORDER BY time_created ASC, id ASC",
+         "SELECT message_id, data FROM part WHERE session_id = ? AND message_id = ? ORDER BY time_created ASC, id ASC"
       )
       .all(sessionId, messageId)
       .filter(isRawPartRow);
@@ -132,6 +132,6 @@ export function readRawSessionMessageByIdFromDb(db: Database, sessionId: string,
       ordinal,
       id: row.id,
       role,
-      parts: partRows.map((part) => parseJsonUnknown(part.data)),
+      parts: partRows.map((part) => parseJsonUnknown(part.data))
    };
 }

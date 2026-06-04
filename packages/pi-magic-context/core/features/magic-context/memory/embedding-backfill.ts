@@ -23,7 +23,7 @@ export async function ensureMemoryEmbeddings(args: {
    try {
       const result = await embedBatchForProject(
          args.projectIdentity,
-         missingMemories.map((memory) => memory.content),
+         missingMemories.map((memory) => memory.content)
       );
       if (!result) {
          return args.existingEmbeddings;

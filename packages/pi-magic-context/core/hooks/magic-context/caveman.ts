@@ -51,7 +51,7 @@ const PRESERVATION_PATTERNS: RegExp[] = [
    // File paths — rough heuristic: starts with ./ or ../ or contains / and a common file extension
    /(?:\.{1,2}\/)?(?:[\w.-]+\/)+[\w.-]+\.\w{1,6}/g,
    // Commit hashes (7-40 hex) surrounded by word boundaries or backticks
-   /(?<![a-z0-9])[0-9a-f]{7,40}(?![a-z0-9])/gi,
+   /(?<![a-z0-9])[0-9a-f]{7,40}(?![a-z0-9])/gi
 ];
 
 /** Replace preserved regions with sentinel placeholders so text transforms
@@ -102,7 +102,7 @@ const FILLER_WORDS = [
    "fairly",
    "sort of",
    "kind of",
-   "a bit",
+   "a bit"
 ];
 
 const HEDGING_PHRASES = [
@@ -116,7 +116,7 @@ const HEDGING_PHRASES = [
    "it appears",
    "arguably",
    "i suppose",
-   "i guess",
+   "i guess"
 ];
 
 const PLEASANTRIES = ["please", "thanks", "thank you", "kindly", "if possible"];
@@ -141,7 +141,7 @@ const AUXILIARIES = [
    "could be",
    "should be",
    "might be",
-   "may be",
+   "may be"
 ];
 
 /** Phrase replacements — always applied at lite+ to shorten common verbose forms. */
@@ -155,7 +155,7 @@ const PHRASE_SHORTENINGS: Array<[RegExp, string]> = [
    [/\bwith regard to\b/gi, "about"],
    [/\bin spite of the fact that\b/gi, "though"],
    [/\bon the grounds that\b/gi, "because"],
-   [/\bfor the reason that\b/gi, "because"],
+   [/\bfor the reason that\b/gi, "because"]
 ];
 
 /** Symbol connectives for ultra level.
@@ -172,7 +172,7 @@ const ULTRA_CONNECTIVE_REPLACEMENTS: Array<[RegExp, string]> = [
    // Word-boundary " and " / " or " in prose — not inside identifiers.
    // Leading + trailing space ensures we don't touch "stand" or "word".
    [/ and /gi, " + "],
-   [/ or /gi, " | "],
+   [/ or /gi, " | "]
 ];
 
 /** Abbreviate common repeat terms at ultra level when a single region uses them
@@ -193,7 +193,7 @@ const ULTRA_ABBREVIATIONS: Record<string, string> = {
    implemented: "impl",
    repository: "repo",
    database: "db",
-   directory: "dir",
+   directory: "dir"
 };
 
 // ---------------------------------------------------------------------------
@@ -238,7 +238,7 @@ function dropAuxiliaries(text: string): string {
       // Space + aux + space + (gerund or past participle or verb-like word)
       // Participle heuristic: word ending in -ed, -en, -ing, or a common irregular.
       `\\s+\\b(?:${escaped.join("|")})\\b\\s+(?=\\w+(?:ed|en|ing|ized|ised)\\b)`,
-      "gi",
+      "gi"
    );
    let working = text.replace(pattern, " ");
    working = working.replace(/ +/g, " ");

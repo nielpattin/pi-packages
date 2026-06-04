@@ -7,7 +7,7 @@ import { STUB_CTX } from "#test/helpers/stub-ctx";
 
 function makeManager(records: Map<string, Agent> = new Map()): SteerToolManager {
    return {
-      getRecord: (id: string) => records.get(id),
+      getRecord: (id: string) => records.get(id)
    };
 }
 
@@ -18,7 +18,7 @@ function makeEvents(): SteerToolEvents {
 async function execute(
    manager: SteerToolManager,
    events: SteerToolEvents,
-   params: { agent_id: string; message: string },
+   params: { agent_id: string; message: string }
 ) {
    const tool = new SteerTool(manager, events);
    return tool.execute("tc-1", params, new AbortController().signal, undefined, STUB_CTX);
@@ -33,7 +33,7 @@ describe("SteerTool", () => {
    it("includes promptSnippet", () => {
       const tool = new SteerTool(makeManager(), makeEvents());
       expect(tool.toToolDefinition().promptSnippet).toBe(
-         "steer_subagent: Send a mid-run message to redirect a running background agent.",
+         "steer_subagent: Send a mid-run message to redirect a running background agent."
       );
    });
 
@@ -60,7 +60,7 @@ describe("SteerTool", () => {
       expect(record.pendingSteerCount).toBe(1);
       expect(events.emit).toHaveBeenCalledWith("subagents:steered", {
          id: "agent-1",
-         message: "redirect",
+         message: "redirect"
       });
    });
 
@@ -75,7 +75,7 @@ describe("SteerTool", () => {
       expect(mockSession.steer).toHaveBeenCalledWith("change plan");
       expect(events.emit).toHaveBeenCalledWith("subagents:steered", {
          id: "agent-1",
-         message: "change plan",
+         message: "change plan"
       });
       expect(result.content[0].text).toContain("Steering message sent");
       expect(result.content[0].text).toContain("3 tool uses");

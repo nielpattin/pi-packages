@@ -27,17 +27,17 @@ const agentConfigMock = {
       promptMode: "replace",
       inheritContext: false,
       runInBackground: false,
-      isolated: false,
-   },
+      isolated: false
+   }
 };
 
 /** Mock AgentConfigLookup injected via RunOptions.registry. */
 const mockAgentLookup = {
    resolveAgentConfig: vi.fn((): import("#src/types").AgentConfig => ({
       ...agentConfigMock.current,
-      promptMode: agentConfigMock.current.promptMode as "replace" | "append",
+      promptMode: agentConfigMock.current.promptMode as "replace" | "append"
    })),
-   getToolNamesForType: vi.fn((): string[] => agentConfigMock.current.builtinToolNames ?? ["read"]), // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- builtinToolNames is always defined in type but may be absent at runtime
+   getToolNamesForType: vi.fn((): string[] => agentConfigMock.current.builtinToolNames ?? ["read"]) // eslint-disable-line @typescript-eslint/no-unnecessary-condition -- builtinToolNames is always defined in type but may be absent at runtime
 };
 
 let io: ReturnType<typeof createRunnerIO>;
@@ -57,7 +57,7 @@ function createSessionWithExtensionToolRegistration(beforeBind: string[], afterB
       prompt: vi.fn(async () => {
          session.messages.push({
             role: "assistant",
-            content: [{ type: "text", text: "DONE" }],
+            content: [{ type: "text", text: "DONE" }]
          });
       }),
       abort: vi.fn(),
@@ -66,7 +66,7 @@ function createSessionWithExtensionToolRegistration(beforeBind: string[], afterB
       setActiveToolsByName: vi.fn(),
       bindExtensions: vi.fn(async () => {
          bound = true;
-      }),
+      })
    };
    return session;
 }
@@ -86,7 +86,7 @@ beforeEach(() => {
       promptMode: "replace",
       inheritContext: false,
       runInBackground: false,
-      isolated: false,
+      isolated: false
    };
 });
 
@@ -100,7 +100,7 @@ describe("post-bind recursion guard", () => {
          "test-agent",
          "go",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
+         createRunnerDeps({ io, exec, registry: mockAgentLookup })
       );
 
       // Should be called exactly once: post-bind.
@@ -123,7 +123,7 @@ describe("post-bind recursion guard", () => {
          "test-agent",
          "go",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
+         createRunnerDeps({ io, exec, registry: mockAgentLookup })
       );
 
       // Post-bind call should include the extension-registered tool.
@@ -136,7 +136,7 @@ describe("post-bind recursion guard", () => {
       agentConfigMock.current.extensions = true;
       const session = createSessionWithExtensionToolRegistration(
          ["read"],
-         ["read", "subagent", "get_subagent_result", "steer_subagent", "external"],
+         ["read", "subagent", "get_subagent_result", "steer_subagent", "external"]
       );
       io.createSession.mockResolvedValue({ session });
 
@@ -145,7 +145,7 @@ describe("post-bind recursion guard", () => {
          "test-agent",
          "go",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
+         createRunnerDeps({ io, exec, registry: mockAgentLookup })
       );
 
       const postBindArgs = session.setActiveToolsByName.mock.calls[0][0];
@@ -168,7 +168,7 @@ describe("post-bind recursion guard", () => {
          "test-agent",
          "go",
          { context: {} },
-         createRunnerDeps({ io, exec, registry: mockAgentLookup }),
+         createRunnerDeps({ io, exec, registry: mockAgentLookup })
       );
 
       expect(session.setActiveToolsByName).not.toHaveBeenCalled();

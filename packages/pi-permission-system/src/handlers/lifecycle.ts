@@ -23,7 +23,7 @@ interface ResourcesDiscoverPayload {
 export class SessionLifecycleHandler {
    constructor(
       private readonly session: PermissionSession,
-      private readonly cleanupRpc: () => void,
+      private readonly cleanupRpc: () => void
    ) {}
 
    handleSessionStart(event: SessionStartPayload, ctx: ExtensionContext): Promise<void> {
@@ -41,7 +41,7 @@ export class SessionLifecycleHandler {
          this.session.logger.debug("lifecycle.reload", {
             triggeredBy: "session_start",
             reason: event.reason,
-            cwd: ctx.cwd,
+            cwd: ctx.cwd
          });
       }
       return Promise.resolve();
@@ -56,7 +56,7 @@ export class SessionLifecycleHandler {
       this.session.logger.debug("lifecycle.reload", {
          triggeredBy: "resources_discover",
          reason: event.reason,
-         cwd: this.session.getRuntimeContext()?.cwd ?? null,
+         cwd: this.session.getRuntimeContext()?.cwd ?? null
       });
       return Promise.resolve();
    }

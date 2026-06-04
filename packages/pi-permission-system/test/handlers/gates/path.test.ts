@@ -16,7 +16,7 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: { path: ".env" },
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -26,7 +26,7 @@ function makeCheckResult(overrides: Partial<PermissionCheckResult> = {}): Permis
       state: "allow",
       source: "special",
       origin: "global",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -34,7 +34,7 @@ type CheckPermissionFn = (
    surface: string,
    input: unknown,
    agentName?: string,
-   sessionRules?: Rule[],
+   sessionRules?: Rule[]
 ) => PermissionCheckResult;
 
 // ── tests ──────────────────────────────────────────────────────────────────
@@ -47,7 +47,7 @@ describe("describePathGate", () => {
       const result = describePathGate(
          makeTcc({ toolName: "bash", input: { command: "ls" } }),
          checkPermission,
-         getSessionRuleset,
+         getSessionRuleset
       );
       expect(result).toBeNull();
       expect(checkPermission).not.toHaveBeenCalled();
@@ -71,8 +71,8 @@ describe("describePathGate", () => {
             state: "ask",
             matchedPattern: undefined,
             source: "special",
-            origin: "builtin",
-         }),
+            origin: "builtin"
+         })
       );
       const result = describePathGate(makeTcc(), checkPermission, getSessionRuleset);
       expect(result).toBeNull();
@@ -84,8 +84,8 @@ describe("describePathGate", () => {
             state: "ask",
             matchedPattern: "*.env",
             source: "special",
-            origin: "global",
-         }),
+            origin: "global"
+         })
       );
       const result = describePathGate(makeTcc(), checkPermission, getSessionRuleset);
       expect(result).not.toBeNull();
@@ -96,8 +96,8 @@ describe("describePathGate", () => {
       const checkPermission = vi.fn<CheckPermissionFn>().mockReturnValue(
          makeCheckResult({
             state: "deny",
-            matchedPattern: "*.env",
-         }),
+            matchedPattern: "*.env"
+         })
       );
       const result = describePathGate(makeTcc(), checkPermission, getSessionRuleset);
       expect(result).not.toBeNull();
@@ -111,8 +111,8 @@ describe("describePathGate", () => {
       const checkPermission = vi.fn<CheckPermissionFn>().mockReturnValue(
          makeCheckResult({
             state: "ask",
-            matchedPattern: "*.env",
-         }),
+            matchedPattern: "*.env"
+         })
       );
       const result = describePathGate(makeTcc(), checkPermission, getSessionRuleset);
       expect(result).not.toBeNull();
@@ -129,7 +129,7 @@ describe("describePathGate", () => {
       const result = describePathGate(
          makeTcc({ input: { path: "/test/project/src/.env" } }),
          checkPermission,
-         getSessionRuleset,
+         getSessionRuleset
       ) as GateDescriptor;
       expect(result.sessionApproval).toBeDefined();
       expect(result.sessionApproval).toHaveProperty("surface", "path");
@@ -145,7 +145,7 @@ describe("describePathGate", () => {
          kind: "path",
          toolName: "read",
          pathValue: ".env",
-         agentName: undefined,
+         agentName: undefined
       });
    });
 
@@ -164,8 +164,8 @@ describe("describePathGate", () => {
             surface: "path",
             pattern: "/project/*",
             action: "allow",
-            origin: "session",
-         },
+            origin: "session"
+         }
       ];
       const getSession = vi.fn<() => Rule[]>().mockReturnValue(sessionRules);
       const checkPermission = vi.fn<CheckPermissionFn>().mockReturnValue(makeCheckResult({ state: "allow" }));

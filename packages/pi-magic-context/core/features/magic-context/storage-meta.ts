@@ -55,6 +55,6 @@ export {
    setPersistedStickyTurnReminder,
    setPersistedTodoSyntheticAnchor,
    setSessionWorkMetrics,
-   setStrippedPlaceholderIds,
+   setStrippedPlaceholderIds
 } from "./storage-meta-persisted";
 export { clearSession, getOrCreateSessionMeta, updateSessionMeta } from "./storage-meta-session";

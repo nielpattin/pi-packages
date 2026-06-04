@@ -2,7 +2,7 @@ import { describe, expect, test } from "vitest";
 
 import {
    formatBashExternalDirectoryAskPrompt,
-   formatExternalDirectoryAskPrompt,
+   formatExternalDirectoryAskPrompt
 } from "#src/handlers/gates/external-directory-messages";
 
 // Denial message functions (formatExternalDirectoryDenyReason,
@@ -33,7 +33,7 @@ describe("formatBashExternalDirectoryAskPrompt", () => {
          "cat /etc/passwd",
          ["/etc/passwd"],
          "/projects/my-app",
-         "my-agent",
+         "my-agent"
       );
       expect(result).toContain("Agent 'my-agent'");
       expect(result).toContain("cat /etc/passwd");

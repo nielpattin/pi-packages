@@ -9,7 +9,7 @@ import type { ScopeConfig } from "#src/types";
 
 type MockHandler = (
    event: Record<string, unknown>,
-   ctx: Record<string, unknown>,
+   ctx: Record<string, unknown>
 ) => Promise<Record<string, unknown> | undefined> | Record<string, unknown> | undefined;
 
 describe("session_start handler consolidation", () => {
@@ -24,12 +24,12 @@ describe("session_start handler consolidation", () => {
       mkdirSync(dirname(globalConfigPath), { recursive: true });
 
       const config: ScopeConfig = {
-         permission: { "*": "ask" },
+         permission: { "*": "ask" }
       };
       writeFileSync(
          globalConfigPath,
          `${JSON.stringify({ ...DEFAULT_EXTENSION_CONFIG, ...config }, null, 2)}\n`,
-         "utf8",
+         "utf8"
       );
 
       process.env.PI_CODING_AGENT_DIR = baseDir;
@@ -57,8 +57,8 @@ describe("session_start handler consolidation", () => {
          registerProvider: (): void => {},
          events: {
             emit: (): void => {},
-            on: (): (() => void) => () => undefined,
-         },
+            on: (): (() => void) => () => undefined
+         }
       } as never);
 
       const sessionStartHandlers = registrations.filter((r) => r.name === "session_start");
@@ -78,8 +78,8 @@ describe("session_start handler consolidation", () => {
          registerProvider: (): void => {},
          events: {
             emit: (): void => {},
-            on: (): (() => void) => () => undefined,
-         },
+            on: (): (() => void) => () => undefined
+         }
       } as never);
 
       const sessionStartHandlers = registrations.filter((r) => r.name === "session_start");
@@ -91,8 +91,8 @@ describe("session_start handler consolidation", () => {
          agent: { name: "test-agent" },
          sessionManager: {
             getEntries: () => [],
-            addEntry: () => {},
-         },
+            addEntry: () => {}
+         }
       };
 
       // Should not throw when called with a reload event

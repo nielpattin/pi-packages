@@ -52,7 +52,7 @@ export function createWorktree(cwd: string, agentId: string): WorktreeInfo | und
       execFileSync("git", ["worktree", "add", "--detach", worktreePath, "HEAD"], {
          cwd,
          stdio: "pipe",
-         timeout: 30000,
+         timeout: 30000
       });
       return { path: worktreePath, branch };
    } catch (err) {
@@ -76,7 +76,7 @@ export function cleanupWorktree(cwd: string, worktree: WorktreeInfo, agentDescri
       const status = execFileSync("git", ["status", "--porcelain"], {
          cwd: worktree.path,
          stdio: "pipe",
-         timeout: 10000,
+         timeout: 10000
       })
          .toString()
          .trim();
@@ -95,7 +95,7 @@ export function cleanupWorktree(cwd: string, worktree: WorktreeInfo, agentDescri
       execFileSync("git", ["commit", "-m", commitMsg], {
          cwd: worktree.path,
          stdio: "pipe",
-         timeout: 10000,
+         timeout: 10000
       });
 
       // Create a branch pointing to the worktree's HEAD.
@@ -105,7 +105,7 @@ export function cleanupWorktree(cwd: string, worktree: WorktreeInfo, agentDescri
          execFileSync("git", ["branch", branchName], {
             cwd: worktree.path,
             stdio: "pipe",
-            timeout: 5000,
+            timeout: 5000
          });
       } catch (err) {
          debugLog("git branch", err);
@@ -113,7 +113,7 @@ export function cleanupWorktree(cwd: string, worktree: WorktreeInfo, agentDescri
          execFileSync("git", ["branch", branchName], {
             cwd: worktree.path,
             stdio: "pipe",
-            timeout: 5000,
+            timeout: 5000
          });
       }
       // Update branch name in worktree info for the caller
@@ -125,7 +125,7 @@ export function cleanupWorktree(cwd: string, worktree: WorktreeInfo, agentDescri
       return {
          hasChanges: true,
          branch: worktree.branch,
-         path: worktree.path,
+         path: worktree.path
       };
    } catch (err) {
       debugLog("cleanupWorktree", err);
@@ -146,7 +146,7 @@ function removeWorktree(cwd: string, worktreePath: string): void {
       execFileSync("git", ["worktree", "remove", "--force", worktreePath], {
          cwd,
          stdio: "pipe",
-         timeout: 10000,
+         timeout: 10000
       });
    } catch (err) {
       debugLog("git worktree remove", err);

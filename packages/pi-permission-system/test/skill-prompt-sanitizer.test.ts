@@ -13,14 +13,14 @@ const CWD = "/projects/my-app";
 
 function makeManager(
    defaultState: "allow" | "deny" | "ask" = "allow",
-   overrides: Record<string, "allow" | "deny" | "ask"> = {},
+   overrides: Record<string, "allow" | "deny" | "ask"> = {}
 ): PermissionManager {
    return {
       checkPermission: vi.fn((_surface: string, input: { name?: string }): PermissionCheckResult => {
          const name = input.name ?? "";
          const state = overrides[name] ?? defaultState;
          return { toolName: "skill", state, source: "tool", origin: "builtin" };
-      }),
+      })
    } as unknown as PermissionManager;
 }
 
@@ -30,7 +30,7 @@ function skillBlock(name: string, location = `/skills/${name}/SKILL.md`): string
       `    <name>${name}</name>`,
       `    <description>Description of ${name}</description>`,
       `    <location>${location}</location>`,
-      "  </skill>",
+      "  </skill>"
    ].join("\n");
 }
 
@@ -142,7 +142,7 @@ describe("findSkillPathMatch", () => {
          location: "/skills/librarian/SKILL.md",
          state: "allow" as const,
          normalizedLocation: "/skills/librarian/SKILL.md",
-         normalizedBaseDir: "/skills/librarian",
+         normalizedBaseDir: "/skills/librarian"
       },
       {
          name: "ask-user",
@@ -150,8 +150,8 @@ describe("findSkillPathMatch", () => {
          location: "/skills/ask-user/SKILL.md",
          state: "allow" as const,
          normalizedLocation: "/skills/ask-user/SKILL.md",
-         normalizedBaseDir: "/skills/ask-user",
-      },
+         normalizedBaseDir: "/skills/ask-user"
+      }
    ];
 
    test("returns null for empty normalized path", () => {
@@ -191,7 +191,7 @@ describe("findSkillPathMatch", () => {
             location: "/skills/parent/SKILL.md",
             state: "allow" as const,
             normalizedLocation: "/skills/parent/SKILL.md",
-            normalizedBaseDir: "/skills/parent",
+            normalizedBaseDir: "/skills/parent"
          },
          {
             name: "child",
@@ -199,8 +199,8 @@ describe("findSkillPathMatch", () => {
             location: "/skills/parent/child/SKILL.md",
             state: "allow" as const,
             normalizedLocation: "/skills/parent/child/SKILL.md",
-            normalizedBaseDir: "/skills/parent/child",
-         },
+            normalizedBaseDir: "/skills/parent/child"
+         }
       ];
       const match = findSkillPathMatch("/skills/parent/child/helper.md", nestedEntries);
       expect(match?.name).toBe("child");

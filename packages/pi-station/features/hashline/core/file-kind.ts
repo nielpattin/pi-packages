@@ -35,7 +35,7 @@ export async function loadFileKindAndText(filePath: string): Promise<LoadedFile>
    if (!pathStat.isFile()) {
       return {
          kind: "binary",
-         description: "unsupported file type",
+         description: "unsupported file type"
       };
    }
 
@@ -55,13 +55,13 @@ export async function loadFileKindAndText(filePath: string): Promise<LoadedFile>
          }
          return {
             kind: "binary",
-            description: detectedMimeType,
+            description: detectedMimeType
          };
       }
       if (hasNullByte(sample)) {
          return {
             kind: "binary",
-            description: "null bytes detected",
+            description: "null bytes detected"
          };
       }
 
@@ -83,7 +83,7 @@ export async function loadFileKindAndText(filePath: string): Promise<LoadedFile>
          if (hasNullByte(chunk)) {
             return {
                kind: "binary",
-               description: "null bytes detected",
+               description: "null bytes detected"
             };
          }
          parts.push(decoder.decode(chunk, { stream: true }));

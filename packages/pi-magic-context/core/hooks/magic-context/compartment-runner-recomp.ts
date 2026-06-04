@@ -2,7 +2,7 @@ import {
    clearRecompStaging,
    getRecompStaging,
    promoteRecompStaging,
-   saveRecompStagingPass,
+   saveRecompStagingPass
 } from "../../features/magic-context/compartment-storage";
 import { clearCompressionDepth } from "../../features/magic-context/compression-depth-storage";
 import { promoteSessionFactsToMemory } from "../../features/magic-context/memory";
@@ -11,7 +11,7 @@ import { getMemoriesByProject } from "../../features/magic-context/memory/storag
 import {
    clearPendingCompactionMarkerStateIf,
    getPendingCompactionMarkerState,
-   updateSessionMeta,
+   updateSessionMeta
 } from "../../features/magic-context/storage-meta";
 import { normalizeSDKResponse } from "../../shared";
 import { getErrorMessage } from "../../shared/error-message";
@@ -27,7 +27,7 @@ import type { CandidateCompartment, CompartmentRunnerDeps } from "./compartment-
 import {
    getReducedRecompTokenBudget,
    validateChunkCoverage,
-   validateStoredCompartments,
+   validateStoredCompartments
 } from "./compartment-runner-validation";
 import { clearInjectionCache, renderMemoryBlock } from "./inject-compartments";
 import { getProtectedTailStartOrdinal, getRawSessionMessageCount, readSessionChunk } from "./read-session-chunk";
@@ -54,7 +54,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
       // Intentional: session.get failure is non-fatal — we fall back to deps.directory
       const parentSessionResponse = await client.session.get({ path: { id: sessionId } }).catch(() => null);
       const parentSession = normalizeSDKResponse(parentSessionResponse, null as { directory?: string } | null, {
-         preferResponseOnMissingData: true,
+         preferResponseOnMissingData: true
       });
       const sessionDirectory = parentSession?.directory ?? directory;
 
@@ -78,7 +78,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
             client,
             sessionId,
             `## Magic Recomp — Resumed\n\nFound ${existingStaging.compartments.length} staged compartment(s) from ${existingStaging.passCount} previous pass(es), covering messages 1-${existingStaging.lastEndMessage}. Resuming from message ${offset}.`,
-            notifParams(),
+            notifParams()
          );
       }
 
@@ -135,7 +135,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
          return [
             `Persisted ${promoted.compartments.length} compartment${promoted.compartments.length === 1 ? "" : "s"} from ${passCount} successful pass${passCount === 1 ? "" : "es"}.`,
             `Covered raw history 1-${lastCompartmentEnd} out of ${rawMessageCount} total messages.`,
-            `Remaining messages ${lastCompartmentEnd + 1}-${protectedTailStart - 1} were not rebuilt (${reason}).`,
+            `Remaining messages ${lastCompartmentEnd + 1}-${protectedTailStart - 1} were not rebuilt (${reason}).`
          ].join("\n");
       }
 
@@ -145,7 +145,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
             // Remaining messages before the protected tail are too few or all noise.
             // If we already have valid candidates, this is a normal completion — not a partial failure.
             const promoted = await promoteAndFinalize(
-               `remaining messages ${offset}-${protectedTailStart - 1} were too few or all noise to form a historian chunk`,
+               `remaining messages ${offset}-${protectedTailStart - 1} were too few or all noise to form a historian chunk`
             );
             if (promoted) {
                return `## Magic Recomp — Complete\n\n${promoted}`;
@@ -179,14 +179,14 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
          const prompt = buildCompartmentAgentPrompt(
             existingState,
             `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-            { stateFilePath: currentStateFilePath },
+            { stateFilePath: currentStateFilePath }
          );
 
          await sendIgnoredMessage(
             client,
             sessionId,
             `## Magic Recomp\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} started for messages ${chunk.startIndex}-${chunk.endIndex}.`,
-            notifParams(),
+            notifParams()
          );
 
          const validatedPass = await runValidatedHistorianPass({
@@ -209,10 +209,10 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
                      client,
                      sessionId,
                      `## Magic Recomp\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} is continuing with a repair retry for messages ${chunk.startIndex}-${chunk.endIndex}.\n\nThe previous output did not validate: ${error}`,
-                     notifParams(),
+                     notifParams()
                   );
-               },
-            },
+               }
+            }
          });
          if (!validatedPass.ok) {
             const reducedBudget = getReducedRecompTokenBudget(currentTokenBudget);
@@ -223,7 +223,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
                      client,
                      sessionId,
                      `## Magic Recomp\n\nHistorian pass ${passCount + 1}, attempt ${passAttempt} is continuing with a smaller chunk ending at ${smallerChunk.endIndex} because messages ${chunk.startIndex}-${chunk.endIndex} could not be validated.\n\nValidator result: ${validatedPass.error}`,
-                     notifParams(),
+                     notifParams()
                   );
                   currentTokenBudget = reducedBudget;
                   passAttempt += 1;
@@ -232,7 +232,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
             }
 
             const partial = await promoteAndFinalize(
-               `historian failed to validate messages ${chunk.startIndex}-${chunk.endIndex}: ${validatedPass.error}`,
+               `historian failed to validate messages ${chunk.startIndex}-${chunk.endIndex}: ${validatedPass.error}`
             );
             if (partial) {
                return `## Magic Recomp — Partial\n\n${partial}`;
@@ -254,7 +254,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
             (validatedPass.compartments?.[validatedPass.compartments.length - 1]?.endMessage ?? chunk.endIndex) + 1;
          if (nextOffset <= offset) {
             const partial = await promoteAndFinalize(
-               `historian made no forward progress after messages ${chunk.startIndex}-${chunk.endIndex}`,
+               `historian made no forward progress after messages ${chunk.startIndex}-${chunk.endIndex}`
             );
             if (partial) {
                return `## Magic Recomp — Partial\n\n${partial}`;
@@ -311,7 +311,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
             historianTimeoutMs,
             fallbackModels: deps.fallbackModels,
             minCompartmentRatio: deps.compressorMinCompartmentRatio,
-            maxMergeDepth: deps.compressorMaxMergeDepth,
+            maxMergeDepth: deps.compressorMaxMergeDepth
          });
       }
 
@@ -322,7 +322,7 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
          `Rebuilt ${finalCompartments.length} compartment${finalCompartments.length === 1 ? "" : "s"} across ${passCount} historian pass${passCount === 1 ? "" : "es"}.`,
          `Covered raw history 1-${lastCompartmentEnd} out of ${rawMessageCount} total messages, stopping before protected tail at ${protectedTailStart}.`,
          `Replaced facts with ${finalFacts.length} current entr${finalFacts.length === 1 ? "y" : "ies"}.`,
-         ...(compressed ? ["Compression pass ran to fit within history budget."] : []),
+         ...(compressed ? ["Compression pass ran to fit within history budget."] : [])
       ].join("\n");
    } catch (error: unknown) {
       // Recomp replaces durable state atomically, so unexpected failures must leave state untouched.

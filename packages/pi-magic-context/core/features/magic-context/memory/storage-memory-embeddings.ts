@@ -39,7 +39,7 @@ function getSaveEmbeddingStatement(db: Database): PreparedStatement {
    let stmt = saveEmbeddingStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO memory_embeddings (memory_id, embedding, model_id) VALUES (?, ?, ?) ON CONFLICT(memory_id) DO UPDATE SET embedding = excluded.embedding, model_id = excluded.model_id",
+         "INSERT INTO memory_embeddings (memory_id, embedding, model_id) VALUES (?, ?, ?) ON CONFLICT(memory_id) DO UPDATE SET embedding = excluded.embedding, model_id = excluded.model_id"
       );
       saveEmbeddingStatements.set(db, stmt);
    }
@@ -50,7 +50,7 @@ function getLoadAllEmbeddingsStatement(db: Database): PreparedStatement {
    let stmt = loadAllEmbeddingsStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT memory_embeddings.memory_id AS memoryId, memory_embeddings.embedding AS embedding FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ? ORDER BY memory_embeddings.memory_id ASC",
+         "SELECT memory_embeddings.memory_id AS memoryId, memory_embeddings.embedding AS embedding FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ? ORDER BY memory_embeddings.memory_id ASC"
       );
       loadAllEmbeddingsStatements.set(db, stmt);
    }
@@ -70,7 +70,7 @@ function getStoredModelIdStatement(db: Database): PreparedStatement {
    let stmt = getStoredModelIdStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT memory_embeddings.model_id AS modelId FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ? AND memory_embeddings.model_id IS NOT NULL LIMIT 1",
+         "SELECT memory_embeddings.model_id AS modelId FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ? AND memory_embeddings.model_id IS NOT NULL LIMIT 1"
       );
       getStoredModelIdStatements.set(db, stmt);
    }
@@ -81,7 +81,7 @@ function getClearAllEmbeddingsStatement(db: Database): PreparedStatement {
    let stmt = clearAllEmbeddingsStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "DELETE FROM memory_embeddings WHERE memory_id IN (SELECT id FROM memories WHERE project_path = ?)",
+         "DELETE FROM memory_embeddings WHERE memory_id IN (SELECT id FROM memories WHERE project_path = ?)"
       );
       clearAllEmbeddingsStatements.set(db, stmt);
    }
@@ -92,7 +92,7 @@ function getDistinctStoredModelIdsStatement(db: Database): PreparedStatement {
    let stmt = getDistinctStoredModelIdsStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT DISTINCT memory_embeddings.model_id AS modelId FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ?",
+         "SELECT DISTINCT memory_embeddings.model_id AS modelId FROM memory_embeddings INNER JOIN memories ON memories.id = memory_embeddings.memory_id WHERE memories.project_path = ?"
       );
       getDistinctStoredModelIdsStatements.set(db, stmt);
    }

@@ -4,7 +4,7 @@ vi.mock("#src/lifecycle/agent-runner", async () => {
    const actual = await vi.importActual<typeof import("#src/lifecycle/agent-runner")>("#src/lifecycle/agent-runner");
    return {
       ...actual,
-      runAgent: vi.fn(),
+      runAgent: vi.fn()
    };
 });
 
@@ -32,15 +32,15 @@ function makePi() {
             on: vi.fn((event: string, handler: any) => {
                eventHandlers.set(event, handler);
                return vi.fn();
-            }),
+            })
          },
          appendEntry: vi.fn(),
          sendMessage: vi.fn(() => {
             throw new Error("stale extension context");
-         }),
+         })
       } as any,
       tools,
-      handlers,
+      handlers
    };
 }
 
@@ -49,20 +49,20 @@ function makeHeadlessCtx() {
       hasUI: false,
       ui: {
          setStatus: vi.fn(),
-         setWidget: vi.fn(),
+         setWidget: vi.fn()
       },
       cwd: "/tmp",
       model: undefined,
       modelRegistry: {
          find: vi.fn(),
-         getAvailable: vi.fn(() => []),
+         getAvailable: vi.fn(() => [])
       },
       sessionManager: {
          getSessionId: vi.fn(() => "session-1"),
          getSessionFile: vi.fn(() => "/sessions/parent.jsonl"),
-         getBranch: vi.fn(() => []),
+         getBranch: vi.fn(() => [])
       },
-      getSystemPrompt: vi.fn(() => "parent prompt"),
+      getSystemPrompt: vi.fn(() => "parent prompt")
    } as any;
 }
 
@@ -78,7 +78,7 @@ describe("print mode background notifications", () => {
          session: toAgentSession(createMockSession()),
          aborted: false,
          steered: false,
-         sessionFile: "/sessions/child.jsonl",
+         sessionFile: "/sessions/child.jsonl"
       });
 
       const { pi, tools, handlers } = makePi();
@@ -96,11 +96,11 @@ describe("print mode background notifications", () => {
             prompt: "reply done",
             description: "tiny child",
             subagent_type: "general-purpose",
-            run_in_background: true,
+            run_in_background: true
          },
          undefined,
          undefined,
-         makeHeadlessCtx(),
+         makeHeadlessCtx()
       );
 
       await vi.advanceTimersByTimeAsync(100); // smart-join batch debounce

@@ -6,7 +6,7 @@ import {
    FilePolicyLoader,
    type PolicyLoader,
    type PolicyLoaderOptions,
-   type ResolvedPolicyPaths,
+   type ResolvedPolicyPaths
 } from "./policy-loader";
 import type { Rule, RuleOrigin, Ruleset } from "./rule";
 import { evaluate, evaluateFirst } from "./rule";
@@ -82,7 +82,7 @@ export class PermissionManager {
          ["global", globalConfig],
          ["project", projectConfig],
          ["agent", agentConfig],
-         ["project-agent", projectAgentConfig],
+         ["project-agent", projectAgentConfig]
       ] as const) {
          if (!scope.permission) continue;
 
@@ -129,7 +129,7 @@ export class PermissionManager {
 
       // Build config rules from everything except the universal "*" key.
       const permissionWithoutUniversal: FlatPermissionConfig = Object.fromEntries(
-         Object.entries(mergedPermission).filter(([k]) => k !== "*"),
+         Object.entries(mergedPermission).filter(([k]) => k !== "*")
       );
 
       // Normalize to config rules, tagged with "config" layer and their origin.
@@ -137,14 +137,14 @@ export class PermissionManager {
          (r): Rule => ({
             ...r,
             layer: "config",
-            origin: origins.get(r.surface)?.get(r.pattern) ?? "builtin",
-         }),
+            origin: origins.get(r.surface)?.get(r.pattern) ?? "builtin"
+         })
       );
 
       const composedRules = composeRuleset(
          synthesizeDefaults(universalFallback, universalFallbackOrigin),
          synthesizeBaseline(configRules),
-         configRules,
+         configRules
       );
 
       const value: ResolvedPermissions = { composedRules };
@@ -196,7 +196,7 @@ export class PermissionManager {
       toolName: string,
       input: unknown,
       agentName?: string,
-      sessionRules?: Ruleset,
+      sessionRules?: Ruleset
    ): PermissionCheckResult {
       const { composedRules } = this.resolvePermissions(agentName);
       const normalizedToolName = toolName.trim();
@@ -208,7 +208,7 @@ export class PermissionManager {
       const { surface, values, resultExtras } = normalizeInput(
          normalizedToolName,
          input,
-         this.loader.getConfiguredMcpServerNames(),
+         this.loader.getConfiguredMcpServerNames()
       );
 
       const { rule, value } = evaluateFirst(surface, values, fullRules);
@@ -223,7 +223,7 @@ export class PermissionManager {
          matchedPattern: rule.layer === "config" || rule.layer === "session" ? rule.pattern : undefined,
          source: deriveSource(rule, normalizedToolName),
          origin: rule.origin,
-         ...extras,
+         ...extras
       };
    }
 }

@@ -15,12 +15,12 @@ import type {
    PermissionsCheckRequest,
    PermissionsPromptReplyData,
    PermissionsPromptRequest,
-   PermissionsRpcReply,
+   PermissionsRpcReply
 } from "./permission-events";
 import {
    PERMISSIONS_PROTOCOL_VERSION,
    PERMISSIONS_RPC_CHECK_CHANNEL,
-   PERMISSIONS_RPC_PROMPT_CHANNEL,
+   PERMISSIONS_RPC_PROMPT_CHANNEL
 } from "./permission-events";
 import type { PermissionManager } from "./permission-manager";
 import type { Rule } from "./rule";
@@ -41,7 +41,7 @@ export interface PermissionRpcDeps {
       ui: ExtensionContext["ui"],
       title: string,
       message: string,
-      options?: RequestPermissionOptions,
+      options?: RequestPermissionOptions
    ): Promise<PermissionPromptDecision>;
    /** Write structured entries to the permission review log. */
    writeReviewLog(event: string, details: Record<string, unknown>): void;
@@ -63,7 +63,7 @@ function successReply<T>(data?: T): PermissionsRpcReply<T> {
       return {
          success: true,
          protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
-         data,
+         data
       };
    }
    return { success: true, protocolVersion: PERMISSIONS_PROTOCOL_VERSION };
@@ -74,7 +74,7 @@ function errorReply(error: string): PermissionsRpcReply {
    return {
       success: false,
       protocolVersion: PERMISSIONS_PROTOCOL_VERSION,
-      error,
+      error
    };
 }
 
@@ -105,7 +105,7 @@ function handleCheckRpc(raw: unknown, events: PermissionEventBus, deps: Permissi
          result: result.state,
          matchedPattern: result.matchedPattern ?? null,
          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- ?? null normalises undefined to null for the reply record
-         origin: result.origin ?? null,
+         origin: result.origin ?? null
       };
       events.emit(replyChannel, successReply(data));
    } catch (err) {
@@ -144,7 +144,7 @@ async function handlePromptRpc(raw: unknown, events: PermissionEventBus, deps: P
          ctx.ui,
          title,
          message,
-         sessionLabel ? { sessionLabel } : undefined,
+         sessionLabel ? { sessionLabel } : undefined
       );
 
       deps.writeReviewLog("permission_request.rpc_prompt", {
@@ -155,13 +155,13 @@ async function handlePromptRpc(raw: unknown, events: PermissionEventBus, deps: P
          message,
          approved: decision.approved,
          resolution: decision.state,
-         denialReason: decision.denialReason ?? null,
+         denialReason: decision.denialReason ?? null
       });
 
       const data: PermissionsPromptReplyData = {
          approved: decision.approved,
          state: decision.state,
-         ...(decision.denialReason !== undefined ? { denialReason: decision.denialReason } : {}),
+         ...(decision.denialReason !== undefined ? { denialReason: decision.denialReason } : {})
       };
       events.emit(replyChannel, successReply(data));
    } catch (err) {
@@ -181,7 +181,7 @@ async function handlePromptRpc(raw: unknown, events: PermissionEventBus, deps: P
  */
 export function registerPermissionRpcHandlers(
    events: PermissionEventBus,
-   deps: PermissionRpcDeps,
+   deps: PermissionRpcDeps
 ): PermissionRpcHandles {
    const unsubCheck = events.on(PERMISSIONS_RPC_CHECK_CHANNEL, (raw) => {
       handleCheckRpc(raw, events, deps);

@@ -2,7 +2,7 @@ import {
    clearPersistedStickyTurnReminder,
    getPendingOps,
    removePendingOp,
-   updateTagStatus,
+   updateTagStatus
 } from "../../features/magic-context/storage";
 import { getErrorMessage } from "../../shared/error-message";
 import { sessionLog } from "../../shared/logger";

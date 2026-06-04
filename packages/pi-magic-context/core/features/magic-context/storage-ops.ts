@@ -12,7 +12,7 @@ function getQueuePendingOpStatement(db: Database): PreparedStatement {
    let stmt = queuePendingOpStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO pending_ops (session_id, tag_id, operation, queued_at, harness) VALUES (?, ?, ?, ?, ?)",
+         "INSERT INTO pending_ops (session_id, tag_id, operation, queued_at, harness) VALUES (?, ?, ?, ?, ?)"
       );
       queuePendingOpStatements.set(db, stmt);
    }
@@ -23,7 +23,7 @@ function getPendingOpsStatement(db: Database): PreparedStatement {
    let stmt = getPendingOpsStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT id, session_id, tag_id, operation, queued_at FROM pending_ops WHERE session_id = ? ORDER BY queued_at ASC, id ASC",
+         "SELECT id, session_id, tag_id, operation, queued_at FROM pending_ops WHERE session_id = ? ORDER BY queued_at ASC, id ASC"
       );
       getPendingOpsStatements.set(db, stmt);
    }
@@ -79,7 +79,7 @@ function toPendingOp(row: PendingOpRow): PendingOp | null {
       sessionId: row.session_id,
       tagId: row.tag_id,
       operation: row.operation,
-      queuedAt: row.queued_at,
+      queuedAt: row.queued_at
    };
 }
 
@@ -88,7 +88,7 @@ export function queuePendingOp(
    sessionId: string,
    tagId: number,
    operation: PendingOp["operation"],
-   queuedAt: number = Date.now(),
+   queuedAt: number = Date.now()
 ): void {
    getQueuePendingOpStatement(db).run(sessionId, tagId, operation, queuedAt, getHarness());
 }

@@ -3,7 +3,7 @@ import { createHash } from "node:crypto";
 import type { EmbeddingConfig } from "../config/schema/magic-context";
 import {
    getProjectEmbeddingSnapshot,
-   registerProjectInObservationMode,
+   registerProjectInObservationMode
 } from "../features/magic-context/memory/embedding";
 import { log } from "../shared/logger";
 import type { Database } from "../shared/sqlite";
@@ -30,7 +30,7 @@ export const EMBEDDING_AFFECTING_KEYS = new Set([
    "embedding.api_key",
    "embedding.endpoint",
    "embedding.model",
-   "embedding.provider",
+   "embedding.provider"
 ]);
 
 export const EMBEDDING_AFFECTING_TOP_LEVEL_KEYS = new Set(["embedding", "memory", "experimental"]);
@@ -86,7 +86,7 @@ export function describeFailure(detailed: EmbeddingLoadResultDetailed<{ embeddin
       parts.push(
          `substitution=${detailed.substitutionFailures
             .map((failure) => `${failure.source}:${failure.keyPath}`)
-            .join(",")}`,
+            .join(",")}`
       );
    }
    if (detailed.recoveredTopLevelKeys.length > 0) {
@@ -97,7 +97,7 @@ export function describeFailure(detailed: EmbeddingLoadResultDetailed<{ embeddin
 
 export function logConfigFailureOnce(
    projectIdentity: string,
-   detailed: EmbeddingLoadResultDetailed<{ embedding: EmbeddingConfig }>,
+   detailed: EmbeddingLoadResultDetailed<{ embedding: EmbeddingConfig }>
 ): void {
    const signature = sha256Prefix(
       JSON.stringify({
@@ -105,15 +105,15 @@ export function logConfigFailureOnce(
          substitutions: detailed.substitutionFailures
             .map((failure) => `${failure.source}:${failure.keyPath}:${failure.message}`)
             .sort(),
-         recoveredTopLevelKeys: [...detailed.recoveredTopLevelKeys].sort(),
-      }),
+         recoveredTopLevelKeys: [...detailed.recoveredTopLevelKeys].sort()
+      })
    );
    const existing = loggedFailureSignatures.get(projectIdentity) ?? new Set<string>();
    if (existing.has(signature)) return;
    existing.add(signature);
    loggedFailureSignatures.set(projectIdentity, existing);
    log(
-      `[mc][embedding] config load untrusted, preserving last-known-good for ${projectIdentity} — ${describeFailure(detailed)}`,
+      `[mc][embedding] config load untrusted, preserving last-known-good for ${projectIdentity} — ${describeFailure(detailed)}`
    );
 }
 
@@ -121,7 +121,7 @@ export function handleUntrustedLoad(
    db: Database,
    projectIdentity: string,
    directory: string,
-   detailed: EmbeddingLoadResultDetailed<{ embedding: EmbeddingConfig }>,
+   detailed: EmbeddingLoadResultDetailed<{ embedding: EmbeddingConfig }>
 ): boolean {
    const prior = getProjectEmbeddingSnapshot(projectIdentity);
    if (prior && !prior.runtimeFingerprint.startsWith("observation:")) {
@@ -134,7 +134,7 @@ export function handleUntrustedLoad(
       projectIdentity,
       directory,
       detailed.config.embedding,
-      describeFailure(detailed),
+      describeFailure(detailed)
    );
    return true;
 }

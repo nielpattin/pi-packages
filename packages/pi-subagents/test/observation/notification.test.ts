@@ -5,7 +5,7 @@ import {
    escapeXml,
    formatTaskNotification,
    getStatusLabel,
-   NotificationManager,
+   NotificationManager
 } from "#src/observation/notification";
 import { NotificationState } from "#src/observation/notification-state";
 import { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
@@ -89,7 +89,7 @@ describe("buildNotificationDetails", () => {
       result: "Done.",
       toolUses: 2,
       completedAt: 3000,
-      lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 },
+      lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 }
    });
 
    it("maps record fields to notification shape", () => {
@@ -117,7 +117,7 @@ describe("buildNotificationDetails", () => {
          result: "x".repeat(600),
          toolUses: 2,
          completedAt: 3000,
-         lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 },
+         lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 }
       });
       const details = buildNotificationDetails(record, 100);
       expect(details.resultPreview).toHaveLength(101); // 100 chars + "…"
@@ -131,7 +131,7 @@ describe("buildEventData", () => {
       description: "Search files",
       result: "Found 3 files",
       toolUses: 5,
-      lifetimeUsage: { input: 1000, output: 500, cacheWrite: 0 },
+      lifetimeUsage: { input: 1000, output: 500, cacheWrite: 0 }
    });
 
    it("includes all expected fields", () => {
@@ -145,7 +145,7 @@ describe("buildEventData", () => {
          status: "completed",
          toolUses: 5,
          durationMs: 1000,
-         tokens: { input: 1000, output: 500, total: 1500 },
+         tokens: { input: 1000, output: 500, total: 1500 }
       });
    });
 
@@ -155,7 +155,7 @@ describe("buildEventData", () => {
          description: "Search files",
          result: "Found 3 files",
          toolUses: 5,
-         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 },
+         lifetimeUsage: { input: 0, output: 0, cacheWrite: 0 }
       });
       const data = buildEventData(record);
       expect(data.tokens).toBeUndefined();
@@ -170,7 +170,7 @@ describe("buildEventData", () => {
          result: "Found 3 files",
          toolUses: 5,
          lifetimeUsage: { input: 1000, output: 500, cacheWrite: 0 },
-         completedAt: undefined,
+         completedAt: undefined
       });
       const data = buildEventData(record);
       expect(data.durationMs).toBe(4000); // 5000 - 1000
@@ -194,7 +194,7 @@ describe("NotificationManager", () => {
          sendMessage: vi.fn(),
          agentActivity: new Map<string, AgentActivityTracker>(),
          markFinished: vi.fn(),
-         updateWidget: vi.fn(),
+         updateWidget: vi.fn()
       };
    }
 
@@ -206,7 +206,7 @@ describe("NotificationManager", () => {
       description: "Test",
       result: "Done.",
       toolUses: 2,
-      lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 },
+      lifetimeUsage: { input: 100, output: 200, cacheWrite: 0 }
    });
 
    it("cancelNudge prevents a scheduled nudge from firing", () => {

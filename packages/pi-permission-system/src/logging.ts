@@ -9,7 +9,7 @@ export function safeJsonStringify(value: unknown): string | undefined {
          return {
             name: currentValue.name,
             message: currentValue.message,
-            stack: currentValue.stack,
+            stack: currentValue.stack
          };
       }
 
@@ -50,7 +50,7 @@ export function createPermissionSystemLogger(options: PermissionSystemLoggerOpti
       stream: "debug" | "review",
       path: string,
       event: string,
-      details: Record<string, unknown>,
+      details: Record<string, unknown>
    ): string | undefined => {
       const directoryError = ensureLogsDirectory();
       if (directoryError) {
@@ -63,7 +63,7 @@ export function createPermissionSystemLogger(options: PermissionSystemLoggerOpti
             extension: EXTENSION_ID,
             stream,
             event,
-            ...details,
+            ...details
          });
          if (!line) {
             return `Failed to write permission-system ${stream} log '${path}': event could not be serialized.`;

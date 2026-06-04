@@ -45,7 +45,7 @@ export const HISTORIAN_STATE_INLINE_THRESHOLD = 30_000;
 export function maybeWriteHistorianStateFile(
    sessionId: string,
    existingState: string,
-   directory: string,
+   directory: string
 ): string | undefined {
    if (existingState.length <= HISTORIAN_STATE_INLINE_THRESHOLD) return undefined;
    try {

@@ -7,7 +7,7 @@ const SYSTEM_INJECTION_MARKERS = [
    "[task CALL FAILED - IMMEDIATE RETRY REQUIRED]",
    "[EMERGENCY CONTEXT WINDOW WARNING]",
    "Unstable background agent appears idle",
-   "**THE SUBAGENT JUST CLAIMED THIS TASK IS DONE.",
+   "**THE SUBAGENT JUST CLAIMED THIS TASK IS DONE."
 ];
 
 const SYSTEM_REMINDER_REGEX = /<system-reminder>[\s\S]*?<\/system-reminder>/gi;

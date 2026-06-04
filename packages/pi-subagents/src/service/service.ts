@@ -84,7 +84,7 @@ export interface SubagentsService {
 export const SUBAGENT_EVENTS = {
    STARTED: "subagents:started",
    COMPLETED: "subagents:completed",
-   ACTIVITY: "subagents:activity",
+   ACTIVITY: "subagents:activity"
 } as const;
 
 // ---- Accessor functions ----

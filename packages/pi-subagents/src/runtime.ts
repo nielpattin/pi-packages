@@ -82,7 +82,7 @@ export class SubagentRuntime {
    getModelInfo(): ModelInfo {
       return {
          parentModel: this.currentCtx?.model as ModelInfo["parentModel"],
-         modelRegistry: this.currentCtx?.modelRegistry,
+         modelRegistry: this.currentCtx?.modelRegistry
       };
    }
 
@@ -90,7 +90,7 @@ export class SubagentRuntime {
    getSessionInfo(): { parentSessionFile: string; parentSessionId: string } {
       return {
          parentSessionFile: this.currentCtx?.sessionManager.getSessionFile() ?? "",
-         parentSessionId: this.currentCtx?.sessionManager.getSessionId() ?? "",
+         parentSessionId: this.currentCtx?.sessionManager.getSessionId() ?? ""
       };
    }
 

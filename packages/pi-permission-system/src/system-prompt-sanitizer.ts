@@ -19,46 +19,46 @@ const GUIDELINES_SECTION_HEADER = "Guidelines:";
 const TOOL_GUIDELINE_RULES: readonly GuidelineRule[] = [
    {
       matches: (guideline) => guideline === "use bash for file operations like ls, rg, find",
-      shouldKeep: (allowedTools) => allowedTools.has("bash"),
+      shouldKeep: (allowedTools) => allowedTools.has("bash")
    },
    {
       matches: (guideline) =>
          guideline === "prefer grep/find/ls tools over bash for file exploration (faster, respects .gitignore)",
       shouldKeep: (allowedTools) =>
-         allowedTools.has("bash") && (allowedTools.has("grep") || allowedTools.has("find") || allowedTools.has("ls")),
+         allowedTools.has("bash") && (allowedTools.has("grep") || allowedTools.has("find") || allowedTools.has("ls"))
    },
    {
       matches: (guideline) =>
          guideline === "use read to examine files before editing. you must use this tool instead of cat or sed." ||
          guideline === "use read to examine files instead of cat or sed.",
-      shouldKeep: (allowedTools) => allowedTools.has("read"),
+      shouldKeep: (allowedTools) => allowedTools.has("read")
    },
    {
       matches: (guideline) => guideline === "use edit for precise changes (old text must match exactly)",
-      shouldKeep: (allowedTools) => allowedTools.has("edit"),
+      shouldKeep: (allowedTools) => allowedTools.has("edit")
    },
    {
       matches: (guideline) => guideline === "use write only for new files or complete rewrites",
-      shouldKeep: (allowedTools) => allowedTools.has("write"),
+      shouldKeep: (allowedTools) => allowedTools.has("write")
    },
    {
       matches: (guideline) =>
          guideline ===
          "when summarizing your actions, output plain text directly - do not use cat or bash to display what you did",
-      shouldKeep: (allowedTools) => allowedTools.has("edit") || allowedTools.has("write"),
+      shouldKeep: (allowedTools) => allowedTools.has("edit") || allowedTools.has("write")
    },
    {
       matches: (guideline) =>
          guideline ===
          "use task when work should be delegated to one or more specialized agents instead of handled entirely in the current session.",
-      shouldKeep: (allowedTools) => allowedTools.has("task"),
+      shouldKeep: (allowedTools) => allowedTools.has("task")
    },
    {
       matches: (guideline) =>
          guideline ===
          "use mcp for mcp discovery first: search by capability, describe one exact tool name, then call it.",
-      shouldKeep: (allowedTools) => allowedTools.has("mcp"),
-   },
+      shouldKeep: (allowedTools) => allowedTools.has("mcp")
+   }
 ];
 
 function normalizePrompt(prompt: string): string {
@@ -122,7 +122,7 @@ function findSection(lines: readonly string[], header: string): LineSection | nu
 
 function removeLineSection(
    lines: readonly string[],
-   section: LineSection | null,
+   section: LineSection | null
 ): { lines: string[]; removed: boolean } {
    if (!section) {
       return { lines: [...lines], removed: false };
@@ -130,7 +130,7 @@ function removeLineSection(
 
    return {
       lines: [...lines.slice(0, section.start), ...lines.slice(section.end)],
-      removed: true,
+      removed: true
    };
 }
 
@@ -148,7 +148,7 @@ function shouldKeepGuideline(line: string, allowedTools: ReadonlySet<string>): b
 
 function sanitizeGuidelinesSection(
    lines: readonly string[],
-   allowedTools: ReadonlySet<string>,
+   allowedTools: ReadonlySet<string>
 ): { lines: string[]; removed: boolean } {
    const section = findSection(lines, GUIDELINES_SECTION_HEADER);
    if (!section) {
@@ -176,31 +176,31 @@ function sanitizeGuidelinesSection(
    if (!hasBullet) {
       return {
          lines: [...lines.slice(0, section.start), ...after],
-         removed: true,
+         removed: true
       };
    }
 
    return {
       lines: [...before, ...filteredBody, ...after],
-      removed: true,
+      removed: true
    };
 }
 
 export function sanitizeAvailableToolsSection(
    systemPrompt: string,
-   allowedToolNames: readonly string[],
+   allowedToolNames: readonly string[]
 ): SanitizeSystemPromptResult {
    const allowedTools = new Set(allowedToolNames.map((toolName) => toolName.trim()).filter(Boolean));
    const normalizedLines = normalizePrompt(systemPrompt).split("\n");
    const removedToolsSection = removeLineSection(
       normalizedLines,
-      findSection(normalizedLines, AVAILABLE_TOOLS_SECTION_HEADER),
+      findSection(normalizedLines, AVAILABLE_TOOLS_SECTION_HEADER)
    );
    const sanitizedGuidelines = sanitizeGuidelinesSection(removedToolsSection.lines, allowedTools);
    const removed = removedToolsSection.removed || sanitizedGuidelines.removed;
 
    return {
       prompt: removed ? collapseExtraBlankLines(sanitizedGuidelines.lines.join("\n")) : systemPrompt,
-      removed,
+      removed
    };
 }

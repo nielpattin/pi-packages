@@ -5,7 +5,7 @@ const STATUS_MAP: Record<string, ChangedFile["status"]> = {
    A: "added",
    C: "copied",
    M: "modified",
-   R: "renamed",
+   R: "renamed"
 };
 
 function parseDiffOutput(stdout: string): ChangedFile[] {

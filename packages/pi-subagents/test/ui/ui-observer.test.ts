@@ -44,14 +44,14 @@ describe("subscribeUIObserver", () => {
 
       session.emit({
          type: "message_update",
-         assistantMessageEvent: { type: "text_delta", delta: "Hello " },
+         assistantMessageEvent: { type: "text_delta", delta: "Hello " }
       });
       expect(tracker.responseText).toBe("Hello ");
       expect(updateCount).toBe(1);
 
       session.emit({
          type: "message_update",
-         assistantMessageEvent: { type: "text_delta", delta: "world" },
+         assistantMessageEvent: { type: "text_delta", delta: "world" }
       });
       expect(tracker.responseText).toBe("Hello world");
       expect(updateCount).toBe(2);
@@ -65,7 +65,7 @@ describe("subscribeUIObserver", () => {
 
       session.emit({
          type: "message_update",
-         assistantMessageEvent: { type: "tool_use", name: "Read" },
+         assistantMessageEvent: { type: "tool_use", name: "Read" }
       });
       expect(tracker.responseText).toBe("");
       expect(updateCount).toBe(0);

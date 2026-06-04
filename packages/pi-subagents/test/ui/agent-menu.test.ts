@@ -17,16 +17,16 @@ function makeSettings() {
       graceTurns: 5,
       applyMaxConcurrent: vi.fn((): { message: string; level: "info" | "warning" } => ({
          message: "Max concurrency set to 8",
-         level: "info",
+         level: "info"
       })),
       applyDefaultMaxTurns: vi.fn((): { message: string; level: "info" | "warning" } => ({
          message: "Default max turns set to unlimited",
-         level: "info",
+         level: "info"
       })),
       applyGraceTurns: vi.fn((): { message: string; level: "info" | "warning" } => ({
          message: "Grace turns set to 3",
-         level: "info",
-      })),
+         level: "info"
+      }))
    };
 }
 
@@ -41,7 +41,7 @@ function makeHandler(
       settings?: ReturnType<typeof makeSettings>;
       personalAgentsDir?: string;
       projectAgentsDir?: string;
-   } = {},
+   } = {}
 ) {
    const manager = opts.manager ?? makeMenuManager();
    const fileOps = opts.fileOps ?? makeFileOps();
@@ -55,7 +55,7 @@ function makeHandler(
       settings,
       fileOps,
       personalAgentsDir,
-      projectAgentsDir,
+      projectAgentsDir
    );
    return { handler, manager, settings, fileOps };
 }
@@ -64,7 +64,7 @@ function makeUI(selectResults: (string | undefined)[] = []) {
    return {
       ui: makeMenuUI(selectResults),
       modelRegistry: { find: () => undefined, getAll: () => [] },
-      parentSnapshot: STUB_SNAPSHOT,
+      parentSnapshot: STUB_SNAPSHOT
    };
 }
 
@@ -115,11 +115,11 @@ describe("AgentsMenuHandler", () => {
                .fn()
                .mockReturnValue([
                   createTestAgent({ status: "running" }),
-                  createTestAgent({ status: "completed", id: "agent-2" }),
+                  createTestAgent({ status: "completed", id: "agent-2" })
                ]),
             getRecord: vi.fn(),
-            spawnAndWait: vi.fn(),
-         },
+            spawnAndWait: vi.fn()
+         }
       });
       const params = makeUI([undefined]);
       await handler.handle(params);
@@ -146,7 +146,7 @@ describe("agent menu — delegates to config editor", () => {
 
       expect(fileOps.findAgentFile).toHaveBeenCalledWith("test-agent", [
          "/test-project/.pi/agents",
-         "/home/.pi/agents",
+         "/home/.pi/agents"
       ]);
    });
 });
@@ -157,7 +157,7 @@ describe("agent menu — settings", () => {
       const params = makeUI([
          "Settings", // from main menu
          "Max concurrency (current: 4)", // from settings
-         undefined, // cancel settings re-show
+         undefined // cancel settings re-show
       ]);
       params.ui.input = vi.fn().mockResolvedValue("8");
       await handler.handle(params);

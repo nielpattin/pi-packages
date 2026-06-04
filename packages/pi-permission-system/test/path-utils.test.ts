@@ -5,7 +5,7 @@ vi.mock("node:os", () => {
    const homedir = vi.fn(() => "/mock/home");
    return {
       homedir,
-      default: { homedir },
+      default: { homedir }
    };
 });
 
@@ -18,7 +18,7 @@ import {
    normalizePathForComparison,
    PATH_BEARING_TOOLS,
    READ_ONLY_PATH_BEARING_TOOLS,
-   SAFE_SYSTEM_PATHS,
+   SAFE_SYSTEM_PATHS
 } from "#src/path-utils";
 
 describe("normalizePathForComparison", () => {
@@ -252,14 +252,14 @@ describe("isPiInfrastructureRead", () => {
             "read",
             "/opt/homebrew/Cellar/pi-coding-agent/0.74.0/libexec/lib/node_modules/@earendil-works/pi-coding-agent/SKILL.md",
             ["/opt/homebrew/**/@earendil-works/pi-coding-agent/**"],
-            cwd,
-         ),
+            cwd
+         )
       ).toBe(true);
    });
 
    test("glob entry does not match an unrelated path", () => {
       expect(
-         isPiInfrastructureRead("read", "/etc/passwd", ["/opt/homebrew/**/@earendil-works/pi-coding-agent/**"], cwd),
+         isPiInfrastructureRead("read", "/etc/passwd", ["/opt/homebrew/**/@earendil-works/pi-coding-agent/**"], cwd)
       ).toBe(false);
    });
 

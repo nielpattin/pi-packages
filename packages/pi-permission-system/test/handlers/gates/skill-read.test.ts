@@ -19,7 +19,7 @@ function makeSkillEntry(overrides: Partial<SkillPromptEntry> = {}): SkillPromptE
       state: "ask",
       normalizedLocation: "/skills/librarian/SKILL.md",
       normalizedBaseDir: "/skills/librarian",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -30,7 +30,7 @@ function makeTcc(overrides: Partial<ToolCallContext> = {}): ToolCallContext {
       input: { path: "/skills/librarian/SKILL.md" },
       toolCallId: "tc-1",
       cwd: "/test/project",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -49,7 +49,7 @@ describe("describeSkillReadGate", () => {
 
    it("returns null when read path does not match any skill", () => {
       const result = describeSkillReadGate(makeTcc({ input: { path: "/test/project/src/index.ts" } }), () => [
-         makeSkillEntry(),
+         makeSkillEntry()
       ]);
       expect(result).toBeNull();
    });
@@ -92,32 +92,32 @@ describe("describeSkillReadGate", () => {
          kind: "skill_read",
          skillName: "librarian",
          readPath: "/skills/librarian/SKILL.md",
-         agentName: undefined,
+         agentName: undefined
       });
    });
 
    it("promptDetails includes skill_read source and skillName", () => {
       const result = describeSkillReadGate(makeTcc({ agentName: "test-agent", toolCallId: "tc-42" }), () => [
-         makeSkillEntry({ name: "my-skill" }),
+         makeSkillEntry({ name: "my-skill" })
       ])!;
       expect(result.promptDetails).toMatchObject({
          source: "skill_read",
          agentName: "test-agent",
          toolCallId: "tc-42",
          toolName: "read",
-         skillName: "my-skill",
+         skillName: "my-skill"
       });
       expect(result.promptDetails.message).toBeDefined();
    });
 
    it("logContext includes skill_read source and skillName", () => {
       const result = describeSkillReadGate(makeTcc({ agentName: "agent-1" }), () => [
-         makeSkillEntry({ name: "librarian" }),
+         makeSkillEntry({ name: "librarian" })
       ])!;
       expect(result.logContext).toMatchObject({
          source: "skill_read",
          skillName: "librarian",
-         agentName: "agent-1",
+         agentName: "agent-1"
       });
    });
 

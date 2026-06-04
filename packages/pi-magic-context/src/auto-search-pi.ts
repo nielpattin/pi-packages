@@ -56,7 +56,7 @@ import { unifiedSearch } from "#core/features/magic-context/search";
 import {
    type AutoSearchHintNoHintReason,
    appendAutoSearchHintDecision,
-   getAutoSearchHintDecisions,
+   getAutoSearchHintDecisions
 } from "#core/features/magic-context/storage-meta-persisted";
 import { buildAutoSearchHint } from "#core/hooks/magic-context/auto-search-hint";
 import { log, sessionLog } from "#core/shared/logger";
@@ -97,7 +97,7 @@ async function unifiedSearchWithTimeout(
    projectPath: string,
    prompt: string,
    options: UnifiedSearchOptions,
-   timeoutMs: number,
+   timeoutMs: number
 ): Promise<UnifiedSearchResult[] | null> {
    const controller = new AbortController();
    let timer: ReturnType<typeof setTimeout> | undefined;
@@ -115,9 +115,9 @@ async function unifiedSearchWithTimeout(
             signal: controller.signal,
             // Auto hints are plugin-internal surfacing, not explicit agent
             // retrievals; match Host lines 69-73 and search.ts lines 77-84.
-            countRetrievals: false,
+            countRetrievals: false
          }),
-         timeoutPromise,
+         timeoutPromise
       ]);
    } finally {
       if (timer !== undefined) clearTimeout(timer);
@@ -197,7 +197,7 @@ function extractUserPromptText(message: UserMessage): string {
 
 function findLatestMeaningfulUserMessage(
    messages: AgentMessage[],
-   entryIds: readonly (string | undefined)[],
+   entryIds: readonly (string | undefined)[]
 ): { message: UserMessage; messageId: string } | null {
    for (let i = messages.length - 1; i >= 0; i -= 1) {
       const msg = messages[i];
@@ -289,7 +289,7 @@ export async function runAutoSearchHintForPi(args: {
       const outcome = appendAutoSearchHintDecision(db, sessionId, {
          messageId: userMsgId,
          decision: "no-hint",
-         reason,
+         reason
       });
       if (!outcome.ok) return;
       if (outcome.kind === "already-present" && outcome.decision.decision === "hint") {
@@ -329,7 +329,7 @@ export async function runAutoSearchHintForPi(args: {
             return result?.vector ?? null;
          },
          isEmbeddingRuntimeEnabled: () => embeddingEnabled === true,
-         visibleMemoryIds: options.visibleMemoryIds ?? null,
+         visibleMemoryIds: options.visibleMemoryIds ?? null
       };
       results = await unifiedSearchWithTimeout(
          db,
@@ -337,11 +337,11 @@ export async function runAutoSearchHintForPi(args: {
          options.projectPath,
          rawPrompt,
          searchOptions,
-         AUTO_SEARCH_TIMEOUT_MS,
+         AUTO_SEARCH_TIMEOUT_MS
       );
    } catch (error) {
       log(
-         `[auto-search] unified search failed for session ${sessionId}: ${error instanceof Error ? error.message : String(error)}`,
+         `[auto-search] unified search failed for session ${sessionId}: ${error instanceof Error ? error.message : String(error)}`
       );
       writeNoHintAndReconcile("error");
       return messages;
@@ -377,7 +377,7 @@ export async function runAutoSearchHintForPi(args: {
    const outcome = appendAutoSearchHintDecision(db, sessionId, {
       messageId: userMsgId,
       decision: "hint",
-      text: payload,
+      text: payload
    });
    if (!outcome.ok) return messages;
    if (outcome.decision.decision === "hint") {
@@ -385,7 +385,7 @@ export async function runAutoSearchHintForPi(args: {
    }
    sessionLog(
       sessionId,
-      `auto-search: attached hint to ${userMsgId} (${results.length} fragments, top score ${results[0].score.toFixed(3)})`,
+      `auto-search: attached hint to ${userMsgId} (${results.length} fragments, top score ${results[0].score.toFixed(3)})`
    );
 
    return messages;

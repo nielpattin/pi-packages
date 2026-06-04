@@ -5,7 +5,7 @@ export {
    embedUnembeddedCommits,
    type IndexCommitsOptions,
    type IndexCommitsResult,
-   indexCommitsForProject,
+   indexCommitsForProject
 } from "./indexer";
 export { type GitCommitSearchHit, type SearchGitCommitsOptions, searchGitCommitsSync } from "./search-git-commits";
 export {
@@ -13,7 +13,7 @@ export {
    countEmbeddedCommits,
    loadProjectCommitEmbeddings,
    loadUnembeddedCommits,
-   saveCommitEmbedding,
+   saveCommitEmbedding
 } from "./storage-git-commit-embeddings";
 export {
    enforceProjectCap,
@@ -23,5 +23,5 @@ export {
    getLatestIndexedCommitTimeMs,
    type StoredGitCommit,
    upsertCommit,
-   upsertCommits,
+   upsertCommits
 } from "./storage-git-commits";

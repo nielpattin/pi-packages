@@ -14,7 +14,7 @@ function makeAgentConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
       inheritContext: false,
       runInBackground: false,
       isolated: false,
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -122,7 +122,7 @@ describe("AgentTypeRegistry", () => {
 
       it("returns config for disabled type (no fallback for existing disabled)", () => {
          const registry = makeRegistry(
-            new Map([["Plan", makeAgentConfig({ name: "Plan", description: "Disabled", enabled: false })]]),
+            new Map([["Plan", makeAgentConfig({ name: "Plan", description: "Disabled", enabled: false })]])
          );
          const config = registry.resolveAgentConfig("Plan");
          expect(config.name).toBe("Plan");
@@ -131,7 +131,7 @@ describe("AgentTypeRegistry", () => {
 
       it("returns user-defined agent config", () => {
          const registry = makeRegistry(
-            new Map([["auditor", makeAgentConfig({ name: "auditor", description: "Security auditor" })]]),
+            new Map([["auditor", makeAgentConfig({ name: "auditor", description: "Security auditor" })]])
          );
          const config = registry.resolveAgentConfig("auditor");
          expect(config.name).toBe("auditor");
@@ -184,8 +184,8 @@ describe("AgentTypeRegistry", () => {
          const registry = makeRegistry(
             new Map([
                ["auditor", makeAgentConfig({ name: "auditor" })],
-               ["reviewer", makeAgentConfig({ name: "reviewer" })],
-            ]),
+               ["reviewer", makeAgentConfig({ name: "reviewer" })]
+            ])
          );
          const names = registry.getUserAgentNames();
          expect(names).toEqual(["auditor", "reviewer"]);
@@ -240,7 +240,7 @@ describe("AgentTypeRegistry", () => {
 
       it("returns custom tool names for user agent", () => {
          const registry = makeRegistry(
-            new Map([["auditor", makeAgentConfig({ name: "auditor", builtinToolNames: ["read", "grep"] })]]),
+            new Map([["auditor", makeAgentConfig({ name: "auditor", builtinToolNames: ["read", "grep"] })]])
          );
          expect(registry.getToolNamesForType("auditor")).toEqual(["read", "grep"]);
       });

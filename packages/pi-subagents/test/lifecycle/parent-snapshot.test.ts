@@ -1,11 +1,11 @@
 import { describe, expect, it, vi } from "vitest";
 
 const { buildParentContextMock } = vi.hoisted(() => ({
-   buildParentContextMock: vi.fn((): string => ""),
+   buildParentContextMock: vi.fn((): string => "")
 }));
 
 vi.mock("#src/session/context", () => ({
-   buildParentContext: buildParentContextMock,
+   buildParentContext: buildParentContextMock
 }));
 
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
@@ -18,7 +18,7 @@ function makeCtx(overrides: Record<string, unknown> = {}) {
       model: { id: "claude-sonnet" },
       modelRegistry: { find: vi.fn(), getAvailable: vi.fn(() => []) },
       sessionManager: { getBranch: vi.fn(() => []) },
-      ...overrides,
+      ...overrides
    } as unknown as ExtensionContext;
 }
 

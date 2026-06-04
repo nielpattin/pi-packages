@@ -13,7 +13,7 @@ function makePi(execResults: Record<string, { stdout: string; stderr: string; co
             }
          }
          return Promise.resolve({ code: 1, stderr: "", stdout: "" });
-      }),
+      })
    } as unknown as Parameters<typeof getChangedFiles>[0];
 }
 
@@ -25,8 +25,8 @@ describe(getChangedFiles, () => {
          "diff --name-status HEAD": {
             code: 0,
             stderr: "",
-            stdout: "M\tsrc/foo.ts\nA\tsrc/bar.ts\nR100\tsrc/old.ts\tsrc/new.ts\nC100\tsrc/a.ts\tsrc/b.ts\n",
-         },
+            stdout: "M\tsrc/foo.ts\nA\tsrc/bar.ts\nR100\tsrc/old.ts\tsrc/new.ts\nC100\tsrc/a.ts\tsrc/b.ts\n"
+         }
       });
 
       const files = await getChangedFiles(pi, "/project", defaultOptions);
@@ -35,7 +35,7 @@ describe(getChangedFiles, () => {
          { path: "src/foo.ts", status: "modified" },
          { path: "src/bar.ts", status: "added" },
          { path: "src/new.ts", status: "renamed" },
-         { path: "src/b.ts", status: "copied" },
+         { path: "src/b.ts", status: "copied" }
       ]);
    });
 
@@ -44,8 +44,8 @@ describe(getChangedFiles, () => {
          "diff --name-status HEAD": {
             code: 0,
             stderr: "",
-            stdout: "M\tsrc/keep.ts\nD\tsrc/gone.ts\n",
-         },
+            stdout: "M\tsrc/keep.ts\nD\tsrc/gone.ts\n"
+         }
       });
 
       const files = await getChangedFiles(pi, "/project", defaultOptions);
@@ -58,8 +58,8 @@ describe(getChangedFiles, () => {
          "diff --name-status HEAD~1": {
             code: 0,
             stderr: "",
-            stdout: "M\tsrc/recent.ts\n",
-         },
+            stdout: "M\tsrc/recent.ts\n"
+         }
       });
 
       const files = await getChangedFiles(pi, "/project", defaultOptions);
@@ -80,8 +80,8 @@ describe(getChangedFiles, () => {
          "diff --name-status --cached": {
             code: 0,
             stderr: "",
-            stdout: "M\tsrc/staged.ts\n",
-         },
+            stdout: "M\tsrc/staged.ts\n"
+         }
       });
 
       const options: SimplifyOptions = { files: [], ref: "HEAD", staged: true };
@@ -89,7 +89,7 @@ describe(getChangedFiles, () => {
 
       expect(files).toStrictEqual([{ path: "src/staged.ts", status: "modified" }]);
       expect(pi.exec).toHaveBeenCalledWith("git", ["diff", "--name-status", "--cached"], {
-         cwd: "/project",
+         cwd: "/project"
       });
    });
 
@@ -98,8 +98,8 @@ describe(getChangedFiles, () => {
          "diff --name-status main": {
             code: 0,
             stderr: "",
-            stdout: "A\tsrc/feature.ts\n",
-         },
+            stdout: "A\tsrc/feature.ts\n"
+         }
       });
 
       const options: SimplifyOptions = { files: [], ref: "main", staged: false };
@@ -114,13 +114,13 @@ describe(getChangedFiles, () => {
       const options: SimplifyOptions = {
          files: ["src/a.ts", "src/b.ts"],
          ref: "HEAD",
-         staged: false,
+         staged: false
       };
       const files = await getChangedFiles(pi, "/project", options);
 
       expect(files).toStrictEqual([
          { path: "src/a.ts", status: "modified" },
-         { path: "src/b.ts", status: "modified" },
+         { path: "src/b.ts", status: "modified" }
       ]);
       expect(pi.exec).not.toHaveBeenCalled();
    });
@@ -130,15 +130,15 @@ describe(getChangedFiles, () => {
          "diff --name-status HEAD": {
             code: 0,
             stderr: "",
-            stdout: "M\tsrc/foo.ts\n\n\nA\tsrc/bar.ts\n",
-         },
+            stdout: "M\tsrc/foo.ts\n\n\nA\tsrc/bar.ts\n"
+         }
       });
 
       const files = await getChangedFiles(pi, "/project", defaultOptions);
 
       expect(files).toStrictEqual([
          { path: "src/foo.ts", status: "modified" },
-         { path: "src/bar.ts", status: "added" },
+         { path: "src/bar.ts", status: "added" }
       ]);
    });
 });

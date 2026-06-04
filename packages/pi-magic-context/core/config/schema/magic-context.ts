@@ -26,7 +26,7 @@ export const COMPRESSOR_MERGE_RATIO_BY_DEPTH: Record<number, number> = {
    2: 1.5, // 3:2 — lite caveman
    3: 2.0, // 2:1 — full caveman
    4: 2.0, // 2:1 — ultra caveman (caveman post-process does heavy lifting)
-   5: 0, // title-only collapse (no merge, no LLM)
+   5: 0 // title-only collapse (no merge, no LLM)
 };
 
 export const DREAMER_TASKS = ["consolidate", "verify", "archive-stale", "improve", "maintain-docs"] as const;
@@ -65,7 +65,7 @@ export const DreamerConfigSchema = AgentOverrideConfigSchema.merge(
             /** Enable user memory extraction and promotion (default: true) */
             enabled: z.boolean().default(true),
             /** Minimum candidate observations before dreamer considers promotion (default: 3) */
-            promotion_threshold: z.number().min(2).max(20).default(3),
+            promotion_threshold: z.number().min(2).max(20).default(3)
          })
          .default({ enabled: true, promotion_threshold: 3 }),
       /** Pin frequently-read key files into the system prompt so the agent
@@ -80,12 +80,12 @@ export const DreamerConfigSchema = AgentOverrideConfigSchema.merge(
             /** Total token budget for all pinned key files (min: 2000, max: 30000, default: 10000) */
             token_budget: z.number().min(2000).max(30000).default(10000),
             /** Minimum full-read count before a file is considered for pinning (min: 2, default: 4) */
-            min_reads: z.number().min(2).max(20).default(4),
+            min_reads: z.number().min(2).max(20).default(4)
          })
          .default({ enabled: false, token_budget: 10000, min_reads: 4 }),
       /** Pi only: explicit thinking level for dreamer subagent tasks. See HistorianConfigSchema. */
-      thinking_level: PiThinkingLevelSchema,
-   }),
+      thinking_level: PiThinkingLevelSchema
+   })
 );
 export type DreamerConfig = z.infer<typeof DreamerConfigSchema>;
 
@@ -93,7 +93,7 @@ export const SidekickConfigSchema = AgentOverrideConfigSchema.extend({
    timeout_ms: z.number().default(30000),
    system_prompt: z.string().optional(),
    /** Pi only: explicit thinking level for sidekick subagent. See HistorianConfigSchema. */
-   thinking_level: PiThinkingLevelSchema,
+   thinking_level: PiThinkingLevelSchema
 }).optional();
 export type SidekickConfig = NonNullable<z.infer<typeof SidekickConfigSchema>>;
 
@@ -112,7 +112,7 @@ export const HistorianConfigSchema = AgentOverrideConfigSchema.extend({
     *  because Pi's default thinking-level resolution can pick a value the provider
     *  rejects. Host users set `variant` instead.
     *  Valid: off | minimal | low | medium | high | xhigh */
-   thinking_level: PiThinkingLevelSchema,
+   thinking_level: PiThinkingLevelSchema
 }).optional();
 export type HistorianConfig = NonNullable<z.infer<typeof HistorianConfigSchema>>;
 
@@ -121,14 +121,14 @@ const BaseEmbeddingConfigSchema = z
       provider: z.enum(["local", "openai-compatible", "off"]).default("local"),
       model: z.string().optional(),
       endpoint: z.string().optional(),
-      api_key: z.string().optional(),
+      api_key: z.string().optional()
    })
    .superRefine((data, ctx) => {
       if (data.provider === "openai-compatible" && !data.endpoint?.trim()) {
          ctx.addIssue({
             code: "custom",
             path: ["endpoint"],
-            message: "endpoint is required when embedding.provider is openai-compatible",
+            message: "endpoint is required when embedding.provider is openai-compatible"
          });
       }
 
@@ -136,7 +136,7 @@ const BaseEmbeddingConfigSchema = z
          ctx.addIssue({
             code: "custom",
             path: ["model"],
-            message: "model is required when embedding.provider is openai-compatible",
+            message: "model is required when embedding.provider is openai-compatible"
          });
       }
    });
@@ -145,7 +145,7 @@ export const EmbeddingConfigSchema = BaseEmbeddingConfigSchema.transform((data) 
    if (data.provider === "local") {
       return {
          provider: "local" as const,
-         model: data.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL,
+         model: data.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL
       };
    }
 
@@ -155,7 +155,7 @@ export const EmbeddingConfigSchema = BaseEmbeddingConfigSchema.transform((data) 
          provider: "openai-compatible" as const,
          model: data.model?.trim() ?? "",
          endpoint: data.endpoint?.trim() ?? "",
-         ...(apiKey ? { api_key: apiKey } : {}),
+         ...(apiKey ? { api_key: apiKey } : {})
       };
    }
 
@@ -299,7 +299,7 @@ export const MagicContextConfigSchema = z
       execute_threshold_percentage: z
          .union([
             z.number().min(20).max(80),
-            z.object({ default: z.number().min(20).max(80) }).catchall(z.number().min(20).max(80)),
+            z.object({ default: z.number().min(20).max(80) }).catchall(z.number().min(20).max(80))
          ])
          .default(DEFAULT_EXECUTE_THRESHOLD_PERCENTAGE),
       /** Absolute token thresholds per model. When matched, overrides execute_threshold_percentage
@@ -307,7 +307,7 @@ export const MagicContextConfigSchema = z
        *  80% × context_limit are clamped with a warning log. Min 5_000, max 2_000_000. */
       execute_threshold_tokens: z
          .object({
-            default: z.number().min(5_000).max(2_000_000).optional(),
+            default: z.number().min(5_000).max(2_000_000).optional()
          })
          .catchall(z.number().min(5_000).max(2_000_000))
          .optional(),
@@ -331,7 +331,7 @@ export const MagicContextConfigSchema = z
             /** Enable commit-cluster based historian triggering (default: true) */
             enabled: z.boolean().default(true),
             /** Minimum commit clusters required to trigger historian (min: 1, default: 3) */
-            min_clusters: z.number().min(1).default(3),
+            min_clusters: z.number().min(1).default(3)
          })
          .default({ enabled: true, min_clusters: 3 }),
       /** Controls whether and where Magic Context augments the system prompt.
@@ -348,11 +348,11 @@ export const MagicContextConfigSchema = z
              *  call. Default `<!-- magic-context: skip -->` is meant to be
              *  added inside a user's custom agent prompt to opt that agent
              *  out. (default: ["<!-- magic-context: skip -->"]) */
-            skip_signatures: z.array(z.string()).default(["<!-- magic-context: skip -->"]),
+            skip_signatures: z.array(z.string()).default(["<!-- magic-context: skip -->"])
          })
          .default({
             enabled: true,
-            skip_signatures: ["<!-- magic-context: skip -->"],
+            skip_signatures: ["<!-- magic-context: skip -->"]
          }),
       /** Compressor configuration — controls second-pass compression of older
        *  compartments when the rendered history block exceeds its budget.
@@ -384,7 +384,7 @@ export const MagicContextConfigSchema = z
             /** Number of newest compartments always excluded from compression.
              *  Protects freshly published historian output from being re-compressed before it
              *  has been used. (min: 0, max: 100, default: 10) */
-            grace_compartments: z.number().min(0).max(100).default(DEFAULT_COMPRESSOR_GRACE_COMPARTMENTS),
+            grace_compartments: z.number().min(0).max(100).default(DEFAULT_COMPRESSOR_GRACE_COMPARTMENTS)
          })
          .default({
             enabled: true,
@@ -392,12 +392,12 @@ export const MagicContextConfigSchema = z
             max_merge_depth: DEFAULT_COMPRESSOR_MAX_MERGE_DEPTH,
             cooldown_ms: DEFAULT_COMPRESSOR_COOLDOWN_MS,
             max_compartments_per_pass: DEFAULT_COMPRESSOR_MAX_COMPARTMENTS_PER_PASS,
-            grace_compartments: DEFAULT_COMPRESSOR_GRACE_COMPARTMENTS,
+            grace_compartments: DEFAULT_COMPRESSOR_GRACE_COMPARTMENTS
          }),
       /** Embedding provider configuration */
       embedding: EmbeddingConfigSchema.default({
          provider: "local",
-         model: DEFAULT_LOCAL_EMBEDDING_MODEL,
+         model: DEFAULT_LOCAL_EMBEDDING_MODEL
       }),
       /** Experimental features — gated behind flags, may change between releases.
        *  Note: user_memories and pin_key_files graduated to top-level `dreamer.*` in v0.14. */
@@ -417,7 +417,7 @@ export const MagicContextConfigSchema = z
                   /** Days of HEAD history to index (min: 7, max: 3650, default: 365) */
                   since_days: z.number().min(7).max(3650).default(365),
                   /** Max commits kept per project; oldest evicted (min: 100, max: 20000, default: 2000) */
-                  max_commits: z.number().min(100).max(20000).default(2000),
+                  max_commits: z.number().min(100).max(20000).default(2000)
                })
                .default({ enabled: false, since_days: 365, max_commits: 2000 }),
             /** Auto-search hint: transform-time ctx_search on each new user
@@ -430,7 +430,7 @@ export const MagicContextConfigSchema = z
                   /** Top hit score must exceed this threshold for the hint to fire (min: 0.3, max: 0.95, default: 0.60) */
                   score_threshold: z.number().min(0.3).max(0.95).default(0.6),
                   /** Skip hint when user message is shorter than this (min: 5, max: 500, default: 20) */
-                  min_prompt_chars: z.number().min(5).max(500).default(20),
+                  min_prompt_chars: z.number().min(5).max(500).default(20)
                })
                .default({ enabled: false, score_threshold: 0.6, min_prompt_chars: 20 }),
             /** Age-tier caveman compression for long user/assistant text
@@ -443,15 +443,15 @@ export const MagicContextConfigSchema = z
                   enabled: z.boolean().default(false),
                   /** Text parts shorter than this (characters) stay untouched.
                    *  Min 100, max 10000. Default: 500. */
-                  min_chars: z.number().min(100).max(10000).default(500),
+                  min_chars: z.number().min(100).max(10000).default(500)
                })
-               .default({ enabled: false, min_chars: 500 }),
+               .default({ enabled: false, min_chars: 500 })
          })
          .default({
             temporal_awareness: false,
             git_commit_indexing: { enabled: false, since_days: 365, max_commits: 2000 },
             auto_search: { enabled: false, score_threshold: 0.6, min_prompt_chars: 20 },
-            caveman_text_compression: { enabled: false, min_chars: 500 },
+            caveman_text_compression: { enabled: false, min_chars: 500 }
          }),
       /** Cross-session memory configuration */
       memory: z
@@ -463,20 +463,20 @@ export const MagicContextConfigSchema = z
             /** Automatically promote eligible session facts into memory (default: true) */
             auto_promote: z.boolean().default(true),
             /** retrieval_count threshold for promoting memory to permanent status (min: 1, default: 3) */
-            retrieval_count_promotion_threshold: z.number().min(1).default(3),
+            retrieval_count_promotion_threshold: z.number().min(1).default(3)
          })
          .default({
             enabled: true,
             injection_budget_tokens: 4000,
             auto_promote: true,
-            retrieval_count_promotion_threshold: 3,
+            retrieval_count_promotion_threshold: 3
          }),
       /** Optional sidekick agent configuration for session-start memory retrieval */
-      sidekick: SidekickConfigSchema,
+      sidekick: SidekickConfigSchema
    })
    .transform((data): MagicContextConfig => {
       return {
          ...data,
-         protected_tags: data.protected_tags ?? DEFAULT_PROTECTED_TAGS,
+         protected_tags: data.protected_tags ?? DEFAULT_PROTECTED_TAGS
       };
    });

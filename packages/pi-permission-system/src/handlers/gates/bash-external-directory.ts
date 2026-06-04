@@ -12,7 +12,7 @@ type CheckPermissionFn = (
    surface: string,
    input: unknown,
    agentName?: string,
-   sessionRules?: Rule[],
+   sessionRules?: Rule[]
 ) => PermissionCheckResult;
 
 /**
@@ -27,7 +27,7 @@ type CheckPermissionFn = (
 export async function describeBashExternalDirectoryGate(
    tcc: ToolCallContext,
    checkPermission: CheckPermissionFn,
-   getSessionRuleset: () => Rule[],
+   getSessionRuleset: () => Rule[]
 ): Promise<GateResult> {
    if (tcc.toolName !== "bash" || !tcc.cwd) return null;
 
@@ -66,9 +66,9 @@ export async function describeBashExternalDirectoryGate(
                agentName: tcc.agentName,
                command,
                externalPaths,
-               resolution: "session_approved",
-            },
-         },
+               resolution: "session_approved"
+            }
+         }
       };
    }
 
@@ -81,7 +81,7 @@ export async function describeBashExternalDirectoryGate(
       command,
       uncoveredPaths,
       tcc.cwd,
-      tcc.agentName ?? undefined,
+      tcc.agentName ?? undefined
    );
 
    const patterns = uncoveredPaths.map((p) => deriveApprovalPattern(p));
@@ -94,11 +94,11 @@ export async function describeBashExternalDirectoryGate(
          command,
          externalPaths: uncoveredPaths,
          cwd: tcc.cwd,
-         agentName: tcc.agentName ?? undefined,
+         agentName: tcc.agentName ?? undefined
       },
       sessionApproval: {
          surface: "external_directory",
-         patterns,
+         patterns
       },
       promptDetails: {
          source: "tool_call",
@@ -106,7 +106,7 @@ export async function describeBashExternalDirectoryGate(
          message: bashExtMessage,
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
-         command,
+         command
       },
       logContext: {
          source: "tool_call",
@@ -115,12 +115,12 @@ export async function describeBashExternalDirectoryGate(
          agentName: tcc.agentName,
          command,
          externalPaths: uncoveredPaths,
-         message: bashExtMessage,
+         message: bashExtMessage
       },
       decision: {
          surface: "external_directory",
-         value: command,
+         value: command
       },
-      preCheck: worstCheck,
+      preCheck: worstCheck
    };
 }

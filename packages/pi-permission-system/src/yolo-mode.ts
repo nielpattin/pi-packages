@@ -14,7 +14,7 @@ export function isYoloModeEnabled(config: PermissionSystemExtensionConfig): bool
 
 export function shouldAutoApprovePermissionState(
    state: PermissionState,
-   config: PermissionSystemExtensionConfig,
+   config: PermissionSystemExtensionConfig
 ): boolean {
    return state === "ask" && isYoloModeEnabled(config);
 }

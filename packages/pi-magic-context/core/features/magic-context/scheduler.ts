@@ -8,7 +8,7 @@ const NUMERIC_PATTERN = /^\d+$/;
 const UNIT_TO_MS: Record<string, number> = {
    s: 1000,
    m: 60 * 1000,
-   h: 60 * 60 * 1000,
+   h: 60 * 60 * 1000
 };
 
 export interface Scheduler {
@@ -18,7 +18,7 @@ export interface Scheduler {
       currentTime?: number,
       sessionId?: string,
       modelKey?: string,
-      contextLimit?: number,
+      contextLimit?: number
    ): SchedulerDecision;
 }
 
@@ -54,7 +54,7 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
          currentTime: number = Date.now(),
          sessionId?: string,
          modelKey?: string,
-         contextLimit?: number,
+         contextLimit?: number
       ): SchedulerDecision {
          // Brand-new sessions (no usage, no baseline) have nothing to execute.
          // Skip the TTL check that would always fire due to lastResponseTime=0.
@@ -76,7 +76,7 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
          const threshold = resolveExecuteThreshold(config.executeThresholdPercentage, modelKey, 65, {
             tokensConfig: config.executeThresholdTokens,
             contextLimit: effectiveContextLimit,
-            sessionId,
+            sessionId
          });
          if (contextUsage.percentage >= threshold) {
             return "execute";
@@ -99,6 +99,6 @@ export function createScheduler(config: SchedulerConfig): Scheduler {
          }
 
          return "defer";
-      },
+      }
    };
 }

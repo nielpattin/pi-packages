@@ -17,7 +17,7 @@ function getSetDreamStateStatement(db: Database): PreparedStatement {
    let stmt = setDreamStateStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO dream_state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
+         "INSERT INTO dream_state (key, value) VALUES (?, ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value"
       );
       setDreamStateStatements.set(db, stmt);
    }

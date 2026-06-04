@@ -35,7 +35,7 @@ export class PermissionGateHandler {
    constructor(
       private readonly session: PermissionSession,
       private readonly events: PermissionEventBus,
-      private readonly toolRegistry: ToolRegistry,
+      private readonly toolRegistry: ToolRegistry
    ) {}
 
    async handleToolCall(event: unknown, ctx: ExtensionContext): Promise<{ block?: true; reason?: string }> {
@@ -56,7 +56,7 @@ export class PermissionGateHandler {
       if (registrationCheck.status === "unregistered") {
          return {
             block: true,
-            reason: formatUnknownToolReason(registrationCheck.requestedToolName, registrationCheck.availableToolNames),
+            reason: formatUnknownToolReason(registrationCheck.requestedToolName, registrationCheck.availableToolNames)
          };
       }
 
@@ -71,7 +71,7 @@ export class PermissionGateHandler {
          agentName,
          input,
          toolCallId,
-         cwd: ctx.cwd,
+         cwd: ctx.cwd
       };
 
       // ── Shared gate adapter closures ─────────────────────────────────────
@@ -94,7 +94,7 @@ export class PermissionGateHandler {
          writeReviewLog,
          emitDecision,
          canConfirm,
-         promptPermission,
+         promptPermission
       };
 
       // ── Skill-read gate (descriptor + runner) ───────────────────────────────
@@ -212,7 +212,7 @@ export class PermissionGateHandler {
                source: "skill_input",
                agentName,
                message: skillInputMessage,
-               skillName,
+               skillName
             });
             skillInputAutoApproved = decision.autoApproved === true;
             return decision;
@@ -223,13 +223,13 @@ export class PermissionGateHandler {
             source: "skill_input",
             skillName,
             agentName,
-            message: skillInputMessage,
+            message: skillInputMessage
          },
          messages: {
             denyReason: skillInputMessage,
             unavailableReason: "Skill requires approval, but no interactive UI is available.",
-            userDeniedReason: () => "User denied skill.",
-         },
+            userDeniedReason: () => "User denied skill."
+         }
       });
 
       emitDecisionEvent(this.events, {
@@ -253,7 +253,7 @@ export class PermissionGateHandler {
          // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- ?? null normalises undefined to null for the log record
          origin: check.origin ?? null,
          agentName: agentName ?? null,
-         matchedPattern: check.matchedPattern ?? null,
+         matchedPattern: check.matchedPattern ?? null
       });
 
       if (skillInputGate.action === "block") {

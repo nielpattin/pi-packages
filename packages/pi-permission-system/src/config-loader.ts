@@ -7,7 +7,7 @@ import {
    getLegacyExtensionConfigPath,
    getLegacyGlobalPolicyPath,
    getLegacyProjectPolicyPath,
-   getProjectConfigPath,
+   getProjectConfigPath
 } from "./config-paths";
 import { mergeFlatPermissions } from "./permission-merge";
 import type { FlatPermissionConfig } from "./types";
@@ -184,7 +184,7 @@ export function normalizeUnifiedConfig(raw: unknown): {
  */
 export function mergeUnifiedConfigs(
    base: UnifiedPermissionConfig,
-   override: UnifiedPermissionConfig,
+   override: UnifiedPermissionConfig
 ): UnifiedPermissionConfig {
    const merged: UnifiedPermissionConfig = {};
 
@@ -250,7 +250,7 @@ export function loadAndMergeConfigs(agentDir: string, cwd: string, extensionRoot
       allIssues.push(
          `Legacy global policy found at '${legacyGlobalPolicyPath}'. ` +
             `Move it to '${newGlobalPath}':\n` +
-            `  mv '${legacyGlobalPolicyPath}' '${newGlobalPath}'`,
+            `  mv '${legacyGlobalPolicyPath}' '${newGlobalPath}'`
       );
       allIssues.push(...legacy.issues);
       merged = mergeUnifiedConfigs(merged, legacy.config);
@@ -264,7 +264,7 @@ export function loadAndMergeConfigs(agentDir: string, cwd: string, extensionRoot
       allIssues.push(
          `Legacy extension config found at '${legacyExtConfigPath}'. ` +
             `Move runtime settings to '${newGlobalPath}':\n` +
-            `  mv '${legacyExtConfigPath}' '${newGlobalPath}'`,
+            `  mv '${legacyExtConfigPath}' '${newGlobalPath}'`
       );
       allIssues.push(...legacy.issues);
       merged = mergeUnifiedConfigs(merged, legacy.config);
@@ -282,7 +282,7 @@ export function loadAndMergeConfigs(agentDir: string, cwd: string, extensionRoot
       allIssues.push(
          `Legacy project policy found at '${legacyProjectPolicyPath}'. ` +
             `Move it to '${newProjectPath}':\n` +
-            `  mv '${legacyProjectPolicyPath}' '${newProjectPath}'`,
+            `  mv '${legacyProjectPolicyPath}' '${newProjectPath}'`
       );
       allIssues.push(...legacy.issues);
       merged = mergeUnifiedConfigs(merged, legacy.config);
@@ -298,7 +298,7 @@ export function loadAndMergeConfigs(agentDir: string, cwd: string, extensionRoot
       global: globalConfig,
       project: projectConfig,
       merged,
-      issues: allIssues,
+      issues: allIssues
    };
 }
 
@@ -320,7 +320,7 @@ export function loadUnifiedConfig(path: string): UnifiedConfigLoadResult {
       const message = error instanceof Error ? error.message : String(error);
       return {
          config: {},
-         issues: [`Failed to read config at '${path}': ${message}`],
+         issues: [`Failed to read config at '${path}': ${message}`]
       };
    }
 }

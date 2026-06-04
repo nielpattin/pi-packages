@@ -9,13 +9,13 @@ const testRegistry = new AgentTypeRegistry(() => new Map());
 const env: EnvInfo = {
    isGitRepo: true,
    branch: "main",
-   platform: "darwin",
+   platform: "darwin"
 };
 
 const envNoGit: EnvInfo = {
    isGitRepo: false,
    branch: "",
-   platform: "linux",
+   platform: "linux"
 };
 
 function getDefaultConfig(name: string): AgentConfig {
@@ -82,7 +82,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "append",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const parentPrompt = "You are a parent coding agent with special powers.";
       const prompt = buildAgentPrompt(config, "/workspace", env, parentPrompt);
@@ -105,7 +105,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "append",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const prompt = buildAgentPrompt(config, "/workspace", env);
       expect(prompt).toContain("/workspace");
@@ -124,7 +124,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "append",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const parentPrompt = "You are a parent coding agent.";
       const prompt = buildAgentPrompt(config, "/workspace", env, parentPrompt);
@@ -145,7 +145,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "replace",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const prompt = buildAgentPrompt(config, "/workspace", env);
       expect(prompt).toContain("You are a specialized agent.");
@@ -164,7 +164,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "replace",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const prompt = buildAgentPrompt(config, "/workspace", env, "SECRET parent prompt content");
       expect(prompt).toContain("You are a standalone agent.");
@@ -191,7 +191,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "append",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const prompt = buildAgentPrompt(config, "/workspace", env);
       expect(prompt).toContain("<sub_agent_context>");
@@ -212,13 +212,13 @@ describe("buildAgentPrompt", () => {
          promptMode: "replace",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const extras = {
          skillBlocks: [
             { name: "api-conventions", content: "Use REST endpoints." },
-            { name: "error-handling", content: "Handle errors gracefully." },
-         ],
+            { name: "error-handling", content: "Handle errors gracefully." }
+         ]
       };
       const prompt = buildAgentPrompt(config, "/workspace", env, undefined, extras);
       expect(prompt).toContain("Preloaded Skill: api-conventions");
@@ -238,7 +238,7 @@ describe("buildAgentPrompt", () => {
          promptMode: "replace",
          inheritContext: false,
          runInBackground: false,
-         isolated: false,
+         isolated: false
       };
       const prompt = buildAgentPrompt(config, "/workspace", env);
       expect(prompt).not.toContain("Agent Memory");
@@ -260,7 +260,7 @@ describe("buildAgentPrompt", () => {
             promptMode: "replace",
             inheritContext: false,
             runInBackground: false,
-            isolated: false,
+            isolated: false
          };
          const prompt = buildAgentPrompt(config, "/workspace", env);
          expect(prompt.startsWith('<active_agent name="Explore"/>\n\n')).toBe(true);
@@ -277,7 +277,7 @@ describe("buildAgentPrompt", () => {
             promptMode: "append",
             inheritContext: false,
             runInBackground: false,
-            isolated: false,
+            isolated: false
          };
          const prompt = buildAgentPrompt(config, "/workspace", env, "Parent prompt content.");
          const tagIdx = prompt.indexOf('<active_agent name="general-purpose"/>');
@@ -299,7 +299,7 @@ describe("buildAgentPrompt", () => {
             promptMode: "replace",
             inheritContext: false,
             runInBackground: false,
-            isolated: false,
+            isolated: false
          };
          const prompt = buildAgentPrompt(config, "/workspace", env);
          expect(prompt).toContain('<active_agent name="my-custom-agent"/>');
@@ -316,7 +316,7 @@ describe("buildAgentPrompt", () => {
             promptMode: "replace",
             inheritContext: false,
             runInBackground: false,
-            isolated: false,
+            isolated: false
          };
          const replacePrompt = buildAgentPrompt(replaceConfig, "/workspace", env);
          const tagIdx = replacePrompt.indexOf('<active_agent name="agent-a"/>');
@@ -335,7 +335,7 @@ describe("buildAgentPrompt", () => {
             promptMode: "append",
             inheritContext: false,
             runInBackground: false,
-            isolated: false,
+            isolated: false
          };
          const appendPrompt = buildAgentPrompt(appendConfig, "/workspace", env, "Parent.");
          const tagIdxB = appendPrompt.indexOf('<active_agent name="agent-b"/>');

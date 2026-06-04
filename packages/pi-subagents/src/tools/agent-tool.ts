@@ -3,7 +3,7 @@ import type { AgentToolResult } from "@earendil-works/pi-coding-agent";
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
-import { AgentTypeRegistry } from "#src/config/agent-types";
+import type { AgentTypeRegistry } from "#src/config/agent-types";
 import type { AgentSpawnConfig } from "#src/lifecycle/agent-manager";
 import type { ParentSnapshot } from "#src/lifecycle/parent-snapshot";
 import { spawnBackground } from "#src/tools/background-spawner";
@@ -12,8 +12,8 @@ import { buildDetails, buildTypeListText, textResult } from "#src/tools/helpers"
 import { renderAgentResult } from "#src/tools/result-renderer";
 import { type ModelInfo, resolveSpawnConfig } from "#src/tools/spawn-config";
 import type { Agent, ParentSessionInfo } from "#src/types";
-import { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
-import { type UICtx } from "#src/ui/agent-widget";
+import type { AgentActivityTracker } from "#src/ui/agent-activity-tracker";
+import type { UICtx } from "#src/ui/agent-widget";
 import { type AgentDetails, getDisplayName } from "#src/ui/display";
 
 // ---- Shared interfaces (also used by background-spawner and foreground-runner) ----
@@ -37,7 +37,7 @@ export interface AgentToolManager {
       snapshot: ParentSnapshot,
       type: string,
       prompt: string,
-      opts: Omit<AgentSpawnConfig, "isBackground">,
+      opts: Omit<AgentSpawnConfig, "isBackground">
    ) => Promise<Agent>;
    resume: (id: string, prompt: string, signal: AbortSignal) => Promise<Agent | undefined>;
    getRecord: (id: string) => Agent | undefined;
@@ -72,7 +72,7 @@ export class AgentTool {
       private readonly runtime: AgentToolRuntime,
       private readonly settings: AgentToolSettings,
       private readonly registry: AgentTypeRegistry,
-      private readonly agentDir: string,
+      private readonly agentDir: string
    ) {
       this.typeListText = buildTypeListText(registry, agentDir);
       this.availableTypesText = registry.getAvailableTypes().join(", ");
@@ -83,7 +83,7 @@ export class AgentTool {
       params: Record<string, unknown>,
       signal: AbortSignal | undefined,
       onUpdate: ((update: AgentToolResult<any>) => void) | undefined,
-      ctx: any,
+      ctx: any
    ) {
       // Ensure we have UI context for widget rendering
       this.runtime.setUICtx(ctx.ui as UICtx);
@@ -112,14 +112,14 @@ export class AgentTool {
          const record = await this.manager.resume(
             params.resume as string,
             params.prompt as string,
-            signal ?? new AbortController().signal,
+            signal ?? new AbortController().signal
          );
          if (!record) {
             return textResult(`Failed to resume agent "${params.resume}".`);
          }
          return textResult(
             record.result?.trim() ?? record.error?.trim() ?? "No output.",
-            buildDetails(config.presentation.detailBase, record),
+            buildDetails(config.presentation.detailBase, record)
          );
       }
 
@@ -129,7 +129,7 @@ export class AgentTool {
             config,
             snapshot,
             parentSession,
-            settings: this.settings,
+            settings: this.settings
          });
       }
 
@@ -140,7 +140,7 @@ export class AgentTool {
          this.runtime.agentActivity,
          { config, snapshot, parentSession },
          signal,
-         onUpdate,
+         onUpdate
       );
    }
 
@@ -178,58 +178,58 @@ Guidelines:
 - Use isolation: "worktree" to run the agent in an isolated git worktree (safe parallel file modifications).`,
          parameters: Type.Object({
             prompt: Type.String({
-               description: "The task for the agent to perform.",
+               description: "The task for the agent to perform."
             }),
             description: Type.String({
-               description: "A short (3-5 word) description of the task (shown in UI).",
+               description: "A short (3-5 word) description of the task (shown in UI)."
             }),
             subagent_type: Type.String({
-               description: `The type of specialized agent to use. Available types: ${availableTypesText}. Custom agents from .pi/agents/<name>.md (project) or ${agentDir}/agents/<name>.md (global) are also available.`,
+               description: `The type of specialized agent to use. Available types: ${availableTypesText}. Custom agents from .pi/agents/<name>.md (project) or ${agentDir}/agents/<name>.md (global) are also available.`
             }),
             model: Type.Optional(
                Type.String({
                   description:
-                     'Optional model override. Accepts "provider/modelId" or fuzzy name (e.g. "haiku", "sonnet"). Omit to use the agent type\'s default.',
-               }),
+                     'Optional model override. Accepts "provider/modelId" or fuzzy name (e.g. "haiku", "sonnet"). Omit to use the agent type\'s default.'
+               })
             ),
             thinking: Type.Optional(
                Type.String({
-                  description: "Thinking level: off, minimal, low, medium, high, xhigh. Overrides agent default.",
-               }),
+                  description: "Thinking level: off, minimal, low, medium, high, xhigh. Overrides agent default."
+               })
             ),
             max_turns: Type.Optional(
                Type.Number({
                   description: "Maximum number of agentic turns before stopping. Omit for unlimited (default).",
-                  minimum: 1,
-               }),
+                  minimum: 1
+               })
             ),
             run_in_background: Type.Optional(
                Type.Boolean({
                   description:
-                     "Set to true to run in background. Returns agent ID immediately. You will be notified when it completes.",
-               }),
+                     "Set to true to run in background. Returns agent ID immediately. You will be notified when it completes."
+               })
             ),
             resume: Type.Optional(
                Type.String({
-                  description: "Optional agent ID to resume from. Continues from previous context.",
-               }),
+                  description: "Optional agent ID to resume from. Continues from previous context."
+               })
             ),
             isolated: Type.Optional(
                Type.Boolean({
-                  description: "If true, agent gets no extension/MCP tools — only built-in tools.",
-               }),
+                  description: "If true, agent gets no extension/MCP tools — only built-in tools."
+               })
             ),
             inherit_context: Type.Optional(
                Type.Boolean({
-                  description: "If true, fork parent conversation into the agent. Default: false (fresh context).",
-               }),
+                  description: "If true, fork parent conversation into the agent. Default: false (fresh context)."
+               })
             ),
             isolation: Type.Optional(
                Type.Literal("worktree", {
                   description:
-                     'Set to "worktree" to run the agent in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.',
-               }),
-            ),
+                     'Set to "worktree" to run the agent in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.'
+               })
+            )
          }),
 
          // ---- Custom rendering: Claude Code style ----
@@ -240,9 +240,9 @@ Guidelines:
                : "Subagent";
             const desc = (args.description as string | undefined) ?? "";
             return new Text(
-               "▸ " + theme.fg("toolTitle", theme.bold(displayName)) + (desc ? "  " + theme.fg("muted", desc) : ""),
+               `▸ ${theme.fg("toolTitle", theme.bold(displayName))}${desc ? `  ${theme.fg("muted", desc)}` : ""}`,
                0,
-               0,
+               0
             );
          },
 
@@ -261,8 +261,8 @@ Guidelines:
             params: Record<string, unknown>,
             signal: AbortSignal | undefined,
             onUpdate: ((update: AgentToolResult<any>) => void) | undefined,
-            ctx: any,
-         ) => this.execute(toolCallId, params, signal, onUpdate, ctx),
+            ctx: any
+         ) => this.execute(toolCallId, params, signal, onUpdate, ctx)
       });
    }
 }

@@ -19,7 +19,7 @@ import {
    type ExtensionAPI,
    getAgentDir,
    SettingsManager as SdkSettingsManager,
-   SessionManager,
+   SessionManager
 } from "@earendil-works/pi-coding-agent";
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import { loadCustomAgents } from "#src/config/custom-agents";
@@ -66,7 +66,7 @@ export default function (pi: ExtensionAPI) {
       (msg, opts) => pi.sendMessage(msg, opts),
       runtime.agentActivity,
       (id) => runtime.markFinished(id),
-      () => runtime.update(),
+      () => runtime.update()
    );
 
    // Settings: owns all three in-memory values and handles load/save/emit.
@@ -75,7 +75,7 @@ export default function (pi: ExtensionAPI) {
       emit: (event, payload) => pi.events.emit(event, payload),
       cwd: process.cwd(),
       agentDir: getAgentDir(),
-      onMaxConcurrentChanged: () => queue.drain(),
+      onMaxConcurrentChanged: () => queue.drain()
    });
    settings.load();
 
@@ -86,7 +86,7 @@ export default function (pi: ExtensionAPI) {
          pi.events.emit("subagents:started", {
             id: record.id,
             type: record.type,
-            description: record.description,
+            description: record.description
          });
       },
       onAgentCompleted(record) {
@@ -108,7 +108,7 @@ export default function (pi: ExtensionAPI) {
             result: record.result,
             error: record.error,
             startedAt: record.startedAt,
-            completedAt: record.completedAt,
+            completedAt: record.completedAt
          });
 
          // Skip notification if result was already consumed via get_subagent_result.
@@ -127,7 +127,7 @@ export default function (pi: ExtensionAPI) {
             description: record.description,
             reason: info.reason,
             tokensBefore: info.tokensBefore,
-            compactionCount: record.compactionCount,
+            compactionCount: record.compactionCount
          });
       },
       onAgentCreated(record) {
@@ -136,9 +136,9 @@ export default function (pi: ExtensionAPI) {
             id: record.id,
             type: record.type,
             description: record.description,
-            isBackground: true,
+            isBackground: true
          });
-      },
+      }
    };
 
    const runnerDeps: RunnerDeps = {
@@ -152,12 +152,12 @@ export default function (pi: ExtensionAPI) {
          createSession: (opts) => createAgentSession(opts as any),
          assemblerIO: {
             preloadSkills,
-            buildAgentPrompt,
-         },
+            buildAgentPrompt
+         }
       },
       exec: (cmd, args, opts) => pi.exec(cmd, args, opts),
       registry,
-      lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data)),
+      lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data))
    };
 
    // ConcurrencyQueue: scheduling extracted from AgentManager.
@@ -168,7 +168,7 @@ export default function (pi: ExtensionAPI) {
          const agent = manager.getRecord(id);
          if (agent?.status !== "queued") return;
          agent.promise = agent.run();
-      },
+      }
    );
 
    const manager = new AgentManager({
@@ -177,7 +177,7 @@ export default function (pi: ExtensionAPI) {
       baseCwd: process.cwd(),
       observer,
       queue,
-      getRunConfig: () => settings,
+      getRunConfig: () => settings
    });
 
    // Typed service published via Symbol.for() for cross-extension access.
@@ -189,7 +189,7 @@ export default function (pi: ExtensionAPI) {
       runtime,
       manager,
       () => notifications.dispose(),
-      unpublishSubagentsService,
+      unpublishSubagentsService
    );
 
    pi.on("session_start", (event, ctx) => lifecycle.handleSessionStart(event, ctx));
@@ -224,7 +224,7 @@ export default function (pi: ExtensionAPI) {
       if (!guidance) return {};
 
       return {
-         systemPrompt: event.systemPrompt + "\n\n" + guidance,
+         systemPrompt: `${event.systemPrompt}\n\n${guidance}`
       };
    });
 
@@ -237,7 +237,7 @@ export default function (pi: ExtensionAPI) {
             pi.sendMessage({
                customType: "orchestrator",
                content: "Orchestrator mode **disabled**.",
-               display: true,
+               display: true
             });
             return;
          }
@@ -254,7 +254,7 @@ export default function (pi: ExtensionAPI) {
                content:
                   `Orchestrator mode **enabled**. Guidance will be loaded from ${count} enabled agent config${count === 1 ? "" : "s"}. ` +
                   "Use `/orchestrator off` or `/orchestrator` again to disable.",
-               display: true,
+               display: true
             });
             return;
          }
@@ -263,9 +263,9 @@ export default function (pi: ExtensionAPI) {
          pi.sendMessage({
             customType: "orchestrator",
             content: "Orchestrator mode **disabled**.",
-            display: true,
+            display: true
          });
-      },
+      }
    });
 
    // ---- /agents interactive menu ----
@@ -277,7 +277,7 @@ export default function (pi: ExtensionAPI) {
       settings,
       new FsAgentFileOps(),
       join(getAgentDir(), "agents"),
-      join(process.cwd(), ".pi", "agents"),
+      join(process.cwd(), ".pi", "agents")
    );
 
    pi.registerCommand("agents", {
@@ -286,8 +286,8 @@ export default function (pi: ExtensionAPI) {
          await agentsMenu.handle({
             ui: ctx.ui,
             modelRegistry: ctx.modelRegistry,
-            parentSnapshot: buildParentSnapshot(ctx),
+            parentSnapshot: buildParentSnapshot(ctx)
          });
-      },
+      }
    });
 }

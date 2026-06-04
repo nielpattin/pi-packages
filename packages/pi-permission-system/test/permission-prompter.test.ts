@@ -3,12 +3,12 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // ── Module mocks ────────────────────────────────────────────────────────────
 
 const { mockConfirmPermission } = vi.hoisted(() => ({
-   mockConfirmPermission: vi.fn(),
+   mockConfirmPermission: vi.fn()
 }));
 
 vi.mock("../src/forwarded-permissions/polling", () => ({
    confirmPermission: mockConfirmPermission,
-   processForwardedPermissionRequests: vi.fn().mockResolvedValue(undefined),
+   processForwardedPermissionRequests: vi.fn().mockResolvedValue(undefined)
 }));
 
 // ── Imports (after mocks) ───────────────────────────────────────────────────
@@ -25,7 +25,7 @@ function makeCtx(hasUI: boolean): ExtensionContext {
    return {
       hasUI,
       ui: { select: vi.fn(), input: vi.fn() },
-      sessionManager: { getSessionDir: vi.fn().mockReturnValue(null) },
+      sessionManager: { getSessionDir: vi.fn().mockReturnValue(null) }
    } as unknown as ExtensionContext;
 }
 
@@ -36,7 +36,7 @@ function makeDetails(overrides?: Partial<PromptPermissionDetails>): PromptPermis
       agentName: "test-agent",
       message: "Allow read?",
       toolName: "read",
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -47,7 +47,7 @@ function makeDeps(overrides?: Partial<PermissionPrompterDeps>): PermissionPrompt
       subagentSessionsDir: "/sessions/subagents",
       forwardingDir: "/sessions/permission-forwarding",
       requestPermissionDecisionFromUi: vi.fn().mockResolvedValue({ approved: true, state: "approved" }),
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -63,7 +63,7 @@ describe("PermissionPrompter", () => {
    describe("yolo-mode auto-approve", () => {
       it("returns approved without calling confirmPermission when yoloMode is true", async () => {
          const deps = makeDeps({
-            getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true }),
+            getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true })
          });
          const prompter = new PermissionPrompter(deps);
 
@@ -72,7 +72,7 @@ describe("PermissionPrompter", () => {
          expect(decision).toEqual({
             approved: true,
             state: "approved",
-            autoApproved: true,
+            autoApproved: true
          });
          expect(mockConfirmPermission).not.toHaveBeenCalled();
       });
@@ -81,7 +81,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          const deps = makeDeps({
             getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true }),
-            writeReviewLog,
+            writeReviewLog
          });
          const prompter = new PermissionPrompter(deps);
 
@@ -89,7 +89,7 @@ describe("PermissionPrompter", () => {
 
          expect(writeReviewLog).toHaveBeenCalledWith(
             "permission_request.auto_approved",
-            expect.objectContaining({ requestId: "req-123" }),
+            expect.objectContaining({ requestId: "req-123" })
          );
       });
 
@@ -97,7 +97,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          const deps = makeDeps({
             getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true }),
-            writeReviewLog,
+            writeReviewLog
          });
          const prompter = new PermissionPrompter(deps);
 
@@ -108,7 +108,7 @@ describe("PermissionPrompter", () => {
 
       it("does not call confirmPermission with yoloMode even when ctx has UI", async () => {
          const deps = makeDeps({
-            getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true }),
+            getConfig: () => ({ ...DEFAULT_EXTENSION_CONFIG, yoloMode: true })
          });
          const prompter = new PermissionPrompter(deps);
 
@@ -125,7 +125,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          const approved: PermissionPromptDecision = {
             approved: true,
-            state: "approved",
+            state: "approved"
          };
          mockConfirmPermission.mockResolvedValue(approved);
          const deps = makeDeps({ writeReviewLog });
@@ -142,7 +142,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -153,8 +153,8 @@ describe("PermissionPrompter", () => {
             "permission_request.approved",
             expect.objectContaining({
                requestId: "req-123",
-               resolution: "approved",
-            }),
+               resolution: "approved"
+            })
          );
       });
 
@@ -162,7 +162,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          mockConfirmPermission.mockResolvedValue({
             approved: false,
-            state: "denied",
+            state: "denied"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -173,8 +173,8 @@ describe("PermissionPrompter", () => {
             "permission_request.denied",
             expect.objectContaining({
                requestId: "req-123",
-               resolution: "denied",
-            }),
+               resolution: "denied"
+            })
          );
       });
 
@@ -183,7 +183,7 @@ describe("PermissionPrompter", () => {
          mockConfirmPermission.mockResolvedValue({
             approved: false,
             state: "denied_with_reason",
-            denialReason: "too sensitive",
+            denialReason: "too sensitive"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -193,8 +193,8 @@ describe("PermissionPrompter", () => {
          expect(writeReviewLog).toHaveBeenCalledWith(
             "permission_request.denied",
             expect.objectContaining({
-               denialReason: "too sensitive",
-            }),
+               denialReason: "too sensitive"
+            })
          );
       });
 
@@ -202,7 +202,7 @@ describe("PermissionPrompter", () => {
          const decision: PermissionPromptDecision = {
             approved: false,
             state: "denied_with_reason",
-            denialReason: "sensitive",
+            denialReason: "sensitive"
          };
          mockConfirmPermission.mockResolvedValue(decision);
          const deps = makeDeps();
@@ -216,7 +216,7 @@ describe("PermissionPrompter", () => {
       it("passes sessionLabel option to confirmPermission when present", async () => {
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps();
          const prompter = new PermissionPrompter(deps);
@@ -225,14 +225,14 @@ describe("PermissionPrompter", () => {
          await prompter.prompt(makeCtx(true), details);
 
          expect(mockConfirmPermission).toHaveBeenCalledWith(expect.anything(), expect.any(String), expect.anything(), {
-            sessionLabel: "Yes, for 'read' tool",
+            sessionLabel: "Yes, for 'read' tool"
          });
       });
 
       it("passes undefined options to confirmPermission when sessionLabel is absent", async () => {
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps();
          const prompter = new PermissionPrompter(deps);
@@ -243,14 +243,14 @@ describe("PermissionPrompter", () => {
             expect.anything(),
             expect.any(String),
             expect.anything(),
-            undefined,
+            undefined
          );
       });
 
       it("passes the message from details to confirmPermission", async () => {
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps();
          const prompter = new PermissionPrompter(deps);
@@ -262,7 +262,7 @@ describe("PermissionPrompter", () => {
             expect.anything(),
             "Allow bash: git status?",
             expect.anything(),
-            undefined,
+            undefined
          );
       });
    });
@@ -274,7 +274,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -284,7 +284,7 @@ describe("PermissionPrompter", () => {
             path: "/src/foo.ts",
             command: "git status",
             target: "server:tool",
-            toolInputPreview: "{ path: '...' }",
+            toolInputPreview: "{ path: '...' }"
          });
 
          await prompter.prompt(makeCtx(true), details);
@@ -302,8 +302,8 @@ describe("PermissionPrompter", () => {
                path: "/src/foo.ts",
                command: "git status",
                target: "server:tool",
-               toolInputPreview: "{ path: '...' }",
-            }),
+               toolInputPreview: "{ path: '...' }"
+            })
          );
       });
 
@@ -311,7 +311,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -326,8 +326,8 @@ describe("PermissionPrompter", () => {
                path: null,
                command: null,
                target: null,
-               toolInputPreview: null,
-            }),
+               toolInputPreview: null
+            })
          );
       });
    });
@@ -338,7 +338,7 @@ describe("PermissionPrompter", () => {
       it("calls confirmPermission even when ctx has no UI", async () => {
          const forwarded: PermissionPromptDecision = {
             approved: true,
-            state: "approved",
+            state: "approved"
          };
          mockConfirmPermission.mockResolvedValue(forwarded);
          const deps = makeDeps();
@@ -352,7 +352,7 @@ describe("PermissionPrompter", () => {
       it("returns the decision from confirmPermission in the subagent path", async () => {
          const forwarded: PermissionPromptDecision = {
             approved: false,
-            state: "denied",
+            state: "denied"
          };
          mockConfirmPermission.mockResolvedValue(forwarded);
          const deps = makeDeps();
@@ -367,7 +367,7 @@ describe("PermissionPrompter", () => {
          const writeReviewLog = vi.fn();
          mockConfirmPermission.mockResolvedValue({
             approved: true,
-            state: "approved",
+            state: "approved"
          });
          const deps = makeDeps({ writeReviewLog });
          const prompter = new PermissionPrompter(deps);
@@ -376,7 +376,7 @@ describe("PermissionPrompter", () => {
 
          expect(writeReviewLog).toHaveBeenCalledWith(
             "permission_request.approved",
-            expect.objectContaining({ requestId: "req-123" }),
+            expect.objectContaining({ requestId: "req-123" })
          );
       });
    });

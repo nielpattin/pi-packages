@@ -30,7 +30,7 @@ import { getRawSessionTagKeysThrough } from "./read-session-chunk";
 export function queueDropsForCompartmentalizedMessages(
    db: Database,
    sessionId: string,
-   upToMessageIndex: number,
+   upToMessageIndex: number
 ): void {
    const tags = getTagsBySession(db, sessionId);
    const { messageFileKeys, toolObservations } = getRawSessionTagKeysThrough(sessionId, upToMessageIndex);

@@ -4,20 +4,20 @@ import { writeAgentFile } from "#src/ui/agent-file-writer";
 function makeFileOps() {
    return {
       exists: vi.fn((_path: string): boolean => false),
-      write: vi.fn((_path: string, _content: string): void => {}),
+      write: vi.fn((_path: string, _content: string): void => {})
    };
 }
 
 function makeUI() {
    return {
       confirm: vi.fn((_title: string, _message: string): Promise<boolean> => Promise.resolve(true)),
-      notify: vi.fn((_message: string, _level: "info" | "warning" | "error"): void => {}),
+      notify: vi.fn((_message: string, _level: "info" | "warning" | "error"): void => {})
    };
 }
 
 function makeRegistry() {
    return {
-      reload: vi.fn((): void => {}),
+      reload: vi.fn((): void => {})
    };
 }
 

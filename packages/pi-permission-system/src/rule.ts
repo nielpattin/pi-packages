@@ -71,7 +71,7 @@ export function evaluate(surface: string, pattern: string, rules: Ruleset, defau
       surface,
       pattern,
       action: defaultAction ?? "ask",
-      origin: "builtin",
+      origin: "builtin"
    };
 }
 
@@ -102,7 +102,7 @@ export function evaluate(surface: string, pattern: string, rules: Ruleset, defau
 export function evaluateMostRestrictive(
    surface: string,
    values: string[],
-   rules: Ruleset,
+   rules: Ruleset
 ): { rule: Rule; value: string } | null {
    let worst: { rule: Rule; value: string } | null = null;
    for (const value of values) {
@@ -126,6 +126,6 @@ export function evaluateFirst(surface: string, values: string[], rules: Ruleset)
    const fallbackValue = values[0] ?? "*";
    return {
       rule: evaluate(surface, fallbackValue, rules),
-      value: fallbackValue,
+      value: fallbackValue
    };
 }

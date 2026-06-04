@@ -45,7 +45,7 @@ export function createMockSession(overrides: Record<string, unknown> = {}): Mock
       },
       dispose: vi.fn(),
       steer: vi.fn().mockResolvedValue(undefined),
-      sessionManager: { getSessionFile: vi.fn() },
+      sessionManager: { getSessionFile: vi.fn() }
    };
 
    return { ...base, ...overrides };

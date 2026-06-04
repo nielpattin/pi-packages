@@ -72,7 +72,7 @@ export function resolveSpawnConfig(
    params: Record<string, unknown>,
    registry: AgentTypeRegistry,
    modelInfo: ModelInfo,
-   settings: { readonly defaultMaxTurns: number | undefined },
+   settings: { readonly defaultMaxTurns: number | undefined }
 ): ResolvedSpawnConfig | SpawnConfigError {
    const rawType = params.subagent_type as SubagentType;
    const resolved = registry.resolveType(rawType);
@@ -90,7 +90,7 @@ export function resolveSpawnConfig(
       modelInfo.parentModel,
       resolvedConfig.modelInput,
       resolvedConfig.modelFromParams,
-      modelInfo.modelRegistry as any,
+      modelInfo.modelRegistry as any
    );
    if (resolution.error) return { error: resolution.error };
    const model = resolution.model;
@@ -118,7 +118,7 @@ export function resolveSpawnConfig(
       isolated,
       inheritContext,
       runInBackground,
-      isolation,
+      isolation
    };
 
    const modeLabel = getPromptModeLabel(subagentType, registry);
@@ -130,7 +130,7 @@ export function resolveSpawnConfig(
       description: params.description as string,
       subagentType,
       modelName,
-      tags: agentTags.length > 0 ? agentTags : undefined,
+      tags: agentTags.length > 0 ? agentTags : undefined
    };
 
    return {
@@ -145,8 +145,8 @@ export function resolveSpawnConfig(
          runInBackground,
          isolated,
          isolation,
-         agentInvocation,
+         agentInvocation
       },
-      presentation: { modelName, agentTags, detailBase },
+      presentation: { modelName, agentTags, detailBase }
    };
 }

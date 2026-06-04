@@ -51,7 +51,7 @@ const GIT_SUBCOMMANDS = [
    "status",
    "switch",
    "tag",
-   "worktree",
+   "worktree"
 ];
 
 function tokenizeBeforeCursor(text: string): string[] {
@@ -136,7 +136,7 @@ function getTokenContext(line: string, cursorCol: number): TokenContext {
       token: line.slice(tokenStart, tokenEnd),
       tokenEnd,
       tokenIndex: Math.max(0, tokens.length - 1),
-      tokenStart,
+      tokenStart
    };
 }
 
@@ -145,7 +145,7 @@ export function getOneOffBashCommandContext(line: string): OneOffBashCommandCont
       return {
          command: line.slice(2),
          offset: 2,
-         prefix: "!!",
+         prefix: "!!"
       };
    }
 
@@ -153,7 +153,7 @@ export function getOneOffBashCommandContext(line: string): OneOffBashCommandCont
       return {
          command: line.slice(1),
          offset: 1,
-         prefix: "!",
+         prefix: "!"
       };
    }
 
@@ -230,7 +230,7 @@ function getPathSuggestions(token: string, cwd: string): ExtendedCompletionItem[
             score: 40 + (entry.isDirectory() ? 4 : 0),
             source: "path",
             startCol: 0,
-            value: replacement,
+            value: replacement
          } satisfies ExtendedCompletionItem;
       });
    } catch {
@@ -244,7 +244,7 @@ function runGit(args: string[], cwd: string): string[] {
       const result = spawnSync("git", args, {
          cwd,
          encoding: "utf8",
-         stdio: ["ignore", "pipe", "ignore"],
+         stdio: ["ignore", "pipe", "ignore"]
       });
       if (result.status !== 0 || !result.stdout) {
          return [];
@@ -273,7 +273,7 @@ function getGitSuggestions(ctx: TokenContext, cwd: string): ExtendedCompletionIt
          score: 52,
          source: "git",
          startCol: 0,
-         value: command,
+         value: command
       }));
    }
 
@@ -294,7 +294,7 @@ function getGitSuggestions(ctx: TokenContext, cwd: string): ExtendedCompletionIt
          score: 50,
          source: "git",
          startCol: 0,
-         value: ref,
+         value: ref
       }));
 }
 
@@ -317,7 +317,7 @@ function commandHead(value: string): string {
 function findNewestHistoryMatchForHead(entries: string[], prefix: string, head: string): string | null {
    for (const rawEntry of entries) {
       const entry = rawEntry.trim();
-      if (!entry || !entry.startsWith(prefix)) {
+      if (!entry?.startsWith(prefix)) {
          continue;
       }
       if (commandHead(entry) !== head) {
@@ -353,7 +353,7 @@ function isLikelyGitCommandHead(prefix: string): boolean {
 function boostValidatedItemsFromGlobalHistory(
    line: string,
    items: ExtendedCompletionItem[],
-   globalHistoryMatches: string[],
+   globalHistoryMatches: string[]
 ): ExtendedCompletionItem[] {
    if (items.length === 0 || globalHistoryMatches.length === 0) {
       return items;
@@ -379,7 +379,7 @@ export class BashCompletionEngine {
          const projectHistory = matchHistoryEntries(
             projectHistoryEntries.map((entry) => entry.command),
             line,
-            1,
+            1
          );
          if (projectHistory.length > 0 && typeof projectHistory[0] === "string") {
             return { source: "project-history", value: `${prefix}${projectHistory[0]}` };
@@ -396,7 +396,7 @@ export class BashCompletionEngine {
       const projectHistory = matchHistoryEntries(
          projectHistoryEntries.map((entry) => entry.command),
          line,
-         10,
+         10
       );
       const trimmedLine = line.trim();
       for (const match of projectHistory) {
@@ -476,8 +476,8 @@ export class BashAutocompleteProvider implements Omit<AutocompleteProvider, "get
    applyCompletion(
       lines: string[],
       cursorLine: number,
-      cursorCol: number,
-      item: AutocompleteItem,
+      _cursorCol: number,
+      item: AutocompleteItem
    ): {
       lines: string[];
       cursorLine: number;
@@ -498,7 +498,7 @@ export class BashAutocompleteProvider implements Omit<AutocompleteProvider, "get
 function applyExtendedCompletion(
    lines: string[],
    cursorLine: number,
-   item: ExtendedCompletionItem,
+   item: ExtendedCompletionItem
 ): {
    lines: string[];
    cursorLine: number;
@@ -513,7 +513,7 @@ function applyExtendedCompletion(
    return {
       cursorCol: startCol + item.replacement.length,
       cursorLine,
-      lines: nextLines,
+      lines: nextLines
    };
 }
 
@@ -525,8 +525,8 @@ export class OneOffBashAutocompleteProvider implements Omit<AutocompleteProvider
    applyCompletion(
       lines: string[],
       cursorLine: number,
-      cursorCol: number,
-      item: AutocompleteItem,
+      _cursorCol: number,
+      item: AutocompleteItem
    ): {
       lines: string[];
       cursorLine: number;
@@ -555,7 +555,7 @@ export class ModeAwareAutocompleteProvider implements Omit<AutocompleteProvider,
       defaultProvider: AutocompleteProvider | undefined,
       bashProvider: AutocompleteProvider,
       oneOffBashProvider: AutocompleteProvider,
-      isBashModeActive: () => boolean,
+      isBashModeActive: () => boolean
    ) {
       this.defaultProvider = defaultProvider;
       this.bashProvider = bashProvider;
@@ -567,7 +567,7 @@ export class ModeAwareAutocompleteProvider implements Omit<AutocompleteProvider,
       lines: string[],
       cursorLine: number,
       cursorCol: number,
-      options: { signal: AbortSignal; force?: boolean },
+      options: { signal: AbortSignal; force?: boolean }
    ): AutocompleteSuggestions | null | Promise<AutocompleteSuggestions | null> {
       return (
          this.resolveProvider(lines, cursorLine, cursorCol)?.getSuggestions(lines, cursorLine, cursorCol, options) ??

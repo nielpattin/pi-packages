@@ -51,7 +51,7 @@ export function describeError(error: unknown): ErrorDescription {
          name: typeof error,
          message: "",
          stringForm,
-         brief: stringForm || "<empty>",
+         brief: stringForm || "<empty>"
       };
    }
 
@@ -100,7 +100,7 @@ export function describeError(error: unknown): ErrorDescription {
       ...(causeName ? { causeName } : {}),
       ...(stackHead ? { stackHead } : {}),
       stringForm,
-      brief,
+      brief
    };
 }
 

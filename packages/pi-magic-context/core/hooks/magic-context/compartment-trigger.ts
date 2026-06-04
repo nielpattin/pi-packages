@@ -7,7 +7,7 @@ import {
    getProtectedTailStartOrdinal,
    getRawSessionMessageCount,
    readSessionChunk,
-   withRawSessionMessageCache,
+   withRawSessionMessageCache
 } from "./read-session-chunk";
 
 const PROACTIVE_TRIGGER_OFFSET_PERCENTAGE = 2;
@@ -24,7 +24,7 @@ export {
    BLOCK_UNTIL_DONE_PERCENTAGE,
    FORCE_COMPARTMENT_PERCENTAGE,
    FORCE_MATERIALIZE_PERCENTAGE,
-   POST_DROP_TARGET_RATIO,
+   POST_DROP_TARGET_RATIO
 };
 
 export interface CompartmentTriggerResult {
@@ -36,7 +36,7 @@ const LARGE_CONTEXT_CAP_TOKENS = 272_000;
 
 export function getProactiveCompartmentTriggerPercentage(
    executeThresholdPercentage: number,
-   contextLimit?: number,
+   contextLimit?: number
 ): number {
    if (typeof contextLimit === "number" && contextLimit > LARGE_CONTEXT_CAP_TOKENS) {
       return (LARGE_CONTEXT_CAP_TOKENS / contextLimit) * 100;
@@ -53,7 +53,7 @@ function estimateProjectedPostDropPercentage(
    protectedTags?: number,
    clearReasoningAge?: number,
    clearedReasoningThroughTag?: number,
-   dropToolStructure = true,
+   dropToolStructure = true
 ): number | null {
    // Denominator must include both text/tool bytes and reasoning bytes to match the numerator
    const totalActiveBytes = activeTags.reduce((sum, tag) => sum + tag.byteSize + tag.reasoningByteSize, 0);
@@ -111,7 +111,7 @@ function estimateProjectedPostDropPercentage(
 
 function estimateToolDropSavings(
    tag: { byteSize: number; reasoningByteSize: number; inputByteSize: number },
-   dropToolStructure: boolean,
+   dropToolStructure: boolean
 ): number {
    const fullDropBytes = tag.byteSize + tag.reasoningByteSize;
    if (dropToolStructure) {
@@ -135,7 +135,7 @@ const TAIL_INFO_DEFAULTS: TailInfo = {
    hasNewRawHistory: false,
    isMeaningful: false,
    tokenEstimate: 0,
-   commitClusterCount: 0,
+   commitClusterCount: 0
 };
 
 function getUnsummarizedTailInfo(db: Database, sessionId: string, triggerBudget: number): TailInfo {
@@ -165,7 +165,7 @@ function getUnsummarizedTailInfo(db: Database, sessionId: string, triggerBudget:
             hasNewRawHistory: true,
             isMeaningful,
             tokenEstimate: chunk.tokenEstimate,
-            commitClusterCount: chunk.commitClusterCount,
+            commitClusterCount: chunk.commitClusterCount
          };
       } catch (error) {
          sessionLog(sessionId, "compartment trigger: raw tail inspection failed:", error);
@@ -188,12 +188,12 @@ export function checkCompartmentTrigger(
    dropToolStructure = true,
    commitClusterTrigger?: { enabled: boolean; min_clusters: number },
    preloadedActiveTags?: readonly TagEntry[],
-   contextLimit?: number,
+   contextLimit?: number
 ): CompartmentTriggerResult {
    if (sessionMeta.compartmentInProgress) {
       sessionLog(
          sessionId,
-         `compartment trigger: skipped — historian already in progress (usage=${usage.percentage.toFixed(1)}%)`,
+         `compartment trigger: skipped — historian already in progress (usage=${usage.percentage.toFixed(1)}%)`
       );
       return { shouldFire: false };
    }
@@ -213,12 +213,12 @@ export function checkCompartmentTrigger(
          const protectedTailStart = getProtectedTailStartOrdinal(sessionId);
          sessionLog(
             sessionId,
-            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} lastCompartmentEnd=${lastCompartmentEnd} rawMessageCount=${rawMessageCount} protectedTailStart=${protectedTailStart})`,
+            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} lastCompartmentEnd=${lastCompartmentEnd} rawMessageCount=${rawMessageCount} protectedTailStart=${protectedTailStart})`
          );
       } catch (error) {
          sessionLog(
             sessionId,
-            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} diagnostic-collection-failed: ${error instanceof Error ? error.message : String(error)})`,
+            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} diagnostic-collection-failed: ${error instanceof Error ? error.message : String(error)})`
          );
       }
       return { shouldFire: false };
@@ -233,7 +233,7 @@ export function checkCompartmentTrigger(
       protectedTagCount,
       clearReasoningAge,
       sessionMeta.clearedReasoningThroughTag,
-      dropToolStructure,
+      dropToolStructure
    );
    const relativePostDropTarget = executeThresholdPercentage * POST_DROP_TARGET_RATIO;
 
@@ -242,14 +242,14 @@ export function checkCompartmentTrigger(
       if (projectedPostDropPercentage !== null && projectedPostDropPercentage <= relativePostDropTarget) {
          sessionLog(
             sessionId,
-            `compartment trigger: skipping force-${FORCE_COMPARTMENT_PERCENTAGE} because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${relativePostDropTarget.toFixed(1)}%)`,
+            `compartment trigger: skipping force-${FORCE_COMPARTMENT_PERCENTAGE} because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${relativePostDropTarget.toFixed(1)}%)`
          );
          return { shouldFire: false };
       }
 
       sessionLog(
          sessionId,
-         `compartment trigger: force-firing at ${usage.percentage.toFixed(1)}% (projected post-drop ${projectedPostDropPercentage?.toFixed(1) ?? "none"}%)`,
+         `compartment trigger: force-firing at ${usage.percentage.toFixed(1)}% (projected post-drop ${projectedPostDropPercentage?.toFixed(1) ?? "none"}%)`
       );
       return { shouldFire: true, reason: "force_80" };
    }
@@ -260,7 +260,7 @@ export function checkCompartmentTrigger(
    if (clusterEnabled && tailInfo.commitClusterCount >= minClusters && tailInfo.tokenEstimate >= triggerBudget) {
       sessionLog(
          sessionId,
-         `compartment trigger: commit-cluster fire — ${tailInfo.commitClusterCount} clusters (min=${minClusters}), ~${tailInfo.tokenEstimate} tokens in eligible prefix`,
+         `compartment trigger: commit-cluster fire — ${tailInfo.commitClusterCount} clusters (min=${minClusters}), ~${tailInfo.tokenEstimate} tokens in eligible prefix`
       );
       return { shouldFire: true, reason: "commit_clusters" };
    }
@@ -269,7 +269,7 @@ export function checkCompartmentTrigger(
    if (tailInfo.tokenEstimate >= triggerBudget * TAIL_SIZE_TRIGGER_MULTIPLIER) {
       sessionLog(
          sessionId,
-         `compartment trigger: tail-size fire — ~${tailInfo.tokenEstimate} tokens exceeds ${triggerBudget * TAIL_SIZE_TRIGGER_MULTIPLIER} budget threshold`,
+         `compartment trigger: tail-size fire — ~${tailInfo.tokenEstimate} tokens exceeds ${triggerBudget * TAIL_SIZE_TRIGGER_MULTIPLIER} budget threshold`
       );
       return { shouldFire: true, reason: "tail_size" };
    }
@@ -277,12 +277,12 @@ export function checkCompartmentTrigger(
    // Pressure-driven trigger: context is near threshold and drops aren't enough
    const proactiveTriggerPercentage = getProactiveCompartmentTriggerPercentage(
       executeThresholdPercentage,
-      contextLimit,
+      contextLimit
    );
    if (usage.percentage < proactiveTriggerPercentage) {
       sessionLog(
          sessionId,
-         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% — below proactive floor (${proactiveTriggerPercentage}%)`,
+         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% — below proactive floor (${proactiveTriggerPercentage}%)`
       );
       return { shouldFire: false };
    }
@@ -290,7 +290,7 @@ export function checkCompartmentTrigger(
    if (projectedPostDropPercentage !== null && projectedPostDropPercentage <= relativePostDropTarget) {
       sessionLog(
          sessionId,
-         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${relativePostDropTarget.toFixed(1)}%)`,
+         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${relativePostDropTarget.toFixed(1)}%)`
       );
       return { shouldFire: false };
    }
@@ -298,14 +298,14 @@ export function checkCompartmentTrigger(
    if (!tailInfo.isMeaningful) {
       sessionLog(
          sessionId,
-         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because unsummarized tail from ${tailInfo.nextStartOrdinal} is too small`,
+         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because unsummarized tail from ${tailInfo.nextStartOrdinal} is too small`
       );
       return { shouldFire: false };
    }
 
    sessionLog(
       sessionId,
-      `compartment trigger: proactive fire at ${usage.percentage.toFixed(1)}% (floor=${proactiveTriggerPercentage}% projected post-drop=${projectedPostDropPercentage?.toFixed(1) ?? "none"}% target=${relativePostDropTarget.toFixed(1)}%)`,
+      `compartment trigger: proactive fire at ${usage.percentage.toFixed(1)}% (floor=${proactiveTriggerPercentage}% projected post-drop=${projectedPostDropPercentage?.toFixed(1) ?? "none"}% target=${relativePostDropTarget.toFixed(1)}%)`
    );
    return { shouldFire: true, reason: "projected_headroom" };
 }

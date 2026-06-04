@@ -53,7 +53,7 @@ export interface PermissionPrompterDeps {
       ui: ExtensionContext["ui"],
       title: string,
       message: string,
-      options?: RequestPermissionOptions,
+      options?: RequestPermissionOptions
    ): Promise<PermissionPromptDecision>;
 }
 
@@ -83,13 +83,13 @@ export class PermissionPrompter implements PermissionPrompterApi {
          ctx,
          details.message,
          this.buildForwardingDeps(),
-         details.sessionLabel ? { sessionLabel: details.sessionLabel } : undefined,
+         details.sessionLabel ? { sessionLabel: details.sessionLabel } : undefined
       );
 
       this.writeReviewEntry(decision.approved ? "permission_request.approved" : "permission_request.denied", {
          ...details,
          resolution: decision.state,
-         denialReason: decision.denialReason,
+         denialReason: decision.denialReason
       });
 
       return decision;
@@ -102,7 +102,7 @@ export class PermissionPrompter implements PermissionPrompterApi {
       details: PromptPermissionDetails & {
          resolution?: string;
          denialReason?: string;
-      },
+      }
    ): void {
       this.deps.writeReviewLog(event, {
          requestId: details.requestId,
@@ -117,7 +117,7 @@ export class PermissionPrompter implements PermissionPrompterApi {
          target: details.target ?? null,
          toolInputPreview: details.toolInputPreview ?? null,
          resolution: details.resolution ?? null,
-         denialReason: details.denialReason ?? null,
+         denialReason: details.denialReason ?? null
       });
    }
 
@@ -136,7 +136,7 @@ export class PermissionPrompter implements PermissionPrompterApi {
       const logger: ForwardedPermissionLogger = {
          // eslint-disable-next-line @typescript-eslint/unbound-method -- logger methods are plain function closures; no this-binding issue
          writeReviewLog: deps.writeReviewLog,
-         writeDebugLog: () => undefined,
+         writeDebugLog: () => undefined
       };
       return {
          forwardingDir: deps.forwardingDir,
@@ -147,7 +147,7 @@ export class PermissionPrompter implements PermissionPrompterApi {
          writeReviewLog: deps.writeReviewLog,
          // eslint-disable-next-line @typescript-eslint/unbound-method -- same as above
          requestPermissionDecisionFromUi: deps.requestPermissionDecisionFromUi,
-         shouldAutoApprove: () => false,
+         shouldAutoApprove: () => false
       };
    }
 }

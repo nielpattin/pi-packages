@@ -5,5 +5,5 @@ export {
    readPersistedStashHistory,
    persistStashHistory,
    buildStashPreview,
-   pushStashHistory,
+   pushStashHistory
 } from "./stash-history.ts";

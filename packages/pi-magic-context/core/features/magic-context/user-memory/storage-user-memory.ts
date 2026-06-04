@@ -28,12 +28,12 @@ export function insertUserMemoryCandidates(
       sessionId: string;
       sourceCompartmentStart?: number;
       sourceCompartmentEnd?: number;
-   }>,
+   }>
 ): void {
    if (candidates.length === 0) return;
    const now = Date.now();
    const stmt = db.prepare(
-      "INSERT INTO user_memory_candidates (content, session_id, source_compartment_start, source_compartment_end, created_at) VALUES (?, ?, ?, ?, ?)",
+      "INSERT INTO user_memory_candidates (content, session_id, source_compartment_start, source_compartment_end, created_at) VALUES (?, ?, ?, ?, ?)"
    );
    db.transaction(() => {
       for (const c of candidates) {
@@ -45,7 +45,7 @@ export function insertUserMemoryCandidates(
 export function getUserMemoryCandidates(db: Database): UserMemoryCandidate[] {
    const rows = db
       .prepare(
-         "SELECT id, content, session_id, source_compartment_start, source_compartment_end, created_at FROM user_memory_candidates ORDER BY created_at ASC",
+         "SELECT id, content, session_id, source_compartment_start, source_compartment_end, created_at FROM user_memory_candidates ORDER BY created_at ASC"
       )
       .all() as Array<{
       id: number;
@@ -61,7 +61,7 @@ export function getUserMemoryCandidates(db: Database): UserMemoryCandidate[] {
       sessionId: r.session_id,
       sourceCompartmentStart: r.source_compartment_start,
       sourceCompartmentEnd: r.source_compartment_end,
-      createdAt: r.created_at,
+      createdAt: r.created_at
    }));
 }
 
@@ -77,7 +77,7 @@ export function insertUserMemory(db: Database, content: string, sourceCandidateI
    const now = Date.now();
    const result = db
       .prepare(
-         "INSERT INTO user_memories (content, status, promoted_at, source_candidate_ids, created_at, updated_at) VALUES (?, 'active', ?, ?, ?, ?)",
+         "INSERT INTO user_memories (content, status, promoted_at, source_candidate_ids, created_at, updated_at) VALUES (?, 'active', ?, ?, ?, ?)"
       )
       .run(content, now, JSON.stringify(sourceCandidateIds), now, now);
    return Number(result.lastInsertRowid);
@@ -86,7 +86,7 @@ export function insertUserMemory(db: Database, content: string, sourceCandidateI
 export function getActiveUserMemories(db: Database): UserMemory[] {
    const rows = db
       .prepare(
-         "SELECT id, content, status, promoted_at, source_candidate_ids, created_at, updated_at FROM user_memories WHERE status = 'active' ORDER BY promoted_at ASC",
+         "SELECT id, content, status, promoted_at, source_candidate_ids, created_at, updated_at FROM user_memories WHERE status = 'active' ORDER BY promoted_at ASC"
       )
       .all() as Array<{
       id: number;
@@ -103,7 +103,7 @@ export function getActiveUserMemories(db: Database): UserMemory[] {
 export function getAllUserMemories(db: Database): UserMemory[] {
    const rows = db
       .prepare(
-         "SELECT id, content, status, promoted_at, source_candidate_ids, created_at, updated_at FROM user_memories ORDER BY created_at ASC",
+         "SELECT id, content, status, promoted_at, source_candidate_ids, created_at, updated_at FROM user_memories ORDER BY created_at ASC"
       )
       .all() as Array<{
       id: number;
@@ -151,6 +151,6 @@ function parseUserMemoryRow(row: {
       promotedAt: row.promoted_at,
       sourceCandidateIds: candidateIds,
       createdAt: row.created_at,
-      updatedAt: row.updated_at,
+      updatedAt: row.updated_at
    };
 }

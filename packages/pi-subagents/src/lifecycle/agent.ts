@@ -255,7 +255,7 @@ export class Agent {
                agentId: this.id,
                agentType: this.type,
                baseCwd: this._baseCwd,
-               invocation: this.invocation,
+               invocation: this.invocation
             });
             cwd = this._workspace?.cwd;
          } else {
@@ -274,7 +274,7 @@ export class Agent {
          const result = await this._runner.run(this._snapshot, this.type, this._prompt, {
             context: {
                cwd,
-               parentSession: this._parentSession,
+               parentSession: this._parentSession
             },
             model: this._model,
             maxTurns: this._maxTurns,
@@ -290,11 +290,11 @@ export class Agent {
                this.flushPendingSteers(session);
                this.attachObserver(
                   subscribeAgentObserver(session, this, {
-                     onCompact: (r, info) => this.observer?.onCompacted?.(r, info),
-                  }),
+                     onCompact: (r, info) => this.observer?.onCompacted?.(r, info)
+                  })
                );
                this.observer?.onSessionCreated?.(this, session);
-            },
+            }
          });
          this.completeRun(result);
       } catch (err) {
@@ -323,8 +323,8 @@ export class Agent {
       this.resetForResume(Date.now());
       this.attachObserver(
          subscribeAgentObserver(session, this, {
-            onCompact: (r, info) => this.observer?.onCompacted?.(r, info),
-         }),
+            onCompact: (r, info) => this.observer?.onCompacted?.(r, info)
+         })
       );
 
       try {
@@ -500,7 +500,7 @@ export class Agent {
 
       this.execution = {
          session: result.session,
-         outputFile: result.sessionFile ?? this.execution?.outputFile,
+         outputFile: result.sessionFile ?? this.execution?.outputFile
       };
 
       this.observer?.onRunFinished?.(this);

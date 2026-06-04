@@ -14,7 +14,7 @@ import {
    getActiveUserMemories,
    getUserMemoryCandidates,
    insertUserMemory,
-   updateUserMemoryContent,
+   updateUserMemoryContent
 } from "./storage-user-memory";
 
 interface ReviewUserMemoriesArgs {
@@ -47,7 +47,7 @@ export async function reviewUserMemories(args: ReviewUserMemoriesArgs): Promise<
 
    const stableMemories = getActiveUserMemories(args.db);
    log(
-      `[dreamer] user-memories: reviewing ${candidates.length} candidate(s) against ${stableMemories.length} stable memorie(s)`,
+      `[dreamer] user-memories: reviewing ${candidates.length} candidate(s) against ${stableMemories.length} stable memorie(s)`
    );
 
    const candidateList = candidates
@@ -115,7 +115,7 @@ If no promotions are warranted, return empty arrays. Always consume reviewed can
          startedAt,
          status: params.status,
          messages: params.messages,
-         error: params.error,
+         error: params.error
       });
    };
    const abortController = new AbortController();
@@ -134,12 +134,12 @@ If no promotions are warranted, return empty arrays. Always consume reviewed can
       const createResponse = await args.client.session.create({
          body: {
             ...(args.parentSessionId ? { parentID: args.parentSessionId } : {}),
-            title: "magic-context-dream-user-memories",
+            title: "magic-context-dream-user-memories"
          },
-         query: { directory: args.sessionDirectory },
+         query: { directory: args.sessionDirectory }
       });
       const created = shared.normalizeSDKResponse(createResponse, null as { id?: string } | null, {
-         preferResponseOnMissingData: true,
+         preferResponseOnMissingData: true
       });
       agentSessionId = typeof created?.id === "string" ? created.id : null;
       if (!agentSessionId) {
@@ -161,23 +161,23 @@ If no promotions are warranted, return empty arrays. Always consume reviewed can
                system: DREAMER_SYSTEM_PROMPT,
                // synthetic: true hides the user-memory review prompt from the TUI
                // subagent pane while still delivering it to the model. See issue #50.
-               parts: [{ type: "text", text: prompt, synthetic: true }],
-            },
+               parts: [{ type: "text", text: prompt, synthetic: true }]
+            }
          },
          {
             timeoutMs: Math.min(remainingMs, 5 * 60 * 1000),
             signal: abortController.signal,
             fallbackModels: args.fallbackModels,
-            callContext: "dreamer:user-memories",
-         },
+            callContext: "dreamer:user-memories"
+         }
       );
 
       const messagesResponse = await args.client.session.messages({
          path: { id: agentSessionId },
-         query: { directory: args.sessionDirectory, limit: 50 },
+         query: { directory: args.sessionDirectory, limit: 50 }
       });
       const messages = shared.normalizeSDKResponse(messagesResponse, [] as unknown[], {
-         preferResponseOnMissingData: true,
+         preferResponseOnMissingData: true
       });
       recordInvocation({ status: "completed", messages });
       const responseText = extractLatestAssistantText(messages);
@@ -255,7 +255,7 @@ If no promotions are warranted, return empty arrays. Always consume reviewed can
       const errorDescription = describeError(error);
       log(
          `[dreamer] user-memories: review failed: ${errorDescription.brief}`,
-         errorDescription.stackHead ? { stackHead: errorDescription.stackHead } : undefined,
+         errorDescription.stackHead ? { stackHead: errorDescription.stackHead } : undefined
       );
       return result;
    } finally {
@@ -264,7 +264,7 @@ If no promotions are warranted, return empty arrays. Always consume reviewed can
          await args.client.session
             .delete({
                path: { id: agentSessionId },
-               query: { directory: args.sessionDirectory },
+               query: { directory: args.sessionDirectory }
             })
             .catch((e: unknown) => {
                log(`[dreamer] user-memories: session cleanup failed: ${getErrorMessage(e)}`);

@@ -48,7 +48,7 @@ function getInsertDreamRunStatement(db: Database): PreparedStatement {
    let stmt = insertDreamRunStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO dream_runs (project_path, started_at, finished_at, holder_id, tasks_json, tasks_succeeded, tasks_failed, smart_notes_surfaced, smart_notes_pending, memory_changes_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+         "INSERT INTO dream_runs (project_path, started_at, finished_at, holder_id, tasks_json, tasks_succeeded, tasks_failed, smart_notes_surfaced, smart_notes_pending, memory_changes_json) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       );
       insertDreamRunStatements.set(db, stmt);
    }
@@ -65,7 +65,7 @@ function getDreamRunsByProjectStatement(db: Database, limit: number): PreparedSt
    let stmt = statements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         `SELECT id, project_path, started_at, finished_at, holder_id, tasks_json, tasks_succeeded, tasks_failed, smart_notes_surfaced, smart_notes_pending, memory_changes_json FROM dream_runs WHERE project_path = ? ORDER BY finished_at DESC LIMIT ${limit}`,
+         `SELECT id, project_path, started_at, finished_at, holder_id, tasks_json, tasks_succeeded, tasks_failed, smart_notes_surfaced, smart_notes_pending, memory_changes_json FROM dream_runs WHERE project_path = ? ORDER BY finished_at DESC LIMIT ${limit}`
       );
       statements.set(db, stmt);
    }
@@ -106,7 +106,7 @@ export function insertDreamRun(db: Database, run: DreamRunInput): void {
       run.tasksFailed,
       run.smartNotesSurfaced,
       run.smartNotesPending,
-      run.memoryChanges ? JSON.stringify(run.memoryChanges) : null,
+      run.memoryChanges ? JSON.stringify(run.memoryChanges) : null
    );
 }
 

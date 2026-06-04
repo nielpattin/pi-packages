@@ -37,11 +37,11 @@ export function createDeniedPermissionDecision(denialReason?: string): Permissio
       ? {
            approved: false,
            state: "denied_with_reason",
-           denialReason: normalizedReason,
+           denialReason: normalizedReason
         }
       : {
            approved: false,
-           state: "denied",
+           state: "denied"
         };
 }
 
@@ -60,7 +60,7 @@ export async function requestPermissionDecisionFromUi(
    ui: PermissionDecisionUi,
    title: string,
    message: string,
-   options?: RequestPermissionOptions,
+   options?: RequestPermissionOptions
 ): Promise<PermissionPromptDecision> {
    const sessionOption = options?.sessionLabel ?? APPROVE_FOR_SESSION_OPTION;
    const decisionOptions = [APPROVE_OPTION, sessionOption, DENY_OPTION, DENY_WITH_REASON_OPTION] as const;
@@ -70,20 +70,20 @@ export async function requestPermissionDecisionFromUi(
    if (selected === APPROVE_OPTION) {
       return {
          approved: true,
-         state: "approved",
+         state: "approved"
       };
    }
 
    if (selected === sessionOption) {
       return {
          approved: true,
-         state: "approved_for_session",
+         state: "approved_for_session"
       };
    }
 
    if (selected === DENY_WITH_REASON_OPTION) {
       const denialReason = normalizePermissionDenialReason(
-         await ui.input(`${title}\nShare why this request was denied (optional).`, "Reason shown back to the agent"),
+         await ui.input(`${title}\nShare why this request was denied (optional).`, "Reason shown back to the agent")
       );
 
       return createDeniedPermissionDecision(denialReason);

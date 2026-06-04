@@ -14,7 +14,7 @@ export function getPermissionSystemStatus(config: PermissionSystemExtensionConfi
 
 export function syncPermissionSystemStatus(
    ctx: PermissionStatusContext,
-   config: PermissionSystemExtensionConfig,
+   config: PermissionSystemExtensionConfig
 ): void {
    ctx.ui.setStatus(PERMISSION_SYSTEM_STATUS_KEY, getPermissionSystemStatus(config));
 }

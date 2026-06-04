@@ -44,7 +44,7 @@ export function resolveInvocationModel(
    parentModel: unknown,
    modelInput: string | undefined,
    modelFromParams: boolean,
-   registry: ModelRegistry,
+   registry: ModelRegistry
 ): ModelResolution {
    if (!modelInput) return { model: parentModel };
    const resolved = resolveModel(modelInput, registry);

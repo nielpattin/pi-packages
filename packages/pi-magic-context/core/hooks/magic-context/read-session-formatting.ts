@@ -174,7 +174,7 @@ export function compactTextForSummary(text: string, role: string): { text: strin
 
    return {
       text: withoutHashes.length > 0 ? withoutHashes : text,
-      commitHashes,
+      commitHashes
    };
 }
 

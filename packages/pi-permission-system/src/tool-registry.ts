@@ -44,7 +44,7 @@ function addToolNameVariants(
    value: string,
    names: Set<string>,
    aliases: Record<string, string>,
-   reverseAliases: ReadonlyMap<string, readonly string[]>,
+   reverseAliases: ReadonlyMap<string, readonly string[]>
 ): void {
    names.add(value);
 
@@ -93,12 +93,12 @@ export function getToolNameFromValue(value: unknown): string | null {
 export function checkRequestedToolRegistration(
    requestedToolName: string | null,
    registeredTools: readonly unknown[],
-   aliases: Record<string, string> = {},
+   aliases: Record<string, string> = {}
 ): ToolRegistrationCheckResult {
    const requested = getNonEmptyString(requestedToolName);
    if (!requested) {
       return {
-         status: "missing-tool-name",
+         status: "missing-tool-name"
       };
    }
 
@@ -124,7 +124,7 @@ export function checkRequestedToolRegistration(
       return {
          status: "registered",
          requestedToolName: requested,
-         normalizedToolName,
+         normalizedToolName
       };
    }
 
@@ -132,6 +132,6 @@ export function checkRequestedToolRegistration(
       status: "unregistered",
       requestedToolName: requested,
       normalizedToolName,
-      availableToolNames: [...availableToolNames].sort((a, b) => a.localeCompare(b)),
+      availableToolNames: [...availableToolNames].sort((a, b) => a.localeCompare(b))
    };
 }

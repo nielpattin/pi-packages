@@ -5,7 +5,7 @@ import { executeFlush } from "#core/hooks/magic-context/execute-flush";
 import {
    signalPiHistoryRefresh,
    signalPiPendingMaterialization,
-   signalPiSystemPromptRefresh,
+   signalPiSystemPromptRefresh
 } from "../context-handler";
 import { resolveSessionId, sendCtxStatusMessage } from "./pi-command-utils";
 
@@ -18,7 +18,7 @@ export function registerCtxFlushCommand(pi: ExtensionAPI, deps: { db: ContextDat
             sendCtxStatusMessage(pi, {
                title: "/ctx-flush",
                text: "## /ctx-flush\n\nNo active Pi session is available.",
-               level: "error",
+               level: "error"
             });
             return;
          }
@@ -58,10 +58,10 @@ export function registerCtxFlushCommand(pi: ExtensionAPI, deps: { db: ContextDat
             {
                title: "/ctx-flush",
                text,
-               level: result.startsWith("Error:") ? "error" : "success",
+               level: result.startsWith("Error:") ? "error" : "success"
             },
-            { sessionId, pendingBefore, result },
+            { sessionId, pendingBefore, result }
          );
-      },
+      }
    });
 }

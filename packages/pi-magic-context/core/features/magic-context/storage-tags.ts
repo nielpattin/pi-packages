@@ -15,7 +15,7 @@ function getInsertTagStatement(db: Database): PreparedStatement {
    let stmt = insertTagStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "INSERT INTO tags (session_id, message_id, type, byte_size, reasoning_byte_size, tag_number, tool_name, input_byte_size, harness, tool_owner_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+         "INSERT INTO tags (session_id, message_id, type, byte_size, reasoning_byte_size, tag_number, tool_name, input_byte_size, harness, tool_owner_message_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
       );
       insertTagStatements.set(db, stmt);
    }
@@ -83,7 +83,7 @@ export function updateTagInputByteSize(
    db: Database,
    sessionId: string,
    tagNumber: number,
-   newInputByteSize: number,
+   newInputByteSize: number
 ): void {
    getUpdateTagInputByteSizeStatement(db).run(newInputByteSize, sessionId, tagNumber);
 }
@@ -101,7 +101,7 @@ function getTagNumbersByMessageIdStatement(db: Database): PreparedStatement {
    let stmt = getTagNumbersByMessageIdStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT tag_number FROM tags WHERE session_id = ? AND (message_id = ? OR message_id LIKE ? ESCAPE '\\' OR message_id LIKE ? ESCAPE '\\') ORDER BY tag_number ASC",
+         "SELECT tag_number FROM tags WHERE session_id = ? AND (message_id = ? OR message_id LIKE ? ESCAPE '\\' OR message_id LIKE ? ESCAPE '\\') ORDER BY tag_number ASC"
       );
       getTagNumbersByMessageIdStatements.set(db, stmt);
    }
@@ -112,7 +112,7 @@ function getDeleteTagsByMessageIdStatement(db: Database): PreparedStatement {
    let stmt = deleteTagsByMessageIdStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "DELETE FROM tags WHERE session_id = ? AND (message_id = ? OR message_id LIKE ? ESCAPE '\\' OR message_id LIKE ? ESCAPE '\\')",
+         "DELETE FROM tags WHERE session_id = ? AND (message_id = ? OR message_id LIKE ? ESCAPE '\\' OR message_id LIKE ? ESCAPE '\\')"
       );
       deleteTagsByMessageIdStatements.set(db, stmt);
    }
@@ -132,7 +132,7 @@ function getTagNumberByMessageIdStatement(db: Database): PreparedStatement {
    let stmt = getTagNumberByMessageIdStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT tag_number FROM tags WHERE session_id = ? AND message_id = ? ORDER BY tag_number ASC LIMIT 1",
+         "SELECT tag_number FROM tags WHERE session_id = ? AND message_id = ? ORDER BY tag_number ASC LIMIT 1"
       );
       getTagNumberByMessageIdStatements.set(db, stmt);
    }
@@ -200,7 +200,7 @@ function toTagEntry(row: TagRow): TagEntry {
       // NULL is the legitimate value for non-tool tags AND for legacy
       // tool tags written before plugin v0.16.x. Lazy adoption +
       // backfill populate this column at runtime; see plan v3.3.1.
-      toolOwnerMessageId: typeof row.tool_owner_message_id === "string" ? row.tool_owner_message_id : null,
+      toolOwnerMessageId: typeof row.tool_owner_message_id === "string" ? row.tool_owner_message_id : null
    };
 }
 
@@ -230,7 +230,7 @@ export function insertTag(
    reasoningByteSize: number = 0,
    toolName: string | null = null,
    inputByteSize: number = 0,
-   toolOwnerMessageId: string | null = null,
+   toolOwnerMessageId: string | null = null
 ): number {
    getInsertTagStatement(db).run(
       sessionId,
@@ -242,7 +242,7 @@ export function insertTag(
       toolName,
       inputByteSize,
       getHarness(),
-      toolOwnerMessageId,
+      toolOwnerMessageId
    );
 
    return tagNumber;
@@ -256,7 +256,7 @@ export function updateTagDropMode(
    db: Database,
    sessionId: string,
    tagNumber: number,
-   dropMode: TagEntry["dropMode"],
+   dropMode: TagEntry["dropMode"]
 ): void {
    getUpdateTagDropModeStatement(db).run(dropMode, sessionId, tagNumber);
 }
@@ -272,7 +272,7 @@ export function updateCavemanDepth(db: Database, sessionId: string, tagNumber: n
    db.prepare("UPDATE tags SET caveman_depth = ? WHERE session_id = ? AND tag_number = ?").run(
       depth,
       sessionId,
-      tagNumber,
+      tagNumber
    );
 }
 
@@ -338,7 +338,7 @@ function getOwnerScopedToolTagNumbers(db: Database, sessionId: string, ownerMsgI
    let stmt = getOwnerScopedToolTagNumbersStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT tag_number FROM tags WHERE session_id = ? AND type = 'tool' AND tool_owner_message_id = ? ORDER BY tag_number ASC",
+         "SELECT tag_number FROM tags WHERE session_id = ? AND type = 'tool' AND tool_owner_message_id = ? ORDER BY tag_number ASC"
       );
       getOwnerScopedToolTagNumbersStatements.set(db, stmt);
    }
@@ -408,7 +408,7 @@ function getActiveTagsBySessionStatement(db: Database): PreparedStatement {
    let stmt = getActiveTagsBySessionStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND status = 'active' ORDER BY tag_number ASC, id ASC`,
+         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND status = 'active' ORDER BY tag_number ASC, id ASC`
       );
       getActiveTagsBySessionStatements.set(db, stmt);
    }
@@ -419,7 +419,7 @@ function getMaxDroppedTagNumberStatement(db: Database): PreparedStatement {
    let stmt = getMaxDroppedTagNumberStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT COALESCE(MAX(tag_number), 0) AS max_tag_number FROM tags WHERE session_id = ? AND status = 'dropped'",
+         "SELECT COALESCE(MAX(tag_number), 0) AS max_tag_number FROM tags WHERE session_id = ? AND status = 'dropped'"
       );
       getMaxDroppedTagNumberStatements.set(db, stmt);
    }
@@ -475,7 +475,7 @@ export function getTagsByNumbers(db: Database, sessionId: string, tagNumbers: re
    const placeholders = tagNumbers.map(() => "?").join(",");
    const rows = db
       .prepare(
-         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND tag_number IN (${placeholders}) ORDER BY tag_number ASC, id ASC`,
+         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND tag_number IN (${placeholders}) ORDER BY tag_number ASC, id ASC`
       )
       .all(sessionId, ...tagNumbers)
       .filter(isTagRow);
@@ -516,7 +516,7 @@ export function getTopNBySize(db: Database, sessionId: string, n: number): TagEn
 
    const rows = db
       .prepare(
-         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND status = 'active' ORDER BY byte_size DESC, tag_number ASC LIMIT ?`,
+         `SELECT ${TAG_SELECT_COLUMNS} FROM tags WHERE session_id = ? AND status = 'active' ORDER BY byte_size DESC, tag_number ASC LIMIT ?`
       )
       .all(sessionId, n)
       .filter(isTagRow);
@@ -549,7 +549,7 @@ function getGetToolTagNumberByOwnerStatement(db: Database): PreparedStatement {
          `SELECT tag_number FROM tags
              WHERE session_id = ? AND message_id = ?
                AND type = 'tool' AND tool_owner_message_id = ?
-             LIMIT 1`,
+             LIMIT 1`
       );
       getToolTagNumberByOwnerStatements.set(db, stmt);
    }
@@ -567,7 +567,7 @@ export function getToolTagNumberByOwner(
    db: Database,
    sessionId: string,
    callId: string,
-   ownerMsgId: string,
+   ownerMsgId: string
 ): number | null {
    const row = getGetToolTagNumberByOwnerStatement(db).get(sessionId, callId, ownerMsgId);
    return isTagNumberRow(row) ? row.tag_number : null;
@@ -592,7 +592,7 @@ function getGetNullOwnerToolTagStatement(db: Database): PreparedStatement {
              WHERE session_id = ? AND message_id = ?
                AND type = 'tool' AND tool_owner_message_id IS NULL
              ORDER BY tag_number ASC
-             LIMIT 1`,
+             LIMIT 1`
       );
       getNullOwnerToolTagStatements.set(db, stmt);
    }
@@ -618,7 +618,7 @@ function getGetNullOwnerToolTagStatement(db: Database): PreparedStatement {
 export function getNullOwnerToolTag(
    db: Database,
    sessionId: string,
-   callId: string,
+   callId: string
 ): { id: number; tagNumber: number } | null {
    const row = getGetNullOwnerToolTagStatement(db).get(sessionId, callId);
    if (!isNullOwnerToolTagRow(row)) return null;
@@ -635,7 +635,7 @@ function getAdoptNullOwnerToolTagStatement(db: Database): PreparedStatement {
       stmt = db.prepare(
          `UPDATE tags
              SET tool_owner_message_id = ?
-             WHERE id = ? AND tool_owner_message_id IS NULL`,
+             WHERE id = ? AND tool_owner_message_id IS NULL`
       );
       adoptNullOwnerToolTagStatements.set(db, stmt);
    }
@@ -681,7 +681,7 @@ export function getCandidateToolOwners(db: Database, sessionId: string, callId: 
              WHERE session_id = ?
                AND message_id = ?
                AND type = 'tool'
-               AND tool_owner_message_id IS NOT NULL`,
+               AND tool_owner_message_id IS NOT NULL`
       )
       .all(sessionId, callId) as Array<{ tool_owner_message_id: string }>;
    return rows.map((r) => r.tool_owner_message_id);
@@ -707,7 +707,7 @@ export function getCandidateToolOwners(db: Database, sessionId: string, callId: 
 export function pickNearestPriorOwner(
    candidates: readonly string[],
    currentMessageId: string,
-   times: ReadonlyMap<string, number>,
+   times: ReadonlyMap<string, number>
 ): string | null {
    const currentTime = times.get(currentMessageId);
    if (typeof currentTime !== "number") return null;
@@ -743,7 +743,7 @@ export function getPersistedToolOwnerNearestPrior(
    _db: Database,
    _sessionId: string,
    _callId: string,
-   _currentMessageId: string,
+   _currentMessageId: string
 ): string | null {
    return null;
 }
@@ -755,7 +755,7 @@ function getDeleteToolTagsByOwnerStatement(db: Database): PreparedStatement {
          `DELETE FROM tags
              WHERE session_id = ?
                AND type = 'tool'
-               AND tool_owner_message_id = ?`,
+               AND tool_owner_message_id = ?`
       );
       deleteToolTagsByOwnerStatements.set(db, stmt);
    }

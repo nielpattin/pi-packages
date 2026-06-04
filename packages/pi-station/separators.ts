@@ -8,9 +8,9 @@ export function getSeparator(): SeparatorDef {
       endCaps: {
          left: chars.right,
          right: chars.left,
-         useBgAsFg: true,
+         useBgAsFg: true
       },
       left: chars.thinLeft,
-      right: chars.thinRight,
+      right: chars.thinRight
    };
 }

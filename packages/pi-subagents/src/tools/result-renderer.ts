@@ -25,7 +25,7 @@ export function renderAgentResult(
    expanded: boolean,
    isPartial: boolean,
    theme: Theme,
-   options?: RenderAgentResultOptions,
+   options?: RenderAgentResultOptions
 ): string {
    if (isPartial || details.status === "running") return renderRunning(details, theme);
    if (details.status === "background") return renderBackground(details, theme);
@@ -41,8 +41,8 @@ export function renderAgentResult(
 export function renderRunning(details: AgentDetails, theme: Theme): string {
    const frame = SPINNER[details.spinnerFrame ?? 0];
    const s = renderStats(details, theme);
-   let line = theme.fg("accent", frame) + (s ? " " + s : "");
-   line += "\n" + theme.fg("dim", `  ⎿  ${details.activity ?? "thinking\u2026"}`);
+   let line = theme.fg("accent", frame) + (s ? ` ${s}` : "");
+   line += `\n${theme.fg("dim", `  ⎿  ${details.activity ?? "thinking\u2026"}`)}`;
    return line;
 }
 
@@ -57,14 +57,14 @@ export function renderCompleted(
    resultText: string,
    expanded: boolean,
    theme: Theme,
-   options: RenderAgentResultOptions = {},
+   options: RenderAgentResultOptions = {}
 ): string {
    const duration = formatMs(details.durationMs);
    const isSteered = details.status === "steered";
    const icon = isSteered ? theme.fg("warning", "\u2713") : theme.fg("success", "\u2713");
    const s = renderStats(details, theme);
-   let line = icon + (s ? " " + s : "");
-   line += " " + theme.fg("dim", "\u00B7") + " " + theme.fg("dim", duration);
+   let line = icon + (s ? ` ${s}` : "");
+   line += ` ${theme.fg("dim", "\u00B7")} ${theme.fg("dim", duration)}`;
 
    if (expanded) {
       if (resultText) {
@@ -72,16 +72,16 @@ export function renderCompleted(
          const expandedLineLimit = "expandedLineLimit" in options ? (options.expandedLineLimit ?? null) : 50;
          const lines = expandedLineLimit === null ? allLines : allLines.slice(0, expandedLineLimit);
          for (const l of lines) {
-            line += "\n" + theme.fg("dim", `  ${l}`);
+            line += `\n${theme.fg("dim", `  ${l}`)}`;
          }
          const overflowHint = options.overflowHint === undefined ? DEFAULT_OVERFLOW_HINT : options.overflowHint;
          if (overflowHint && expandedLineLimit !== null && allLines.length > expandedLineLimit) {
-            line += "\n" + theme.fg("muted", overflowHint);
+            line += `\n${theme.fg("muted", overflowHint)}`;
          }
       }
    } else {
       const doneText = isSteered ? "Wrapped up (turn limit)" : "Done";
-      line += "\n" + theme.fg("dim", `  \u23BF  ${doneText}`);
+      line += `\n${theme.fg("dim", `  \u23BF  ${doneText}`)}`;
    }
    return line;
 }
@@ -89,20 +89,20 @@ export function renderCompleted(
 /** Render stopped status: dim stop icon + stats + "Stopped". */
 export function renderStopped(details: AgentDetails, theme: Theme): string {
    const s = renderStats(details, theme);
-   let line = theme.fg("dim", "\u25A0") + (s ? " " + s : "");
-   line += "\n" + theme.fg("dim", "  \u23BF  Stopped");
+   let line = theme.fg("dim", "\u25A0") + (s ? ` ${s}` : "");
+   line += `\n${theme.fg("dim", "  \u23BF  Stopped")}`;
    return line;
 }
 
 /** Render error or aborted status: error icon + stats + status message. */
 export function renderFailed(details: AgentDetails, theme: Theme): string {
    const s = renderStats(details, theme);
-   let line = theme.fg("error", "\u2717") + (s ? " " + s : "");
+   let line = theme.fg("error", "\u2717") + (s ? ` ${s}` : "");
 
    if (details.status === "error") {
-      line += "\n" + theme.fg("error", `  \u23BF  Error: ${details.error ?? "unknown"}`);
+      line += `\n${theme.fg("error", `  \u23BF  Error: ${details.error ?? "unknown"}`)}`;
    } else {
-      line += "\n" + theme.fg("warning", "  \u23BF  Aborted (max turns exceeded)");
+      line += `\n${theme.fg("warning", "  \u23BF  Aborted (max turns exceeded)")}`;
    }
    return line;
 }
@@ -122,5 +122,5 @@ export function renderStats(details: AgentDetails, theme: Theme): string {
    }
    if (details.toolUses > 0) parts.push(`${details.toolUses} tool use${details.toolUses === 1 ? "" : "s"}`);
    if (details.tokens) parts.push(details.tokens);
-   return parts.map((p) => theme.fg("dim", p)).join(" " + theme.fg("dim", "\u00B7") + " ");
+   return parts.map((p) => theme.fg("dim", p)).join(` ${theme.fg("dim", "\u00B7")} `);
 }

@@ -14,7 +14,7 @@ function mockExec(): ShellExec {
             cwd: options?.cwd,
             encoding: "utf-8",
             stdio: ["pipe", "pipe", "pipe"],
-            timeout: options?.timeout,
+            timeout: options?.timeout
          });
          return { stdout, stderr: "", code: 0 };
       } catch (err: any) {
@@ -38,8 +38,8 @@ describe("detectEnv", () => {
             "git init && git config user.email test@test.com && git config user.name Test && git checkout -b test-branch && git commit --allow-empty -m init",
             {
                cwd: tmpDir,
-               stdio: "pipe",
-            },
+               stdio: "pipe"
+            }
          );
          const env = await detectEnv(mockExec(), tmpDir);
          expect(env.isGitRepo).toBe(true);

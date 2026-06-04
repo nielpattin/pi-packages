@@ -70,7 +70,7 @@ export default function magicContextSubagentExtension(pi: ExtensionAPI): void {
    pi.registerFlag(SUBAGENT_DREAMER_ACTIONS_FLAG, {
       description: "Enable dreamer-only ctx_memory actions (update, merge, archive).",
       type: "boolean",
-      default: false,
+      default: false
    });
 
    pi.on("session_start", async () => {
@@ -96,13 +96,13 @@ export default function magicContextSubagentExtension(pi: ExtensionAPI): void {
             // Subagents inherit the same dreamer-action allowlist
             // the parent passed via the --magic-context-dreamer-actions
             // flag. Default false → write/delete/list only.
-            allowDreamerActions: dreamerActionsEnabled,
+            allowDreamerActions: dreamerActionsEnabled
          });
 
          log(
             `[pi-subagent] registered tools: ctx_search, ctx_memory, ctx_note, ctx_expand` +
                ` (memory=${cfg.memory.enabled}, embedding=${cfg.embedding.provider !== "off"},` +
-               ` git_commits=${cfg.experimental.git_commit_indexing.enabled}, dreamer_actions=${dreamerActionsEnabled})`,
+               ` git_commits=${cfg.experimental.git_commit_indexing.enabled}, dreamer_actions=${dreamerActionsEnabled})`
          );
       } catch (err) {
          const message = err instanceof Error ? err.message : String(err);

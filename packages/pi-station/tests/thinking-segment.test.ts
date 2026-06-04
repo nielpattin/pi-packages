@@ -34,11 +34,11 @@ function createSegmentContext(thinkingLevel: string, colors: ColorScheme): Segme
       theme: {
          fg() {
             throw new Error("unexpected theme color lookup in thinking segment test");
-         },
+         }
       } satisfies ThemeLike,
       thinkingLevel,
       usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0, input: 0, output: 0 },
-      usingSubscription: false,
+      usingSubscription: false
    };
 }
 
@@ -47,7 +47,7 @@ test("thinking segment uses per-level colors for off through medium", () => {
       thinking: "#111111",
       thinkingLow: "#333333",
       thinkingMedium: "#444444",
-      thinkingMinimal: "#222222",
+      thinkingMinimal: "#222222"
    };
 
    const off = renderSegment("thinking", createSegmentContext("off", colors));

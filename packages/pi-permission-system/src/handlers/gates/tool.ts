@@ -40,11 +40,11 @@ export function describeToolGate(tcc: ToolCallContext, check: PermissionCheckRes
          kind: "tool",
          check,
          agentName: tcc.agentName ?? undefined,
-         input: tcc.input,
+         input: tcc.input
       },
       sessionApproval: {
          surface: suggestion.surface,
-         pattern: suggestion.pattern,
+         pattern: suggestion.pattern
       },
       promptDetails: {
          source: "tool_call",
@@ -53,18 +53,18 @@ export function describeToolGate(tcc: ToolCallContext, check: PermissionCheckRes
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
          sessionLabel: suggestion.label,
-         ...permissionLogContext,
+         ...permissionLogContext
       },
       logContext: {
          source: "tool_call",
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
          message: askMessage,
-         ...permissionLogContext,
+         ...permissionLogContext
       },
       decision: {
          surface: tcc.toolName,
-         value: deriveDecisionValue(tcc.toolName, check, getPathBearingToolPath(tcc.toolName, tcc.input) ?? undefined),
-      },
+         value: deriveDecisionValue(tcc.toolName, check, getPathBearingToolPath(tcc.toolName, tcc.input) ?? undefined)
+      }
    };
 }

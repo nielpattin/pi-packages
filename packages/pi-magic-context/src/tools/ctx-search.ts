@@ -28,19 +28,19 @@ const DEFAULT_LIMIT = 10;
 const ParamsSchema = Type.Object({
    query: Type.String({
       description:
-         "Search query. Matches against memory content, git commit messages, and raw user/assistant message text.",
+         "Search query. Matches against memory content, git commit messages, and raw user/assistant message text."
    }),
    limit: Type.Optional(
       Type.Number({
-         description: "Maximum results to return (default: 10)",
-      }),
+         description: "Maximum results to return (default: 10)"
+      })
    ),
    sources: Type.Optional(
       Type.Array(Type.Union([Type.Literal("memory"), Type.Literal("message"), Type.Literal("git_commit")]), {
          description:
-            'Optional. Restrict to specific sources. Examples: ["git_commit"] for "when did we change X", ["memory"] for naming conventions, ["message"] for "did we discuss this earlier", ["git_commit","message"] for regression hunts. Omit for a broad search across all enabled sources.',
-      }),
-   ),
+            'Optional. Restrict to specific sources. Examples: ["git_commit"] for "when did we change X", ["memory"] for naming conventions, ["message"] for "did we discuss this earlier", ["git_commit","message"] for regression hunts. Omit for a broad search across all enabled sources.'
+      })
+   )
 });
 
 type CtxSearchParams = Static<typeof ParamsSchema>;
@@ -68,14 +68,14 @@ function formatResult(result: UnifiedSearchResult, index: number): string {
    if (result.source === "memory") {
       return [
          `[${index}] [memory] score=${result.score.toFixed(2)} id=${result.memoryId} category=${result.category} match=${result.matchType}`,
-         result.content,
+         result.content
       ].join("\n");
    }
 
    if (result.source === "git_commit") {
       return [
          `[${index}] [git_commit] score=${result.score.toFixed(2)} sha=${result.shortSha} ${formatAge(result.committedAtMs)} match=${result.matchType}`,
-         result.content,
+         result.content
       ].join("\n");
    }
 
@@ -83,7 +83,7 @@ function formatResult(result: UnifiedSearchResult, index: number): string {
    const expandEnd = result.messageOrdinal + 3;
    return [
       `[${index}] [message] score=${result.score.toFixed(2)} ordinal=${result.messageOrdinal} range=${expandStart}-${expandEnd} role=${result.role}`,
-      result.content,
+      result.content
    ].join("\n");
 }
 
@@ -94,7 +94,7 @@ function formatSearchResults(query: string, results: UnifiedSearchResult[]): str
    const bodyParts = results.map((result, index) => formatResult(result, index + 1));
    if (results.some((result) => result.source === "message")) {
       bodyParts.push(
-         "Use ctx_expand(start, end) with the range from any message result above to read the full conversation context.",
+         "Use ctx_expand(start, end) with the range from any message result above to read the full conversation context."
       );
    }
    const body = bodyParts.join("\n\n");
@@ -132,7 +132,7 @@ export function createCtxSearchTool(deps: CtxSearchToolDeps): ToolDefinition<typ
             return {
                content: [{ type: "text", text: "Error: 'query' is required." }],
                details: undefined,
-               isError: true,
+               isError: true
             };
          }
 
@@ -163,13 +163,13 @@ export function createCtxSearchTool(deps: CtxSearchToolDeps): ToolDefinition<typ
             maxMessageOrdinal: lastCompartmentEnd >= 0 ? lastCompartmentEnd : undefined,
             gitCommitsEnabled,
             sources: params.sources,
-            visibleMemoryIds,
+            visibleMemoryIds
          });
 
          return {
             content: [{ type: "text", text: formatSearchResults(query, results) }],
-            details: undefined,
+            details: undefined
          };
-      },
+      }
    };
 }

@@ -15,7 +15,7 @@ export interface ForegroundManagerDeps {
       snapshot: ParentSnapshot,
       type: string,
       prompt: string,
-      opts: Omit<AgentSpawnConfig, "isBackground">,
+      opts: Omit<AgentSpawnConfig, "isBackground">
    ): Promise<Agent>;
 }
 
@@ -43,7 +43,7 @@ export async function runForeground(
    agentActivity: AgentActivityAccess,
    params: ForegroundParams,
    signal: AbortSignal | undefined,
-   onUpdate: ((update: AgentToolResult<any>) => void) | undefined,
+   onUpdate: ((update: AgentToolResult<any>) => void) | undefined
 ) {
    const { identity, execution, presentation } = params.config;
    let spinnerFrame = 0;
@@ -65,12 +65,12 @@ export async function runForeground(
          durationMs: Date.now() - startedAt,
          status: "running",
          activity: describeActivity(fgState.activeTools, fgState.responseText),
-         spinnerFrame: spinnerFrame % SPINNER.length,
+         spinnerFrame: spinnerFrame % SPINNER.length
       };
       onUpdate?.({
          content: [{ type: "text", text: `${toolUses} tool uses...` }],
          // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Pi SDK ToolCallUpdate details type is not exported
-         details: details as any,
+         details: details as any
       });
    };
 
@@ -103,8 +103,8 @@ export async function runForeground(
                fgId = agent.id;
                agentActivity.set(agent.id, fgState);
                widget.ensureTimer();
-            },
-         },
+            }
+         }
       });
    } catch (err) {
       clearInterval(spinnerInterval);
@@ -138,6 +138,6 @@ export async function runForeground(
    return textResult(
       `${fallbackNote}Agent completed in ${formatMs(durationMs)} (${statsParts.join(", ")})${getStatusNote(record.status)}.\n\n` +
          (record.result?.trim() ?? "No output."),
-      details,
+      details
    );
 }

@@ -13,7 +13,7 @@ function makeWorktrees(overrides?: {
    return {
       create: vi.fn(() => createReturn),
       cleanup: vi.fn(() => cleanupReturn),
-      prune: vi.fn(),
+      prune: vi.fn()
    };
 }
 

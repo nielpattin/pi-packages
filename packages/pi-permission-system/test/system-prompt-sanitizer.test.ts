@@ -46,7 +46,7 @@ describe("sanitizeAvailableToolsSection — Available tools section", () => {
       const input = prompt(
          "Preamble text",
          availableToolsSection(["bash"]),
-         guidelinesSection(["use bash for file operations like ls, rg, find"]),
+         guidelinesSection(["use bash for file operations like ls, rg, find"])
       );
       const result = sanitizeAvailableToolsSection(input, ["bash"]);
       expect(result.prompt).not.toContain("Available tools:");
@@ -107,8 +107,8 @@ describe("sanitizeAvailableToolsSection — Guidelines section", () => {
       const input = prompt(
          guidelinesSection([
             "use bash for file operations like ls, rg, find",
-            "use write only for new files or complete rewrites",
-         ]),
+            "use write only for new files or complete rewrites"
+         ])
       );
       const result = sanitizeAvailableToolsSection(input, []);
       expect(result.removed).toBe(true);
@@ -128,8 +128,8 @@ describe("sanitizeAvailableToolsSection — Guidelines section", () => {
          guidelinesSection([
             "use bash for file operations like ls, rg, find",
             "use write only for new files or complete rewrites",
-            "some custom guideline not in the rules",
-         ]),
+            "some custom guideline not in the rules"
+         ])
       );
       const result = sanitizeAvailableToolsSection(input, []);
       expect(result.removed).toBe(true);
@@ -153,7 +153,7 @@ describe("sanitizeAvailableToolsSection — multi-section prompt", () => {
          "Intro",
          availableToolsSection(["bash"]),
          guidelinesSection(["use bash for file operations like ls, rg, find"]),
-         "Closing",
+         "Closing"
       );
       const result = sanitizeAvailableToolsSection(input, []);
       // No run of 3+ consecutive newlines
@@ -165,7 +165,7 @@ describe("sanitizeAvailableToolsSection — findSection boundary edge cases", ()
    test("preserves content after Guidelines when Guidelines is the last recognised section", () => {
       const input = prompt(
          guidelinesSection(["use bash for file operations like ls, rg, find"]),
-         "Trailing custom instructions",
+         "Trailing custom instructions"
       );
       const result = sanitizeAvailableToolsSection(input, []);
       expect(result.prompt).toContain("Trailing custom instructions");
@@ -175,7 +175,7 @@ describe("sanitizeAvailableToolsSection — findSection boundary edge cases", ()
       const input = prompt(
          availableToolsSection(["bash"]),
          guidelinesSection(["use bash for file operations like ls, rg, find"]),
-         "Important user note",
+         "Important user note"
       );
       const result = sanitizeAvailableToolsSection(input, []);
       expect(result.removed).toBe(true);

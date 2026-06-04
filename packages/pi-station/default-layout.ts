@@ -12,8 +12,8 @@ export const DEFAULT_LAYOUT: PresetDef = {
    segmentOptions: {
       git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true },
       model: { showThinkingLevel: false },
-      path: { mode: "full" },
+      path: { mode: "full" }
    },
    separator: "thin",
-   tertiarySegments: ["extension_statuses"],
+   tertiarySegments: ["extension_statuses"]
 };

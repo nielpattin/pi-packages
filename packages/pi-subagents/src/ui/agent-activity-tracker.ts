@@ -21,7 +21,7 @@ export class AgentActivityTracker {
 
    /** Record that a tool has started executing. */
    onToolStart(toolName: string): void {
-      this._activeTools.set(toolName + "_" + ++this._toolKeySeq, toolName);
+      this._activeTools.set(`${toolName}_${++this._toolKeySeq}`, toolName);
    }
 
    /** Remove a tool from active tools (called when tool execution ends). No-op when no matching tool is active. */

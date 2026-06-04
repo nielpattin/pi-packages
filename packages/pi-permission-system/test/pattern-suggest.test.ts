@@ -68,7 +68,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("bash", "git status --short");
          expect(result).toMatchObject({
             surface: "bash",
-            pattern: "git status *",
+            pattern: "git status *"
          });
       });
 
@@ -107,7 +107,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("external_directory", "/tmp/foo.txt");
          expect(result).toMatchObject({
             surface: "external_directory",
-            pattern: "/tmp/*",
+            pattern: "/tmp/*"
          });
       });
    });
@@ -117,7 +117,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("path", "src/.env");
          expect(result).toMatchObject({
             surface: "path",
-            pattern: "src/*",
+            pattern: "src/*"
          });
       });
 
@@ -132,7 +132,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("read", "/outside/project/file.ts");
          expect(result).toMatchObject({
             surface: "read",
-            pattern: "/outside/project/*",
+            pattern: "/outside/project/*"
          });
       });
 
@@ -140,7 +140,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("write", "src/main.ts");
          expect(result).toMatchObject({
             surface: "write",
-            pattern: "src/*",
+            pattern: "src/*"
          });
       });
 
@@ -165,7 +165,7 @@ describe("suggestSessionPattern", () => {
          const result = suggestSessionPattern("my_extension_tool", "*");
          expect(result).toMatchObject({
             surface: "my_extension_tool",
-            pattern: "*",
+            pattern: "*"
          });
       });
    });

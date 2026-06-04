@@ -12,7 +12,7 @@ import {
    applyHashlineEdits,
    computeLegacyEditLineRange,
    resolveEditAnchors,
-   type HashlineToolEdit,
+   type HashlineToolEdit
 } from "./core/hashline.ts";
 import { loadFileKindAndText } from "./core/file-kind.ts";
 import { resolveToCwd } from "./core/path-utils.ts";
@@ -25,36 +25,36 @@ import {
    buildNoopResponse,
    buildRangesResponse,
    type CompatibilityDetails as ResponseCompatibilityDetails,
-   type ReturnMode,
+   type ReturnMode
 } from "./core/edit-response.ts";
 
 const hashlineEditLinesSchema = Type.Union([
    Type.Array(Type.String(), { description: "content (preferred format)" }),
    Type.String(),
-   Type.Null(),
+   Type.Null()
 ]);
 
 const returnRangeSchema = Type.Object(
    {
       start: Type.Integer({ minimum: 1, description: "first post-edit line to return" }),
-      end: Type.Optional(Type.Integer({ minimum: 1, description: "last post-edit line to return" })),
+      end: Type.Optional(Type.Integer({ minimum: 1, description: "last post-edit line to return" }))
    },
-   { additionalProperties: false },
+   { additionalProperties: false }
 );
 
 const hashlineEditItemSchema = Type.Object(
    {
       op: Type.Union(
          [Type.Literal("replace"), Type.Literal("append"), Type.Literal("prepend"), Type.Literal("replace_text")],
-         { description: 'edit operation: "replace", "append", "prepend", or "replace_text"' },
+         { description: 'edit operation: "replace", "append", "prepend", or "replace_text"' }
       ),
       pos: Type.Optional(Type.String({ description: "anchor" })),
       end: Type.Optional(Type.String({ description: "limit position" })),
       lines: Type.Optional(hashlineEditLinesSchema),
       oldText: Type.Optional(Type.String({ description: "exact text to replace" })),
-      newText: Type.Optional(Type.String({ description: "replacement text" })),
+      newText: Type.Optional(Type.String({ description: "replacement text" }))
    },
-   { additionalProperties: false },
+   { additionalProperties: false }
 );
 
 export const hashlineEditToolSchema = Type.Object(
@@ -62,19 +62,19 @@ export const hashlineEditToolSchema = Type.Object(
       path: Type.String({ description: "path" }),
       returnMode: Type.Optional(
          Type.Union([Type.Literal("changed"), Type.Literal("full"), Type.Literal("ranges")], {
-            description: 'response mode: "changed", "full", or "ranges"',
-         }),
+            description: 'response mode: "changed", "full", or "ranges"'
+         })
       ),
       returnRanges: Type.Optional(
-         Type.Array(returnRangeSchema, { description: "post-edit line ranges when returnMode is ranges" }),
+         Type.Array(returnRangeSchema, { description: "post-edit line ranges when returnMode is ranges" })
       ),
       edits: Type.Optional(Type.Array(hashlineEditItemSchema, { description: "edits over $path" })),
       oldText: Type.Optional(Type.String({ description: "Deprecated. Use edits[].oldText with op replace_text." })),
       newText: Type.Optional(Type.String({ description: "Deprecated. Use edits[].newText with op replace_text." })),
       old_text: Type.Optional(Type.String({ description: "Deprecated. Use oldText or edits[].oldText." })),
-      new_text: Type.Optional(Type.String({ description: "Deprecated. Use newText or edits[].newText." })),
+      new_text: Type.Optional(Type.String({ description: "Deprecated. Use newText or edits[].newText." }))
    },
-   { additionalProperties: false },
+   { additionalProperties: false }
 );
 
 type ReturnRange = {
@@ -159,7 +159,7 @@ const ROOT_KEYS = new Set([
    "oldText",
    "newText",
    "old_text",
-   "new_text",
+   "new_text"
 ]);
 const ITEM_KEYS = new Set(["op", "pos", "end", "lines", "oldText", "newText"]);
 const LEGACY_KEYS = ["oldText", "newText", "old_text", "new_text"] as const;
@@ -169,7 +169,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function hasOwn(request: Record<string, unknown>, key: string): boolean {
-   return Object.prototype.hasOwnProperty.call(request, key);
+   return Object.hasOwn(request, key);
 }
 
 function isStringArray(value: unknown): value is string[] {
@@ -253,7 +253,7 @@ export function assertEditRequest(request: unknown): asserts request is EditRequ
    const hasSnakeLegacy = hasOwn(request, "old_text") || hasOwn(request, "new_text");
    if (hasCamelLegacy && hasSnakeLegacy) {
       throw new Error(
-         "Edit request cannot mix legacy camelCase and snake_case fields. Use either oldText/newText or old_text/new_text.",
+         "Edit request cannot mix legacy camelCase and snake_case fields. Use either oldText/newText or old_text/new_text."
       );
    }
 
@@ -285,7 +285,7 @@ export function assertEditRequest(request: unknown): asserts request is EditRequ
       }
       if (edit.op !== "replace" && edit.op !== "append" && edit.op !== "prepend" && edit.op !== "replace_text") {
          throw new Error(
-            `Edit ${index} uses unknown op "${edit.op}". Expected "replace", "append", "prepend", or "replace_text".`,
+            `Edit ${index} uses unknown op "${edit.op}". Expected "replace", "append", "prepend", or "replace_text".`
          );
       }
 
@@ -334,7 +334,7 @@ export function assertEditRequest(request: unknown): asserts request is EditRequ
 
       if ((edit.op === "append" || edit.op === "prepend") && hasOwn(edit, "end")) {
          throw new Error(
-            `Edit ${index} with op "${edit.op}" does not support "end". Use "pos" or omit it for file boundary insertion.`,
+            `Edit ${index} with op "${edit.op}" does not support "end". Use "pos" or omit it for file boundary insertion.`
          );
       }
    }
@@ -393,7 +393,7 @@ function colorDiffLines(lines: string[], theme: { fg: (token: string, text: stri
 function formatPreviewDiff(
    diff: string,
    expanded: boolean,
-   theme: { fg: (token: string, text: string) => string },
+   theme: { fg: (token: string, text: string) => string }
 ): string {
    const lines = diff.split("\n");
    const maxLines = expanded ? 40 : 16;
@@ -411,7 +411,7 @@ function formatResultDiff(diff: string, theme: { fg: (token: string, text: strin
 
 function getRenderedEditTextContent(result: { content?: Array<{ type: string; text?: string }> }): string | undefined {
    const textContent = result.content?.find(
-      (entry): entry is { type: "text"; text: string } => entry.type === "text" && typeof entry.text === "string",
+      (entry): entry is { type: "text"; text: string } => entry.type === "text" && typeof entry.text === "string"
    );
    return textContent?.text;
 }
@@ -434,7 +434,7 @@ function buildAppliedChangedResultText(
    text: string | undefined,
    details: HashlineEditToolDetails | undefined,
    preview: EditPreview | undefined,
-   theme: { fg: (token: string, text: string) => string },
+   theme: { fg: (token: string, text: string) => string }
 ): string | undefined {
    const previewDiff = preview && !("error" in preview) ? preview.diff : undefined;
    const sections: string[] = [];
@@ -546,20 +546,20 @@ function createRenderedEditMarkdownTheme(theme: {
             }
 
             return theme.fg("mdCodeBlock", line);
-         }),
+         })
    };
 }
 
 function formatRequestedRangePreviews(
    text: string,
-   ranges: ReturnRange[],
+   ranges: ReturnRange[]
 ): { text: string; returnedRanges: ReturnedRangePreview[] } {
    const totalLines = getVisibleLines(text).length;
    const returnedRanges = ranges.map((range) => {
       const requestedEnd = range.end ?? range.start;
       const preview = formatHashlineReadPreview(text, {
          offset: range.start,
-         limit: requestedEnd - range.start + 1,
+         limit: requestedEnd - range.start + 1
       });
       const hasReturnedLines = /^\s*\d+#/m.test(preview.text);
       const actualEnd = hasReturnedLines
@@ -572,7 +572,7 @@ function formatRequestedRangePreviews(
          end: hasReturnedLines ? Math.max(range.start, actualEnd) : actualEnd,
          text: preview.text,
          ...(preview.nextOffset !== undefined ? { nextOffset: preview.nextOffset } : {}),
-         ...(!hasReturnedLines ? { empty: true as const } : {}),
+         ...(!hasReturnedLines ? { empty: true as const } : {})
       };
    });
 
@@ -582,7 +582,7 @@ function formatRequestedRangePreviews(
 
    return {
       text: formatted,
-      returnedRanges,
+      returnedRanges
    };
 }
 
@@ -631,7 +631,7 @@ function buildStructureOutline(sections: Array<{ label?: string; previewText: st
    }
    return {
       text: ["Structure outline:", ...outlineLines].join("\n"),
-      outline: detailOutline,
+      outline: detailOutline
    };
 }
 
@@ -642,7 +642,7 @@ function formatEditCall(
    theme: {
       bold: (text: string) => string;
       fg: (token: string, text: string) => string;
-   },
+   }
 ): string {
    const path = args?.path;
    const pathDisplay =
@@ -701,12 +701,12 @@ export async function computeEditPreview(request: unknown, cwd: string): Promise
       }
       if (file.kind === "image") {
          return {
-            error: `Path is an image file: ${path}. Hashline edit only supports text files.`,
+            error: `Path is an image file: ${path}. Hashline edit only supports text files.`
          };
       }
       if (file.kind === "binary") {
          return {
-            error: `Path is a binary file: ${path} (${file.description}). Hashline edit only supports text files.`,
+            error: `Path is a binary file: ${path} (${file.description}). Hashline edit only supports text files.`
          };
       }
 
@@ -720,13 +720,13 @@ export async function computeEditPreview(request: unknown, cwd: string): Promise
          result = applyExactUniqueLegacyReplace(
             originalNormalized,
             normalizeToLF(legacy!.oldText),
-            normalizeToLF(legacy!.newText),
+            normalizeToLF(legacy!.newText)
          ).content;
       }
 
       if (originalNormalized === result) {
          return {
-            error: `No changes made to ${path}. The edits produced identical content.`,
+            error: `No changes made to ${path}. The edits produced identical content.`
          };
       }
 
@@ -777,7 +777,7 @@ const editToolDefinition: EditToolDefinition = {
                .catch((err: unknown) => {
                   if (context.state.argsKey === argsKey && context.state.previewGeneration === previewGeneration) {
                      context.state.preview = {
-                        error: err instanceof Error ? err.message : String(err),
+                        error: err instanceof Error ? err.message : String(err)
                      };
                      context.invalidate();
                   }
@@ -790,8 +790,8 @@ const editToolDefinition: EditToolDefinition = {
             getRenderablePreviewInput(args) ?? undefined,
             context.state as EditRenderState,
             context.expanded,
-            theme as any,
-         ),
+            theme as any
+         )
       );
       return text;
    },
@@ -830,7 +830,7 @@ const editToolDefinition: EditToolDefinition = {
             renderedText,
             typedResult.details,
             previewBeforeResult,
-            theme as any,
+            theme as any
          );
          if (!appliedChangedText) {
             return new Text("", 0, 0);
@@ -867,7 +867,7 @@ const editToolDefinition: EditToolDefinition = {
          return {
             content: [{ type: "text", text: "No edits provided." }],
             isError: true,
-            details: { diff: "", firstChangedLine: undefined },
+            details: { diff: "", firstChangedLine: undefined }
          };
       }
 
@@ -897,7 +897,7 @@ const editToolDefinition: EditToolDefinition = {
          }
          if (file.kind === "binary") {
             throw new Error(
-               `Path is a binary file: ${path} (${file.description}). Hashline edit only supports text files.`,
+               `Path is a binary file: ${path} (${file.description}). Hashline edit only supports text files.`
             );
          }
 
@@ -936,7 +936,7 @@ const editToolDefinition: EditToolDefinition = {
                used: true,
                strategy: legacy!.strategy,
                matchCount: replaced.matchCount,
-               ...(replaced.usedFuzzyMatch ? { fuzzyMatch: true } : {}),
+               ...(replaced.usedFuzzyMatch ? { fuzzyMatch: true } : {})
             };
             const legacyRange = computeLegacyEditLineRange(originalNormalized, result);
             firstChangedLine = legacyRange?.firstChangedLine;
@@ -960,7 +960,7 @@ const editToolDefinition: EditToolDefinition = {
                legacyReplace,
                formatHashlineReadPreview: (text) => formatHashlineReadPreview(text, { offset: 1 }),
                formatRequestedRangePreviews,
-               buildStructureOutline,
+               buildStructureOutline
             });
          }
 
@@ -984,14 +984,14 @@ const editToolDefinition: EditToolDefinition = {
             legacyReplace,
             formatHashlineReadPreview: (text: string) => formatHashlineReadPreview(text, { offset: 1 }),
             formatRequestedRangePreviews,
-            buildStructureOutline,
+            buildStructureOutline
          };
 
          if (returnMode === "full") return buildFullResponse(successInput);
          if (returnMode === "ranges") return buildRangesResponse(successInput);
          return buildChangedResponse(successInput);
       });
-   },
+   }
 };
 
 export function registerEditTool(pi: ExtensionAPI): void {

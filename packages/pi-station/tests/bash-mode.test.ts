@@ -9,7 +9,7 @@ import {
    rmSync,
    symlinkSync,
    unlinkSync,
-   writeFileSync,
+   writeFileSync
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,7 +20,7 @@ import {
    BashCompletionEngine,
    ModeAwareAutocompleteProvider,
    OneOffBashAutocompleteProvider,
-   getOneOffBashCommandContext,
+   getOneOffBashCommandContext
 } from "../features/bash-mode/completion.ts";
 import { getIcons } from "../icons.ts";
 import { ManagedShellSession } from "../features/bash-mode/shell-session.ts";
@@ -53,12 +53,12 @@ function ensureEditorModuleLinks(): { cleanup: () => void } {
    const links = [
       {
          link: join(nodeModulesDir, "pi-coding-agent"),
-         target: "/opt/homebrew/lib/node_modules/@earendil-works/pi-coding-agent",
+         target: "/opt/homebrew/lib/node_modules/@earendil-works/pi-coding-agent"
       },
       {
          link: join(nodeModulesDir, "pi-tui"),
-         target: "/opt/homebrew/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui",
-      },
+         target: "/opt/homebrew/lib/node_modules/@earendil-works/pi-coding-agent/node_modules/@earendil-works/pi-tui"
+      }
    ];
 
    const createdLinks: string[] = [];
@@ -76,7 +76,7 @@ function ensureEditorModuleLinks(): { cleanup: () => void } {
                rmSync(link, { force: true, recursive: true });
             }
          }
-      },
+      }
    };
 }
 
@@ -135,13 +135,13 @@ test("one-off bash command context strips ! and !! prefixes", () => {
    assert.deepEqual(getOneOffBashCommandContext("!git status"), {
       command: "git status",
       offset: 1,
-      prefix: "!",
+      prefix: "!"
    });
 
    assert.deepEqual(getOneOffBashCommandContext("!!git status"), {
       command: "git status",
       offset: 2,
-      prefix: "!!",
+      prefix: "!!"
    });
 
    assert.equal(getOneOffBashCommandContext("  !!git status"), null);
@@ -392,7 +392,7 @@ test("managed shell session preserves cwd changes across commands", async () => 
       cwd,
       store,
       () => {},
-      () => {},
+      () => {}
    );
 
    try {
@@ -432,7 +432,7 @@ test("managed shell session recovers cleanly after interrupt", async () => {
       cwd,
       store,
       () => {},
-      () => {},
+      () => {}
    );
 
    const waitForCommand = async () => {
@@ -485,12 +485,12 @@ test("bash editor Tab accepts the current ghost suggestion without opening autoc
             keybindings: {
                matches(_data: string, id: string) {
                   return id === "tui.input.tab";
-               },
+               }
             },
             keybindingsRef: {
                matches(_data: string, id: string) {
                   return id === "tui.input.tab";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -498,10 +498,10 @@ test("bash editor Tab accepts the current ghost suggestion without opening autoc
                onExitBashMode() {},
                onInterrupt() {},
                onNotify() {},
-               onSubmitCommand() {},
-            },
+               onSubmitCommand() {}
+            }
          },
-         "tab",
+         "tab"
       );
 
       assert.equal(accepted, true);
@@ -515,8 +515,9 @@ test("bash editor does not submit pasted multiline input while bracketed paste i
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { CustomEditor } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
+      const { CustomEditor } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js"
+      );
 
       let delegated = 0;
       let submitted = 0;
@@ -543,7 +544,7 @@ test("bash editor does not submit pasted multiline input while bracketed paste i
                keybindings: {
                   matches(_data: string, _id: string) {
                      return false;
-                  },
+                  }
                },
                optionsRef: {
                   getHistoryEntries() {
@@ -557,10 +558,10 @@ test("bash editor does not submit pasted multiline input while bracketed paste i
                   onSubmitCommand() {
                      submitted += 1;
                   },
-                  resolveGhostSuggestion: async () => null,
-               },
+                  resolveGhostSuggestion: async () => null
+               }
             },
-            "\r",
+            "\r"
          );
       } finally {
          CustomEditor.prototype.handleInput = superHandleInput;
@@ -580,8 +581,9 @@ test("bash editor refreshes shell ghost state after a bracketed paste completes"
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { CustomEditor } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
+      const { CustomEditor } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js"
+      );
 
       let delegated = 0;
       let scheduled = 0;
@@ -608,12 +610,12 @@ test("bash editor refreshes shell ghost state after a bracketed paste completes"
                keybindings: {
                   matches() {
                      return false;
-                  },
+                  }
                },
                keybindingsRef: {
                   matches() {
                      return false;
-                  },
+                  }
                },
                optionsRef: {
                   getHistoryEntries() {
@@ -625,16 +627,16 @@ test("bash editor refreshes shell ghost state after a bracketed paste completes"
                   onInterrupt() {},
                   onNotify() {},
                   onSubmitCommand() {},
-                  resolveGhostSuggestion: async () => null,
+                  resolveGhostSuggestion: async () => null
                },
                scheduleGhostUpdate() {
                   scheduled += 1;
                },
                shellHistoryDraft: "git",
                shellHistoryIndex: 3,
-               shellHistoryItems: ["git status"],
+               shellHistoryItems: ["git status"]
             },
-            "\r",
+            "\r"
          );
       } finally {
          CustomEditor.prototype.handleInput = superHandleInput;
@@ -655,8 +657,9 @@ test("bash editor inserts Finder file drops as path strings", async () => {
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { KeybindingsManager } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
+      const { KeybindingsManager } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js"
+      );
       const keybindings = KeybindingsManager.create();
       let scheduled = 0;
       const editor = new BashModeEditor({ requestRender() {}, terminal: { columns: 80, rows: 24 } }, {}, keybindings, {
@@ -668,7 +671,7 @@ test("bash editor inserts Finder file drops as path strings", async () => {
          onInterrupt() {},
          onNotify() {},
          onSubmitCommand() {},
-         resolveGhostSuggestion: async () => null,
+         resolveGhostSuggestion: async () => null
       });
 
       editor.handleInput("\x1b[200~file:///Users/nico/Desktop/Screen%20Shot%202026-05-08.png\x1b[201~");
@@ -678,7 +681,7 @@ test("bash editor inserts Finder file drops as path strings", async () => {
       editor.handleInput("\x1b[200~/Users/nico/Documents/Project\\ Folder\x1b[201~");
       assert.equal(
          editor.getText(),
-         String.raw`/Users/nico/Desktop/Screen Shot 2026-05-08.png /Users/nico/Documents/Project\ Folder`,
+         String.raw`/Users/nico/Desktop/Screen Shot 2026-05-08.png /Users/nico/Documents/Project\ Folder`
       );
 
       const shellEditor = new BashModeEditor(
@@ -694,15 +697,15 @@ test("bash editor inserts Finder file drops as path strings", async () => {
             onInterrupt() {},
             onNotify() {},
             onSubmitCommand() {},
-            resolveGhostSuggestion: async () => null,
-         },
+            resolveGhostSuggestion: async () => null
+         }
       );
       Reflect.set(shellEditor, "scheduleGhostUpdate", () => {
          scheduled += 1;
       });
 
       shellEditor.handleInput(
-         "\x1b[200~file:///Users/nico/Pictures/Finder%20Image.png\nfile:///Users/nico/Desktop/Capture.png\x1b[201~",
+         "\x1b[200~file:///Users/nico/Pictures/Finder%20Image.png\nfile:///Users/nico/Desktop/Capture.png\x1b[201~"
       );
       assert.equal(shellEditor.getText(), "/Users/nico/Pictures/Finder Image.png /Users/nico/Desktop/Capture.png");
       assert.equal(scheduled, 1);
@@ -714,7 +717,7 @@ test("bash editor inserts Finder file drops as path strings", async () => {
 test("one-off bash autocomplete provider stays inactive even inside bang commands", async () => {
    const provider = new OneOffBashAutocompleteProvider();
    const suggestions = await provider.getSuggestions(["!!gi"], 0, 4, {
-      signal: new AbortController().signal,
+      signal: new AbortController().signal
    });
 
    assert.equal(suggestions, null);
@@ -724,10 +727,10 @@ test("bash autocomplete providers return null synchronously in shell contexts", 
    const { signal } = new AbortController();
 
    const bashSuggestions = new BashAutocompleteProvider().getSuggestions(["git st"], 0, 6, {
-      signal,
+      signal
    });
    const oneOffSuggestions = new OneOffBashAutocompleteProvider().getSuggestions(["!git st"], 0, 7, {
-      signal,
+      signal
    });
 
    assert.equal(bashSuggestions, null);
@@ -740,7 +743,7 @@ test("mode-aware autocomplete provider preserves synchronous default results", (
    const { signal } = new AbortController();
    const syncResult = {
       items: [{ label: "status", value: "status" }],
-      prefix: "st",
+      prefix: "st"
    };
    const provider = new ModeAwareAutocompleteProvider(
       {
@@ -749,11 +752,11 @@ test("mode-aware autocomplete provider preserves synchronous default results", (
          },
          getSuggestions() {
             return syncResult;
-         },
+         }
       },
       new BashAutocompleteProvider(),
       new OneOffBashAutocompleteProvider(),
-      () => false,
+      () => false
    );
 
    const suggestions = provider.getSuggestions(["st"], 0, 2, { signal });
@@ -779,7 +782,7 @@ test("bash editor refreshGhostSuggestion reuses the ghost scheduling path", asyn
       getMethod(BashModeEditor.prototype, "refreshGhostSuggestion").call({
          scheduleGhostUpdate() {
             scheduled = true;
-         },
+         }
       });
 
       assert.equal(scheduled, true);
@@ -799,7 +802,7 @@ test("bash editor dismiss clears autocomplete when mode turns off", async () => 
       const fakeAbort = {
          abort() {
             aborted = true;
-         },
+         }
       };
       const fakeEditor = {
          cancelAutocomplete() {
@@ -824,8 +827,8 @@ test("bash editor dismiss clears autocomplete when mode turns off", async () => 
          tui: {
             requestRender() {
                rendered = true;
-            },
-         },
+            }
+         }
       };
 
       getMethod(BashModeEditor.prototype, "dismissBashModeUi").call(fakeEditor);
@@ -855,13 +858,13 @@ test("bash editor shell history state does not clobber the base prompt history i
          historyIndex: 5,
          optionsRef: {
             getHistoryEntries: () => ["git stash", "git status"],
-            onNotify: () => {},
+            onNotify: () => {}
          },
          scheduleGhostUpdate() {},
          setText() {},
          shellHistoryDraft: "",
          shellHistoryIndex: -1,
-         shellHistoryItems: [],
+         shellHistoryItems: []
       };
 
       getMethod(BashModeEditor.prototype, "navigateShellHistory").call(fakeEditor, -1);
@@ -886,12 +889,12 @@ test("bash editor escape exits bash mode", async () => {
             keybindings: {
                matches(data: string, id: string) {
                   return data === "escape" && id === "app.interrupt";
-               },
+               }
             },
             keybindingsRef: {
                matches(data: string, id: string) {
                   return data === "escape" && id === "app.interrupt";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -901,10 +904,10 @@ test("bash editor escape exits bash mode", async () => {
                },
                onInterrupt: () => {
                   interrupted = true;
-               },
-            },
+               }
+            }
          },
-         "escape",
+         "escape"
       );
 
       assert.equal(exited, true);
@@ -934,12 +937,12 @@ test("bash editor right arrow accepts an empty-prompt ghost suggestion without s
             keybindings: {
                matches(data: string, id: string) {
                   return data === "right" && id === "tui.editor.cursorRight";
-               },
+               }
             },
             keybindingsRef: {
                matches(data: string, id: string) {
                   return data === "right" && id === "tui.editor.cursorRight";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -949,10 +952,10 @@ test("bash editor right arrow accepts an empty-prompt ghost suggestion without s
                onNotify: () => {},
                onSubmitCommand: () => {
                   submitted = true;
-               },
-            },
+               }
+            }
          },
-         "right",
+         "right"
       );
 
       assert.equal(accepted, true);
@@ -984,18 +987,18 @@ test("bash editor right arrow accepts ghost text for one-off bang commands", asy
             keybindings: {
                matches(data: string, id: string) {
                   return data === "right" && id === "tui.editor.cursorRight";
-               },
+               }
             },
             keybindingsRef: {
                matches(data: string, id: string) {
                   return data === "right" && id === "tui.editor.cursorRight";
-               },
+               }
             },
             optionsRef: {
-               isBashModeActive: () => false,
-            },
+               isBashModeActive: () => false
+            }
          },
-         "right",
+         "right"
       );
 
       assert.equal(accepted, true);
@@ -1009,8 +1012,9 @@ test("bash editor runs copied Pi app action handlers for alt-enter", async () =>
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { KeybindingsManager } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
+      const { KeybindingsManager } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js"
+      );
       const { setKittyProtocolActive } = await import("../../../node_modules/@earendil-works/pi-tui/dist/keys.js");
       const keybindings = KeybindingsManager.create();
       const editor = new BashModeEditor({ requestRender() {}, terminal: { columns: 80, rows: 24 } }, {}, keybindings, {
@@ -1022,7 +1026,7 @@ test("bash editor runs copied Pi app action handlers for alt-enter", async () =>
          onInterrupt() {},
          onNotify() {},
          onSubmitCommand() {},
-         resolveGhostSuggestion: async () => null,
+         resolveGhostSuggestion: async () => null
       });
 
       let handled = 0;
@@ -1051,8 +1055,9 @@ test("bash editor command-z undoes deleted text for supported encodings only", a
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { KeybindingsManager } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
+      const { KeybindingsManager } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js"
+      );
       const keybindings = KeybindingsManager.create();
       const createEditor = (
          options: {
@@ -1062,7 +1067,7 @@ test("bash editor command-z undoes deleted text for supported encodings only", a
             onExitBashMode?: () => void;
             onInterrupt?: () => void;
             resolveGhostSuggestion?: (text: string) => Promise<null>;
-         } = {},
+         } = {}
       ) =>
          new BashModeEditor(
             { requestRender() {}, terminal: { columns: 80, rows: 24 } },
@@ -1077,8 +1082,8 @@ test("bash editor command-z undoes deleted text for supported encodings only", a
                onInterrupt: options.onInterrupt ?? (() => {}),
                onNotify() {},
                onSubmitCommand() {},
-               resolveGhostSuggestion: options.resolveGhostSuggestion ?? (async () => null),
-            },
+               resolveGhostSuggestion: options.resolveGhostSuggestion ?? (async () => null)
+            }
          );
 
       for (const data of ["\x1b[122;9u", "\x1b[122;9:1u", "\x1b[122;9:2u", "\x1b[27;9;122~"]) {
@@ -1136,7 +1141,7 @@ test("bash editor command-z undoes deleted text for supported encodings only", a
             },
             onInterrupt: () => {
                interrupted = true;
-            },
+            }
          });
 
          for (const char of "hello") {
@@ -1159,14 +1164,12 @@ test("bash editor command-z resets shell history and updates ghost state", async
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { KeybindingsManager } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
+      const { KeybindingsManager } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js"
+      );
       const keybindings = KeybindingsManager.create();
       const createEditor = (
-         options: {
-            isBashModeActive?: () => boolean;
-            resolveGhostSuggestion?: (text: string) => Promise<null>;
-         } = {},
+         options: { isBashModeActive?: () => boolean; resolveGhostSuggestion?: (text: string) => Promise<null> } = {}
       ) =>
          new BashModeEditor({ requestRender() {}, terminal: { columns: 80, rows: 24 } }, {}, keybindings, {
             getHistoryEntries: () => [],
@@ -1177,7 +1180,7 @@ test("bash editor command-z resets shell history and updates ghost state", async
             onInterrupt() {},
             onNotify() {},
             onSubmitCommand() {},
-            resolveGhostSuggestion: options.resolveGhostSuggestion ?? (async () => null),
+            resolveGhostSuggestion: options.resolveGhostSuggestion ?? (async () => null)
          });
       const ghostRefreshes: string[] = [];
       const shellEditor = createEditor({
@@ -1185,7 +1188,7 @@ test("bash editor command-z resets shell history and updates ghost state", async
          resolveGhostSuggestion: async (text) => {
             ghostRefreshes.push(text);
             return null;
-         },
+         }
       });
 
       shellEditor.handleInput("a");
@@ -1222,8 +1225,9 @@ test("bash editor command arrows jump to editor boundaries", async () => {
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { KeybindingsManager } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js");
+      const { KeybindingsManager } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/core/keybindings.js"
+      );
       const keybindings = KeybindingsManager.create();
       let renderRequests = 0;
       const editor = new BashModeEditor(
@@ -1231,7 +1235,7 @@ test("bash editor command arrows jump to editor boundaries", async () => {
             requestRender() {
                renderRequests += 1;
             },
-            terminal: { columns: 80, rows: 24 },
+            terminal: { columns: 80, rows: 24 }
          },
          {},
          keybindings,
@@ -1244,8 +1248,8 @@ test("bash editor command arrows jump to editor boundaries", async () => {
             onInterrupt() {},
             onNotify() {},
             onSubmitCommand() {},
-            resolveGhostSuggestion: async () => null,
-         },
+            resolveGhostSuggestion: async () => null
+         }
       );
 
       editor.setText("alpha\nbravo\ncharlie");
@@ -1283,12 +1287,12 @@ test("bash editor enter does not accept ghost text while a shell command is runn
             keybindings: {
                matches(_data: string, id: string) {
                   return id === "tui.input.submit";
-               },
+               }
             },
             keybindingsRef: {
                matches(_data: string, id: string) {
                   return id === "tui.input.submit";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -1300,10 +1304,10 @@ test("bash editor enter does not accept ghost text while a shell command is runn
                },
                onSubmitCommand: () => {
                   submitted = true;
-               },
-            },
+               }
+            }
          },
-         "enter",
+         "enter"
       );
 
       assert.equal(warned, true);
@@ -1333,7 +1337,7 @@ test("bash editor enter submits the typed command without accepting ghost text",
             keybindingsRef: {
                matches(_data: string, id: string) {
                   return id === "tui.input.submit";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -1343,15 +1347,15 @@ test("bash editor enter submits the typed command without accepting ghost text",
                onNotify: () => {},
                onSubmitCommand: (command: string) => {
                   submittedCommand = command;
-               },
+               }
             },
             refreshGhostSuggestion() {},
             setText() {},
             shellHistoryDraft: "",
             shellHistoryIndex: -1,
-            shellHistoryItems: [],
+            shellHistoryItems: []
          },
-         "enter",
+         "enter"
       );
 
       assert.equal(submittedCommand, "git diff");
@@ -1365,8 +1369,9 @@ test("one-off bang submit does not accept ghost text before submitting", async (
 
    try {
       const { BashModeEditor } = await import("../features/bash-mode/editor.ts");
-      const { CustomEditor } =
-         await import("../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js");
+      const { CustomEditor } = await import(
+         "../../../node_modules/@earendil-works/pi-coding-agent/dist/modes/interactive/components/custom-editor.js"
+      );
 
       let delegated = 0;
       const superHandleInput = CustomEditor.prototype.handleInput;
@@ -1394,15 +1399,15 @@ test("one-off bang submit does not accept ghost text before submitting", async (
                keybindings: {
                   matches(_data: string, id: string) {
                      return id === "tui.input.submit";
-                  },
+                  }
                },
                keybindingsRef: {
                   matches(_data: string, id: string) {
                      return id === "tui.input.submit";
-                  },
+                  }
                },
                optionsRef: {
-                  isBashModeActive: () => false,
+                  isBashModeActive: () => false
                },
                // Provide minimal Editor base stubs to avoid jumpToChar crash.
                jumpToChar() {},
@@ -1413,9 +1418,9 @@ test("one-off bang submit does not accept ghost text before submitting", async (
                mark: null,
                getCursor() {
                   return { col: 0, line: 0 };
-               },
+               }
             },
-            "enter",
+            "enter"
          );
       } finally {
          CustomEditor.prototype.handleInput = superHandleInput;
@@ -1444,7 +1449,7 @@ test("bash editor does not accept a hidden ghost suggestion when the cursor is n
          ghost: { source: "project-history", value: "git status" },
          setText() {
             throw new Error("hidden ghost should not be accepted");
-         },
+         }
       });
 
       assert.equal(accepted, false);
@@ -1477,12 +1482,12 @@ test("bash editor submit clears the prompt and refreshes the empty ghost suggest
             keybindings: {
                matches(_data: string, id: string) {
                   return id === "tui.input.submit";
-               },
+               }
             },
             keybindingsRef: {
                matches(_data: string, id: string) {
                   return id === "tui.input.submit";
-               },
+               }
             },
             optionsRef: {
                isBashModeActive: () => true,
@@ -1492,7 +1497,7 @@ test("bash editor submit clears the prompt and refreshes the empty ghost suggest
                onNotify: () => {},
                onSubmitCommand: (command: string) => {
                   submitted = command === "git status";
-               },
+               }
             },
             refreshGhostSuggestion() {
                refreshed = true;
@@ -1502,9 +1507,9 @@ test("bash editor submit clears the prompt and refreshes the empty ghost suggest
             },
             shellHistoryDraft: "git st",
             shellHistoryIndex: 3,
-            shellHistoryItems: ["git status"],
+            shellHistoryItems: ["git status"]
          },
-         "enter",
+         "enter"
       );
 
       assert.equal(submitted, true);

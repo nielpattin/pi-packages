@@ -4,7 +4,7 @@ import {
    getTagsBySession,
    removePendingOp,
    updateTagDropMode,
-   updateTagStatus,
+   updateTagStatus
 } from "../../features/magic-context/storage";
 import type { TagEntry } from "../../features/magic-context/types";
 import type { TagTarget } from "./tag-messages";
@@ -68,7 +68,7 @@ export function applyPendingOperations(
    targets: Map<number, TagTarget>,
    protectedTags: number = 0,
    preloadedTags?: TagEntry[],
-   preloadedPendingOps?: ReturnType<typeof getPendingOps>,
+   preloadedPendingOps?: ReturnType<typeof getPendingOps>
 ): boolean {
    let didMutateMessage = false;
    db.transaction(() => {
@@ -82,7 +82,7 @@ export function applyPendingOperations(
                     .filter((tag) => tag.status === "active")
                     .map((tag) => tag.tagNumber)
                     .sort((left, right) => right - left)
-                    .slice(0, protectedTags),
+                    .slice(0, protectedTags)
               )
             : new Set<number>();
 
@@ -127,7 +127,7 @@ export function applyFlushedStatuses(
    sessionId: string,
    db: ContextDatabase,
    targets: Map<number, TagTarget>,
-   preloadedTags?: TagEntry[],
+   preloadedTags?: TagEntry[]
 ): boolean {
    let didMutateMessage = false;
    const tags = preloadedTags ?? getTagsBySession(db, sessionId);

@@ -35,7 +35,7 @@ const DEFAULT_COLORS: Required<ColorScheme> = {
    thinkingLow: "thinkingLow",
    thinkingMedium: "thinkingMedium",
    thinkingMinimal: "thinkingMinimal",
-   tokens: "muted",
+   tokens: "muted"
 };
 
 // Rainbow colors for high thinking levels

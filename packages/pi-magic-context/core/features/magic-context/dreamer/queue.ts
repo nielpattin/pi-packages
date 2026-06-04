@@ -46,7 +46,7 @@ export function enqueueDream(
    db: Database,
    projectIdentity: string,
    reason: string,
-   force = false,
+   force = false
 ): DreamQueueEntry | null {
    const now = Date.now();
    return db.transaction(() => {
@@ -61,7 +61,7 @@ export function enqueueDream(
             ? 2 * 60 * 1000 // lease TTL — matches runner's own crash-recovery window
             : 120 * 60 * 1000; // 2 hours — safe for scheduled long-running dreams
          db.prepare("DELETE FROM dream_queue WHERE project_path = ? AND started_at IS NOT NULL AND started_at < ?").run(
-            [projectIdentity, now - staleThresholdMs],
+            [projectIdentity, now - staleThresholdMs]
          );
       }
 
@@ -82,7 +82,7 @@ export function enqueueDream(
          projectIdentity,
          reason,
          enqueuedAt: now,
-         startedAt: null,
+         startedAt: null
       };
    })();
 }
@@ -102,12 +102,12 @@ export function peekQueue(db: Database, projectIdentity?: string): DreamQueueEnt
    const row = projectIdentity
       ? db
            .prepare<[string], { id: number; project_path: string; reason: string; enqueued_at: number }>(
-              "SELECT id, project_path, reason, enqueued_at FROM dream_queue WHERE started_at IS NULL AND project_path = ? ORDER BY enqueued_at ASC LIMIT 1",
+              "SELECT id, project_path, reason, enqueued_at FROM dream_queue WHERE started_at IS NULL AND project_path = ? ORDER BY enqueued_at ASC LIMIT 1"
            )
            .get(projectIdentity)
       : db
            .prepare<[], { id: number; project_path: string; reason: string; enqueued_at: number }>(
-              "SELECT id, project_path, reason, enqueued_at FROM dream_queue WHERE started_at IS NULL ORDER BY enqueued_at ASC LIMIT 1",
+              "SELECT id, project_path, reason, enqueued_at FROM dream_queue WHERE started_at IS NULL ORDER BY enqueued_at ASC LIMIT 1"
            )
            .get();
 
@@ -118,7 +118,7 @@ export function peekQueue(db: Database, projectIdentity?: string): DreamQueueEnt
       projectIdentity: row.project_path,
       reason: row.reason,
       enqueuedAt: row.enqueued_at,
-      startedAt: null,
+      startedAt: null
    };
 }
 
@@ -150,7 +150,7 @@ export function removeDreamEntry(db: Database, id: number): void {
 /** Reset a dequeued entry so it can be retried (e.g., after lease failure). Increments retry_count. */
 export function resetDreamEntry(db: Database, id: number): void {
    db.prepare("UPDATE dream_queue SET started_at = NULL, retry_count = COALESCE(retry_count, 0) + 1 WHERE id = ?").run(
-      id,
+      id
    );
 }
 

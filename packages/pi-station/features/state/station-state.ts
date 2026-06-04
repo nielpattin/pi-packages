@@ -77,7 +77,7 @@ export class StationBarState {
       settings: {
          showLastPrompt: boolean;
          customCompactionEnabled: boolean;
-      },
+      }
    ): void {
       this.showLastPrompt = settings.showLastPrompt;
       this.customCompactionEnabled = settings.customCompactionEnabled;

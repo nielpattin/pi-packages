@@ -28,7 +28,7 @@ export function createBeforeAgentStartPromptStateKey(input: BeforeAgentStartProm
       input.cwd,
       input.permissionStamp,
       createActiveToolsCacheKey(input.allowedToolNames),
-      normalizePrompt(input.systemPrompt),
+      normalizePrompt(input.systemPrompt)
    ]);
 }
 

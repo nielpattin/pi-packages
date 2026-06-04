@@ -22,7 +22,7 @@ describe("permission request sound", () => {
       writeFileSync(
          join(agentDir, "settings.json"),
          JSON.stringify({ piPermissionSystem: { sound: "assets/custom-permission.mp3", volume: 42 } }),
-         "utf8",
+         "utf8"
       );
 
       const order: string[] = [];
@@ -37,7 +37,7 @@ describe("permission request sound", () => {
          agentDir,
          exec,
          requestPermissionDecisionFromUi,
-         warn: vi.fn(),
+         warn: vi.fn()
       });
 
       const decision = await request({} as PermissionDecisionUi, "Permission Required", "Allow this command?");
@@ -51,7 +51,7 @@ describe("permission request sound", () => {
          "error",
          "-volume",
          "42",
-         join(agentDir, "assets", "custom-permission.mp3"),
+         join(agentDir, "assets", "custom-permission.mp3")
       ]);
    });
 
@@ -61,7 +61,7 @@ describe("permission request sound", () => {
       writeFileSync(
          join(agentDir, "settings.json"),
          JSON.stringify({ piPermissionSystem: { sound: "assets/custom-permission.mp3", volume: 150 } }),
-         "utf8",
+         "utf8"
       );
 
       const exec = vi.fn();
@@ -69,7 +69,7 @@ describe("permission request sound", () => {
       const request = createAudiblePermissionDecisionRequester({
          agentDir,
          exec,
-         requestPermissionDecisionFromUi,
+         requestPermissionDecisionFromUi
       });
 
       await request({} as PermissionDecisionUi, "Permission Required", "Allow this command?");
@@ -83,7 +83,7 @@ describe("permission request sound", () => {
          "100",
          "-af",
          "volume=1.5",
-         join(agentDir, "assets", "custom-permission.mp3"),
+         join(agentDir, "assets", "custom-permission.mp3")
       ]);
    });
 });

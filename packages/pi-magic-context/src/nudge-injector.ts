@@ -88,7 +88,7 @@ function createAssistantNudgeMessage(text: string, messages: AgentMessage[]): Pi
       model: latestAssistant?.model ?? "magic-context/nudge",
       usage: latestAssistant?.usage ?? createZeroUsage(),
       stopReason: "stop",
-      timestamp: Date.now(),
+      timestamp: Date.now()
    } satisfies PiAssistantMessage;
 }
 
@@ -116,8 +116,8 @@ function createZeroUsage(): PiAssistantMessage["usage"] {
          output: 0,
          cacheRead: 0,
          cacheWrite: 0,
-         total: 0,
-      },
+         total: 0
+      }
    };
 }
 

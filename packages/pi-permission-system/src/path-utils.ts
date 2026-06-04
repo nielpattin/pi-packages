@@ -86,7 +86,7 @@ export const SAFE_SYSTEM_PATHS: ReadonlySet<string> = new Set([
    "/dev/null",
    "/dev/stdin",
    "/dev/stdout",
-   "/dev/stderr",
+   "/dev/stderr"
 ]);
 
 /**
@@ -148,7 +148,7 @@ export function isPiInfrastructureRead(
    toolName: string,
    normalizedPath: string,
    infrastructureDirs: readonly string[],
-   cwd: string,
+   cwd: string
 ): boolean {
    if (!READ_ONLY_PATH_BEARING_TOOLS.has(toolName)) {
       return false;

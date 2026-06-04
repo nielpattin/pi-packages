@@ -41,7 +41,7 @@ export async function writeAgentFile(
    registry: Reloadable,
    targetPath: string,
    content: string,
-   label: string,
+   label: string
 ): Promise<boolean> {
    if (fileOps.exists(targetPath)) {
       const overwrite = await ui.confirm("Overwrite", `${targetPath} already exists. Overwrite?`);

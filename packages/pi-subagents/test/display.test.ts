@@ -17,9 +17,9 @@ describe("getDisplayName", () => {
                extensions: false,
                skills: false,
                systemPrompt: "",
-               promptMode: "replace",
-            },
-         ],
+               promptMode: "replace"
+            }
+         ]
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
       expect(getDisplayName("my-agent", registry)).toBe("My Agent");
@@ -35,9 +35,9 @@ describe("getDisplayName", () => {
                extensions: false,
                skills: false,
                systemPrompt: "",
-               promptMode: "replace",
-            },
-         ],
+               promptMode: "replace"
+            }
+         ]
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
       expect(getDisplayName("my-agent", registry)).toBe("my-agent");
@@ -63,9 +63,9 @@ describe("getPromptModeLabel", () => {
                extensions: false,
                skills: false,
                systemPrompt: "",
-               promptMode: "append",
-            },
-         ],
+               promptMode: "append"
+            }
+         ]
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
       expect(getPromptModeLabel("twin-agent", registry)).toBe("twin");
@@ -94,10 +94,10 @@ describe("formatSessionTokens", () => {
       expect(formatSessionTokens(1234, null, theme, 3)).toBe("1.2k token <dim>(</dim><dim>↻3</dim><dim>)</dim>");
       // percent + compactions, joined with ` · `
       expect(formatSessionTokens(1234, 45, theme, 2)).toBe(
-         "1.2k token <dim>(</dim><dim>45%</dim><dim> · </dim><dim>↻2</dim><dim>)</dim>",
+         "1.2k token <dim>(</dim><dim>45%</dim><dim> · </dim><dim>↻2</dim><dim>)</dim>"
       );
       expect(formatSessionTokens(1234, 88, theme, 4)).toBe(
-         "1.2k token <dim>(</dim><error>88%</error><dim> · </dim><dim>↻4</dim><dim>)</dim>",
+         "1.2k token <dim>(</dim><error>88%</error><dim> · </dim><dim>↻4</dim><dim>)</dim>"
       );
       // compactions=0 omitted
       expect(formatSessionTokens(1234, 45, theme, 0)).toBe("1.2k token <dim>(</dim><dim>45%</dim><dim>)</dim>");

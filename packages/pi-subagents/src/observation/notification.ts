@@ -52,7 +52,7 @@ export function formatTaskNotification(record: Agent, resultMaxLen: number): str
 
    const resultPreview = record.result
       ? record.result.length > resultMaxLen
-         ? record.result.slice(0, resultMaxLen) + "\n...(truncated, use get_subagent_result for full output)"
+         ? `${record.result.slice(0, resultMaxLen)}\n...(truncated, use get_subagent_result for full output)`
          : record.result
       : "No output.";
 
@@ -67,7 +67,7 @@ export function formatTaskNotification(record: Agent, resultMaxLen: number): str
       `<summary>Agent "${escapeXml(record.description)}" ${record.status}</summary>`,
       `<result>${escapeXml(resultPreview)}</result>`,
       `<usage><total_tokens>${totalTokens}</total_tokens><tool_uses>${record.toolUses}</tool_uses>${ctxXml}${compactXml}<duration_ms>${durationMs}</duration_ms></usage>`,
-      "</task-notification>",
+      "</task-notification>"
    ]
       .filter(Boolean)
       .join("\n");
@@ -77,7 +77,7 @@ export function formatTaskNotification(record: Agent, resultMaxLen: number): str
 export function buildNotificationDetails(
    record: Agent,
    resultMaxLen: number,
-   activity?: AgentActivityTracker,
+   activity?: AgentActivityTracker
 ): NotificationDetails {
    const totalTokens = getLifetimeTotal(record.lifetimeUsage);
 
@@ -94,9 +94,9 @@ export function buildNotificationDetails(
       error: record.error,
       resultPreview: record.result
          ? record.result.length > resultMaxLen
-            ? record.result.slice(0, resultMaxLen) + "…"
+            ? `${record.result.slice(0, resultMaxLen)}…`
             : record.result
-         : "No output.",
+         : "No output."
    };
 }
 
@@ -115,7 +115,7 @@ export function buildEventData(record: Agent) {
       status: record.status,
       toolUses: record.toolUses,
       durationMs,
-      tokens,
+      tokens
    };
 }
 
@@ -136,11 +136,11 @@ export class NotificationManager implements NotificationSystem {
    constructor(
       private sendMessage: (
          msg: { customType: string; content: string; display: boolean; details?: unknown },
-         opts?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" },
+         opts?: { triggerTurn?: boolean; deliverAs?: "steer" | "followUp" | "nextTurn" }
       ) => void,
       private agentActivity: Map<string, AgentActivityTracker>,
       private markFinished: (id: string) => void,
-      private updateWidget: () => void,
+      private updateWidget: () => void
    ) {}
 
    cancelNudge(key: string): void {
@@ -180,7 +180,7 @@ export class NotificationManager implements NotificationSystem {
             } catch (err) {
                debugLog("notification render", err);
             }
-         }, delay),
+         }, delay)
       );
    }
 
@@ -196,9 +196,9 @@ export class NotificationManager implements NotificationSystem {
             customType: "subagent-notification",
             content: notification + footer,
             display: true,
-            details: buildNotificationDetails(record, 500, this.agentActivity.get(record.id)),
+            details: buildNotificationDetails(record, 500, this.agentActivity.get(record.id))
          },
-         { deliverAs: "followUp", triggerTurn: true },
+         { deliverAs: "followUp", triggerTurn: true }
       );
    }
 }

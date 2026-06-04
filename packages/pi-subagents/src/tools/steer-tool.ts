@@ -19,7 +19,7 @@ export interface SteerToolEvents {
 export class SteerTool {
    constructor(
       private readonly manager: SteerToolManager,
-      private readonly events: SteerToolEvents,
+      private readonly events: SteerToolEvents
    ) {}
 
    async execute(
@@ -27,7 +27,7 @@ export class SteerTool {
       params: { agent_id: string; message: string },
       _signal: AbortSignal,
       _onUpdate: unknown,
-      _ctx: unknown,
+      _ctx: unknown
    ) {
       const record = this.manager.getRecord(params.agent_id);
       if (!record) {
@@ -35,7 +35,7 @@ export class SteerTool {
       }
       if (record.status !== "running") {
          return textResult(
-            `Agent "${params.agent_id}" is not running (status: ${record.status}). Cannot steer a non-running agent.`,
+            `Agent "${params.agent_id}" is not running (status: ${record.status}). Cannot steer a non-running agent.`
          );
       }
       const session = record.session;
@@ -44,7 +44,7 @@ export class SteerTool {
          record.queueSteer(params.message);
          this.events.emit("subagents:steered", { id: record.id, message: params.message });
          return textResult(
-            `Steering message queued for agent ${record.id}. It will be delivered once the session initializes.`,
+            `Steering message queued for agent ${record.id}. It will be delivered once the session initializes.`
          );
       }
 
@@ -61,7 +61,7 @@ export class SteerTool {
             stateParts.push(`${record.compactionCount} compaction${record.compactionCount === 1 ? "" : "s"}`);
          return textResult(
             `Steering message sent to agent ${record.id}. The agent will process it after its current tool execution.\n` +
-               `Current state: ${stateParts.join(" · ")}`,
+               `Current state: ${stateParts.join(" · ")}`
          );
       } catch (err) {
          return textResult(`Failed to steer agent: ${err instanceof Error ? err.message : String(err)}`);
@@ -78,20 +78,20 @@ export class SteerTool {
             "and be injected into its conversation, allowing you to redirect its work mid-run. Only works on running agents.",
          parameters: Type.Object({
             agent_id: Type.String({
-               description: "The agent ID to steer (must be currently running).",
+               description: "The agent ID to steer (must be currently running)."
             }),
             message: Type.String({
                description:
-                  "The steering message to send. This will appear as a user message in the agent's conversation.",
-            }),
+                  "The steering message to send. This will appear as a user message in the agent's conversation."
+            })
          }),
          execute: (
             toolCallId: string,
             params: { agent_id: string; message: string },
             signal: AbortSignal,
             onUpdate: unknown,
-            ctx: unknown,
-         ) => this.execute(toolCallId, params, signal, onUpdate, ctx),
+            ctx: unknown
+         ) => this.execute(toolCallId, params, signal, onUpdate, ctx)
       });
    }
 }

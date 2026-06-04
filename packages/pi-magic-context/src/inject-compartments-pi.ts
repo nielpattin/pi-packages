@@ -28,7 +28,7 @@
 import type { ContextDatabase } from "#core/features/magic-context/storage";
 import {
    type PreparedCompartmentInjection,
-   prepareCompartmentInjection,
+   prepareCompartmentInjection
 } from "#core/hooks/magic-context/inject-compartments";
 import type { MessageLike } from "#core/hooks/magic-context/tag-messages";
 import { sessionLog as logSession } from "#core/shared/logger";
@@ -83,7 +83,7 @@ type PiAgentMessage = PiUserMessage | PiAssistantMessage | PiToolResultMessage;
 function resolveStableId(
    msg: PiAgentMessage,
    index: number,
-   entryIds: readonly (string | undefined)[] | undefined,
+   entryIds: readonly (string | undefined)[] | undefined
 ): string {
    const provided = entryIds?.[index];
    if (typeof provided === "string" && provided.length > 0) return provided;
@@ -108,7 +108,7 @@ function resolveStableId(
  */
 function buildMessageLikeProjection(
    piMessages: PiAgentMessage[],
-   entryIds: readonly (string | undefined)[] | undefined,
+   entryIds: readonly (string | undefined)[] | undefined
 ): MessageLike[] {
    const projection: MessageLike[] = [];
    for (let i = 0; i < piMessages.length; i++) {
@@ -118,9 +118,9 @@ function buildMessageLikeProjection(
          info: {
             id: resolveStableId(msg, i, entryIds),
             role: msg.role,
-            sessionID: undefined,
+            sessionID: undefined
          },
-         parts: [],
+         parts: []
       });
    }
    return projection;
@@ -138,7 +138,7 @@ function buildMessageLikeProjection(
 function trimPiMessagesToBoundary(
    piMessages: PiAgentMessage[],
    entryIds: readonly (string | undefined)[] | undefined,
-   cutoffMessageId: string,
+   cutoffMessageId: string
 ): number {
    if (cutoffMessageId.length === 0) return 0;
    let cutoffIndex = -1;
@@ -229,7 +229,7 @@ function getPiToolResultCallId(message: PiToolResultMessage): string | null {
 }
 
 export const __test = {
-   trimPiMessagesToBoundary,
+   trimPiMessagesToBoundary
 };
 
 /**
@@ -263,7 +263,7 @@ function injectHistoryBlockIntoFirstUserMessage(piMessages: PiAgentMessage[], hi
          // Host write pattern (block + "\n\n" + existing text).
          piMessages[i] = {
             ...userMsg,
-            content: [{ type: "text", text: `${historyBlock}\n\n${userMsg.content}` }],
+            content: [{ type: "text", text: `${historyBlock}\n\n${userMsg.content}` }]
          };
          return true;
       }
@@ -273,14 +273,14 @@ function injectHistoryBlockIntoFirstUserMessage(piMessages: PiAgentMessage[], hi
          // image-only or empty.
          const contentArr = userMsg.content;
          const firstTextIndex = contentArr.findIndex(
-            (p) => p && typeof p === "object" && (p as { type?: unknown }).type === "text",
+            (p) => p && typeof p === "object" && (p as { type?: unknown }).type === "text"
          );
          if (firstTextIndex >= 0) {
             const existing = contentArr[firstTextIndex] as PiTextContent;
             const newContent = contentArr.slice();
             newContent[firstTextIndex] = {
                ...existing,
-               text: `${historyBlock}\n\n${existing.text}`,
+               text: `${historyBlock}\n\n${existing.text}`
             };
             piMessages[i] = { ...userMsg, content: newContent };
          } else {
@@ -295,7 +295,7 @@ function injectHistoryBlockIntoFirstUserMessage(piMessages: PiAgentMessage[], hi
       // other content forms today.
       piMessages[i] = {
          ...userMsg,
-         content: [{ type: "text", text: historyBlock }],
+         content: [{ type: "text", text: historyBlock }]
       };
       return true;
    }
@@ -305,7 +305,7 @@ function injectHistoryBlockIntoFirstUserMessage(piMessages: PiAgentMessage[], hi
    piMessages.unshift({
       role: "user",
       content: [{ type: "text", text: historyBlock }],
-      timestamp: Date.now(),
+      timestamp: Date.now()
    });
    return true;
 }
@@ -338,7 +338,7 @@ export function injectSessionHistoryIntoPi(
    projectPath: string | undefined,
    injectionBudgetTokens: number | undefined,
    temporalAwareness: boolean | undefined,
-   entryIds?: readonly (string | undefined)[],
+   entryIds?: readonly (string | undefined)[]
 ): PiInjectionResult {
    // Project Pi messages into a MessageLike[] so the shared trimmer can
    // find the cutoff by synthesized id. Mutations to the projection are
@@ -353,7 +353,7 @@ export function injectSessionHistoryIntoPi(
       isCacheBusting,
       projectPath,
       injectionBudgetTokens,
-      temporalAwareness,
+      temporalAwareness
    );
 
    if (!prepared) {
@@ -362,7 +362,7 @@ export function injectSessionHistoryIntoPi(
          compartmentCount: 0,
          factCount: 0,
          memoryCount: 0,
-         skippedVisibleMessages: 0,
+         skippedVisibleMessages: 0
       };
    }
 
@@ -393,12 +393,12 @@ export function injectSessionHistoryIntoPi(
       if (prepared.compartmentCount > 0) {
          logSession(
             sessionId,
-            `injected ${prepared.compartmentCount} compartments + ${prepared.factCount} facts${memoryLabel} into message[0] (skipped ${skippedVisible}/${beforeProjectionLen} visible messages)`,
+            `injected ${prepared.compartmentCount} compartments + ${prepared.factCount} facts${memoryLabel} into message[0] (skipped ${skippedVisible}/${beforeProjectionLen} visible messages)`
          );
       } else {
          logSession(
             sessionId,
-            `injected ${prepared.factCount} facts${memoryLabel} into message[0] (no compartments yet)`,
+            `injected ${prepared.factCount} facts${memoryLabel} into message[0] (no compartments yet)`
          );
       }
    }
@@ -408,6 +408,6 @@ export function injectSessionHistoryIntoPi(
       compartmentCount: prepared.compartmentCount,
       factCount: prepared.factCount,
       memoryCount: prepared.memoryCount,
-      skippedVisibleMessages: skippedVisible,
+      skippedVisibleMessages: skippedVisible
    };
 }

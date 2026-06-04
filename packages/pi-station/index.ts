@@ -11,7 +11,7 @@ import {
    buildStashPreview,
    persistStashHistory,
    pushStashHistory,
-   readPersistedStashHistory,
+   readPersistedStashHistory
 } from "./features/stash/index.ts";
 import { homedir } from "node:os";
 import type { ColorScheme, SegmentContext } from "./types.ts";
@@ -20,7 +20,7 @@ import {
    BashAutocompleteProvider,
    ModeAwareAutocompleteProvider,
    OneOffBashAutocompleteProvider,
-   getOneOffBashCommandContext,
+   getOneOffBashCommandContext
 } from "./features/bash-mode/completion.ts";
 import { BashModeEditor } from "./features/bash-mode/editor.ts";
 import { registerHashline } from "./features/hashline/register.ts";
@@ -30,7 +30,7 @@ import { DEFAULT_LAYOUT } from "./default-layout.ts";
 import {
    collectHiddenExtensionStatusKeys,
    getNotificationExtensionStatuses,
-   parseStationConfig,
+   parseStationConfig
 } from "./station-config.ts";
 import { computeResponsiveLayout } from "./features/layout/index.ts";
 import { getGitStatus, invalidateGitBranch, invalidateGitStatus } from "./git-status.ts";
@@ -51,7 +51,7 @@ let config: StationConfig = {
    fixedEditor: true,
    scrollBar: true,
    hashline: true,
-   shortcuts: { ...DEFAULT_STATION_SHORTCUTS },
+   shortcuts: { ...DEFAULT_STATION_SHORTCUTS }
 };
 
 const CUSTOM_COMPACTION_STATUS_KEY = "compact-policy";
@@ -336,7 +336,7 @@ function readRecentProjectPrompts(cwd: string, limit: number): string[] {
 
       for (let i = lines.length - 1; i >= 0; i--) {
          const line = lines[i];
-         if (!line || !line.includes('"type":"message"') || !line.includes('"role":"user"')) {
+         if (!line?.includes('"type":"message"') || !line.includes('"role":"user"')) {
             continue;
          }
 
@@ -410,7 +410,7 @@ function writeStationSetting(cwd: string, update: (existingStationSetting: unkno
    const settingsPath = writeToProject ? projectSettingsPath : globalSettingsPath;
    const settings = writeToProject ? projectSettings : globalSettings;
 
-   settings["station"] = update(settings["station"]);
+   settings.station = update(settings.station);
 
    try {
       mkdirSync(dirname(settingsPath), { recursive: true });
@@ -429,7 +429,7 @@ function writeGlobalStationSetting(update: (existingStationSetting: unknown) => 
       return false;
    }
 
-   settings["station"] = update(settings["station"]);
+   settings.station = update(settings.station);
 
    try {
       mkdirSync(dirname(settingsPath), { recursive: true });
@@ -451,7 +451,7 @@ function getCurrentEditorText(ctx: any, editor: any): string {
 
 const DEFAULT_BASH_MODE_SETTINGS: BashModeSettings = {
    transcriptMaxBytes: 512 * 1024,
-   transcriptMaxLines: 2000,
+   transcriptMaxLines: 2000
 };
 
 function parseBashModeSettings(settings: Record<string, unknown>): BashModeSettings {
@@ -468,7 +468,7 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
 
    return {
       transcriptMaxBytes,
-      transcriptMaxLines,
+      transcriptMaxLines
    };
 }
 
@@ -478,7 +478,7 @@ function parseBashModeSettings(settings: Record<string, unknown>): BashModeSetti
 
 export default function stationBar(pi: ExtensionAPI) {
    const startupSettings = readSettings();
-   config = parseStationConfig(startupSettings["station"]);
+   config = parseStationConfig(startupSettings.station);
    let bashModeSettings = parseBashModeSettings(startupSettings);
 
    if (config.hashline) {
@@ -587,7 +587,7 @@ export default function stationBar(pi: ExtensionAPI) {
    const bashIntegration = new BashModeIntegration(bashModeSettings, {
       getCurrentEditor: () => currentEditor,
       getCwd: () => currentCtx?.cwd,
-      requestStatusRender: (delayMs) => requestStatusRender(delayMs),
+      requestStatusRender: (delayMs) => requestStatusRender(delayMs)
    });
 
    // Cache for the top and secondary station bar widgets.
@@ -647,7 +647,7 @@ export default function stationBar(pi: ExtensionAPI) {
       const setExtensionStatusAndRepaint = function setExtensionStatusAndRepaint(
          this: unknown,
          key: string,
-         text: string | undefined,
+         text: string | undefined
       ) {
          originalSetExtensionStatus.call(this, key, text);
          requestImmediateStatusRender();
@@ -682,7 +682,7 @@ export default function stationBar(pi: ExtensionAPI) {
          noMatch: (text: string) => theme.fg("warning", text),
          scrollInfo: (text: string) => theme.fg("dim", text),
          selectedPrefix: (text: string) => theme.fg("accent", text),
-         selectedText: (text: string) => theme.fg("accent", text),
+         selectedText: (text: string) => theme.fg("accent", text)
       };
    }
 
@@ -691,7 +691,7 @@ export default function stationBar(pi: ExtensionAPI) {
       title: string,
       hint: string,
       items: SelectItem[],
-      maxVisible: number,
+      maxVisible: number
    ): Promise<SelectItem | null> {
       return (ctx.ui as any).custom(
          (tui: any, theme: Theme, _keybindings: any, done: (result: SelectItem | null) => void) => {
@@ -726,28 +726,28 @@ export default function stationBar(pi: ExtensionAPI) {
                   lines.push(border(`╰${"─".repeat(innerWidth)}╯`));
 
                   return lines;
-               },
+               }
             };
          },
          {
             overlay: true,
             overlayOptions: () => ({
                horizontalAlign: "center",
-               verticalAlign: "center",
-            }),
-         },
+               verticalAlign: "center"
+            })
+         }
       );
    }
 
    // Track session start
-   pi.on("session_start", async (event, ctx) => {
+   pi.on("session_start", async (_event, ctx) => {
       bashIntegration.session?.dispose();
       bashIntegration.session = null;
       cachedSkillsLoaded = -1;
       cachedSkillsInstalled = -1;
 
       const settings = readSettings(ctx.cwd);
-      config = parseStationConfig(settings["station"]);
+      config = parseStationConfig(settings.station);
       state.config = config;
 
       customCompactionEnabled = detectCustomCompactionEnabled(ctx.cwd);
@@ -756,7 +756,7 @@ export default function stationBar(pi: ExtensionAPI) {
 
       state.startSession(ctx, {
          customCompactionEnabled,
-         showLastPrompt: settings.showLastPrompt !== false,
+         showLastPrompt: settings.showLastPrompt !== false
       });
 
       ({ currentCtx } = state);
@@ -801,7 +801,7 @@ export default function stationBar(pi: ExtensionAPI) {
    const mightChangeGitBranch = (cmd: string): boolean => {
       const gitBranchPatterns = [
          /\bgit\s+(checkout|switch|branch\s+-[dDmM]|merge|rebase|pull|reset|worktree)/,
-         /\bgit\s+stash\s+(pop|apply)/,
+         /\bgit\s+stash\s+(pop|apply)/
       ];
       return gitBranchPatterns.some((p) => p.test(cmd));
    };
@@ -914,7 +914,7 @@ export default function stationBar(pi: ExtensionAPI) {
    async function selectItemFromList(ctx: any, title: string, items: string[]): Promise<string | null> {
       const selectItems: SelectItem[] = items.map((entry, index) => ({
          label: `#${index + 1} ${buildStashPreview(entry, STASH_PREVIEW_WIDTH)}`,
-         value: String(index),
+         value: String(index)
       }));
 
       const selected = await showSelectOverlay(
@@ -922,7 +922,7 @@ export default function stationBar(pi: ExtensionAPI) {
          title,
          "↑↓ navigate • enter insert • esc cancel",
          selectItems,
-         Math.min(selectItems.length, 10),
+         Math.min(selectItems.length, 10)
       );
       if (!selected) {
          return null;
@@ -934,7 +934,7 @@ export default function stationBar(pi: ExtensionAPI) {
    async function selectPromptHistorySource(
       ctx: any,
       stashCount: number,
-      projectPromptCount: number,
+      projectPromptCount: number
    ): Promise<"stash" | "project" | null> {
       const items: SelectItem[] = [];
 
@@ -942,7 +942,7 @@ export default function stationBar(pi: ExtensionAPI) {
          items.push({
             description: `${stashCount} saved`,
             label: "Stashed prompts",
-            value: "stash",
+            value: "stash"
          });
       }
 
@@ -950,7 +950,7 @@ export default function stationBar(pi: ExtensionAPI) {
          items.push({
             description: `${projectPromptCount} recent`,
             label: "Recent project prompts",
-            value: "project",
+            value: "project"
          });
       }
 
@@ -967,7 +967,7 @@ export default function stationBar(pi: ExtensionAPI) {
          "Prompt history",
          "↑↓ navigate • enter open • esc cancel",
          items,
-         items.length,
+         items.length
       );
       if (!selected) {
          return null;
@@ -1095,22 +1095,22 @@ export default function stationBar(pi: ExtensionAPI) {
                         description: "Keep chat/feed scrollable above a fixed editor cluster.",
                         id: "fixedEditor",
                         label: "Fixed Editor",
-                        values: ["ON", "OFF"],
+                        values: ["ON", "OFF"]
                      },
                      {
                         currentValue: valueFor(config.scrollBar),
                         description: "Show the scroll position indicator on the chat/feed area.",
                         id: "scrollBar",
                         label: "Scroll Bar",
-                        values: ["ON", "OFF"],
+                        values: ["ON", "OFF"]
                      },
                      {
                         currentValue: valueFor(config.hashline),
                         description: "Hash-anchored read and edit tools. Reload required.",
                         id: "hashline",
                         label: "Hashline",
-                        values: ["ON", "OFF"],
-                     },
+                        values: ["ON", "OFF"]
+                     }
                   ],
                   3,
                   {
@@ -1118,7 +1118,7 @@ export default function stationBar(pi: ExtensionAPI) {
                      description: (text: string) => text,
                      hint: (text: string) => text,
                      label: (text: string) => text,
-                     value: (text: string) => text,
+                     value: (text: string) => text
                   },
                   (id, newValue) => {
                      if (id === "fixedEditor") {
@@ -1126,7 +1126,7 @@ export default function stationBar(pi: ExtensionAPI) {
                         writeStationSetting(ctx.cwd, (existing) =>
                            isRecord(existing)
                               ? { ...existing, fixedEditor: config.fixedEditor }
-                              : { fixedEditor: config.fixedEditor },
+                              : { fixedEditor: config.fixedEditor }
                         );
                         needsCustomEditorRefresh = true;
                      } else if (id === "scrollBar") {
@@ -1134,7 +1134,7 @@ export default function stationBar(pi: ExtensionAPI) {
                         writeStationSetting(ctx.cwd, (existing) =>
                            isRecord(existing)
                               ? { ...existing, scrollBar: config.scrollBar }
-                              : { scrollBar: config.scrollBar },
+                              : { scrollBar: config.scrollBar }
                         );
                         needsScrollBarRefresh = true;
                      } else if (id === "hashline") {
@@ -1142,7 +1142,7 @@ export default function stationBar(pi: ExtensionAPI) {
                         const saved = writeGlobalStationSetting((existing) =>
                            isRecord(existing)
                               ? { ...existing, hashline: config.hashline }
-                              : { hashline: config.hashline },
+                              : { hashline: config.hashline }
                         );
                         needsHashlineRefresh = saved;
                         if (!saved) {
@@ -1150,7 +1150,7 @@ export default function stationBar(pi: ExtensionAPI) {
                         }
                      }
                   },
-                  () => done(),
+                  () => done()
                );
 
                return {
@@ -1174,10 +1174,10 @@ export default function stationBar(pi: ExtensionAPI) {
                      });
                      const titleRow = `${border("│")} ${title}${" ".repeat(Math.max(0, innerWidth - visibleWidth("Station Settings")))} ${border("│")}`;
                      return [top, titleRow, divider, ...rows, bottom];
-                  },
+                  }
                };
             },
-            { overlay: true },
+            { overlay: true }
          );
 
          if (needsCustomEditorRefresh && enabled) {
@@ -1188,7 +1188,7 @@ export default function stationBar(pi: ExtensionAPI) {
          if (needsHashlineRefresh && enabled) {
             ctx.ui.notify(`Hashline saved: ${config.hashline ? "ON" : "OFF"}. Run /reload to apply.`, "info");
          }
-      },
+      }
    });
 
    pi.registerCommand("stash-history", {
@@ -1203,14 +1203,14 @@ export default function stationBar(pi: ExtensionAPI) {
          }
 
          await openStashHistory(ctx);
-      },
+      }
    });
 
    pi.registerCommand("bash-mode", {
       description: "Enable sticky bash mode",
       handler: async (_args, ctx) => {
          await bashIntegration.setActive(true, ctx as any);
-      },
+      }
    });
 
    pi.registerCommand("bash-reset", {
@@ -1232,7 +1232,7 @@ export default function stationBar(pi: ExtensionAPI) {
          }
          requestStatusRender();
          ctx.ui.notify("Bash session reset", "info");
-      },
+      }
    });
 
    pi.registerShortcut(config.shortcuts.bashMode as any, {
@@ -1242,7 +1242,7 @@ export default function stationBar(pi: ExtensionAPI) {
             return;
          }
          await bashIntegration.setActive(!bashIntegration.active, ctx as any);
-      },
+      }
    });
 
    pi.registerShortcut(config.shortcuts.stash as any, {
@@ -1252,7 +1252,7 @@ export default function stationBar(pi: ExtensionAPI) {
             return;
          }
          stashOrRestoreEditorText(ctx);
-      },
+      }
    });
 
    pi.registerShortcut(config.shortcuts.stashHistory as any, {
@@ -1262,7 +1262,7 @@ export default function stationBar(pi: ExtensionAPI) {
             return;
          }
          await openStashHistory(ctx);
-      },
+      }
    });
 
    function buildSegmentContext(ctx: any, theme: Theme): SegmentContext {
@@ -1353,7 +1353,7 @@ export default function stationBar(pi: ExtensionAPI) {
          theme,
          thinkingLevel,
          usageStats: { cacheRead, cacheWrite, cost, input, output },
-         usingSubscription,
+         usingSubscription
       };
    }
 
@@ -1418,7 +1418,7 @@ export default function stationBar(pi: ExtensionAPI) {
    function renderStationLayoutLine(
       width: number,
       theme: Theme,
-      field: "topContent" | "secondaryContent" | "tertiaryContent",
+      field: "topContent" | "secondaryContent" | "tertiaryContent"
    ): string[] {
       if (!currentCtx) {
          return [];
@@ -1514,7 +1514,7 @@ export default function stationBar(pi: ExtensionAPI) {
    function findContainerWithChild(tui: any, child: any): { container: any; index: number } | null {
       const children = Array.isArray(tui?.children) ? tui.children : [];
       const index = children.findIndex(
-         (candidate: any) => Array.isArray(candidate?.children) && candidate.children.includes(child),
+         (candidate: any) => Array.isArray(candidate?.children) && candidate.children.includes(child)
       );
       if (index === -1) {
          return null;
@@ -1576,7 +1576,7 @@ export default function stationBar(pi: ExtensionAPI) {
                tertiaryLines: renderStationTertiaryLines(width, theme),
                topLines: renderStationTopLines(width, theme),
                transcriptLines: [],
-               width,
+               width
             });
          },
          renderRootOverlay: (width) => {
@@ -1585,7 +1585,7 @@ export default function stationBar(pi: ExtensionAPI) {
          },
          scrollBar: config.scrollBar,
          terminal: tui.terminal,
-         tui,
+         tui
       });
 
       fixedEditorCompositor = compositor;
@@ -1617,9 +1617,9 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             render(width: number): string[] {
                return renderStationStatusLines(width);
-            },
+            }
          }),
-         { placement: "aboveEditor" },
+         { placement: "aboveEditor" }
       );
 
       ctx.ui.setWidget(
@@ -1631,9 +1631,9 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             render(width: number): string[] {
                return renderStationTopLines(width, theme);
-            },
+            }
          }),
-         { placement: "belowEditor" },
+         { placement: "belowEditor" }
       );
 
       ctx.ui.setWidget(
@@ -1645,9 +1645,9 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             render(width: number): string[] {
                return renderStationSecondaryLines(width, theme);
-            },
+            }
          }),
-         { placement: "belowEditor" },
+         { placement: "belowEditor" }
       );
 
       ctx.ui.setWidget(
@@ -1659,9 +1659,9 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             render(width: number): string[] {
                return renderStationTertiaryLines(width, theme);
-            },
+            }
          }),
-         { placement: "belowEditor" },
+         { placement: "belowEditor" }
       );
 
       ctx.ui.setWidget(
@@ -1671,9 +1671,9 @@ export default function stationBar(pi: ExtensionAPI) {
             invalidate() {},
             render(): string[] {
                return [];
-            },
+            }
          }),
-         { placement: "belowEditor" },
+         { placement: "belowEditor" }
       );
 
       ctx.ui.setWidget(
@@ -1683,9 +1683,9 @@ export default function stationBar(pi: ExtensionAPI) {
             invalidate() {},
             render(width: number): string[] {
                return renderLastPromptLines(width);
-            },
+            }
          }),
-         { placement: "belowEditor" },
+         { placement: "belowEditor" }
       );
    }
 
@@ -1727,7 +1727,7 @@ export default function stationBar(pi: ExtensionAPI) {
                   const ghost = await bashIntegration.completionEngine.getGhostSuggestion(
                      oneOffBash.command,
                      bashIntegration.getShellCwd(),
-                     bashIntegration.getShellPath(),
+                     bashIntegration.getShellPath()
                   );
                   return ghost ? { ...ghost, value: `${oneOffBash.prefix}${ghost.value}` } : null;
                }
@@ -1735,9 +1735,9 @@ export default function stationBar(pi: ExtensionAPI) {
                return bashIntegration.completionEngine.getGhostSuggestion(
                   text,
                   bashIntegration.getShellCwd(),
-                  bashIntegration.getShellPath(),
+                  bashIntegration.getShellPath()
                );
-            },
+            }
          });
 
          const getInstalledAutocompleteProvider = (): AutocompleteProvider | undefined => {
@@ -1770,8 +1770,8 @@ export default function stationBar(pi: ExtensionAPI) {
                   defaultProvider,
                   bashProvider as any,
                   oneOffBashProvider as any,
-                  () => bashIntegration.active,
-               ) as any,
+                  () => bashIntegration.active
+               ) as any
             );
             return true;
          };
@@ -1788,7 +1788,7 @@ export default function stationBar(pi: ExtensionAPI) {
                           handler(text);
                        }
                      : handler;
-            },
+            }
          });
 
          currentEditor = editor;
@@ -1854,7 +1854,7 @@ export default function stationBar(pi: ExtensionAPI) {
             },
             render(): string[] {
                return [];
-            },
+            }
          };
       });
 

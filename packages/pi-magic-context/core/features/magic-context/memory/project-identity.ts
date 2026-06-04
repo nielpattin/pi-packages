@@ -27,7 +27,7 @@ function getRootCommitHash(directory: string): string | undefined {
          cwd: directory,
          encoding: "utf-8",
          stdio: ["pipe", "pipe", "pipe"],
-         timeout: GIT_TIMEOUT_MS,
+         timeout: GIT_TIMEOUT_MS
       }).trim();
 
       // Multiple root commits possible (orphan branches); take the first

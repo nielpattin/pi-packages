@@ -24,7 +24,7 @@ export function buildOrchestratorGuidance(registry: OrchestratorGuidanceRegistry
       "",
       "## Enabled Agent Guidance",
       "",
-      ...sections,
+      ...sections
    ].join("\n");
 }
 

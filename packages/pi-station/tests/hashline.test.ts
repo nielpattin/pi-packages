@@ -6,7 +6,7 @@ import { ReadCallRow } from "../features/hashline/ui/read-call-row.ts";
 
 const theme = {
    bold: (text: string) => text,
-   fg: (_token: string, text: string) => text,
+   fg: (_token: string, text: string) => text
 };
 
 describe("hashline read", () => {
@@ -21,10 +21,10 @@ describe("hashline read", () => {
          {
             path: "C:/Users/niel/.pi/agent/packages/packages/pi-station/fixed-editor/terminal-split.ts",
             offset: 670,
-            limit: 190,
+            limit: 190
          },
          theme as any,
-         "C:/Users/niel/.pi/agent/packages/packages/pi-station",
+         "C:/Users/niel/.pi/agent/packages/packages/pi-station"
       );
 
       const rendered = row.render(60);

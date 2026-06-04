@@ -39,7 +39,7 @@ type CompositeLineAt = (
    overlayLine: string,
    startCol: number,
    overlayWidth: number,
-   totalWidth: number,
+   totalWidth: number
 ) => string;
 
 interface SgrMousePacket {
@@ -186,7 +186,7 @@ function parseSgrMousePackets(data: string): SgrMousePacket[] | null {
          code: Number(match[1]),
          col: Number(match[2]),
          final: match[4] as "M" | "m",
-         row: Number(match[3]),
+         row: Number(match[3])
       });
    }
 
@@ -364,7 +364,7 @@ export function buildFixedClusterPaint(
    cluster: FixedEditorClusterRender,
    terminalRows: number,
    width: number,
-   showHardwareCursor: boolean,
+   showHardwareCursor: boolean
 ): string {
    if (cluster.lines.length === 0) {
       return "";
@@ -471,7 +471,7 @@ export class TerminalSplitCompositor {
             this.enableAlternateScreenKeyboardMode() +
             disableAlternateScrollMode() +
             enableMouseReporting() +
-            endSynchronizedOutput(),
+            endSynchronizedOutput()
       );
       this.emergencyCleanup = () => {
          if (!this.disposed) {
@@ -482,7 +482,7 @@ export class TerminalSplitCompositor {
 
       Object.defineProperty(this.terminal, "rows", {
          configurable: true,
-         get: () => this.getScrollableRows(),
+         get: () => this.getScrollableRows()
       });
 
       if (this.originalRender) {
@@ -514,14 +514,14 @@ export class TerminalSplitCompositor {
             overlayLine: string,
             startCol: number,
             overlayWidth: number,
-            totalWidth: number,
+            totalWidth: number
          ) =>
             this.originalCompositeLineAt?.(
                normalizeOverlayCompositionLine(baseLine),
                normalizeOverlayCompositionLine(overlayLine),
                startCol,
                overlayWidth,
-               totalWidth,
+               totalWidth
             ) ?? "";
       }
       this.installed = true;
@@ -584,7 +584,7 @@ export class TerminalSplitCompositor {
       for (const target of candidates) {
          const nextOffset = Math.max(
             0,
-            Math.min(this.lastRootLineCount - Math.max(1, this.visibleScrollableRows) - target, this.maxScrollOffset),
+            Math.min(this.lastRootLineCount - Math.max(1, this.visibleScrollableRows) - target, this.maxScrollOffset)
          );
          if (nextOffset === this.scrollOffset) {
             continue;
@@ -612,7 +612,7 @@ export class TerminalSplitCompositor {
       this.originalWrite(
          beginSynchronizedOutput() +
             buildFixedClusterPaint(this.decorateCluster(cluster), rawRows, width, this.getShowHardwareCursor()) +
-            endSynchronizedOutput(),
+            endSynchronizedOutput()
       );
    }
 
@@ -692,7 +692,7 @@ export class TerminalSplitCompositor {
       try {
          const start = this.refreshRootWindow(width);
          const rootLines = this.visibleRootLines.map((line, index) =>
-            this.renderSelectionHighlight(line, start + index, "root"),
+            this.renderSelectionHighlight(line, start + index, "root")
          );
          return this.scrollBar ? this.decorateRootScrollbar(rootLines, width) : rootLines;
       } finally {
@@ -999,7 +999,7 @@ export class TerminalSplitCompositor {
       if (packet.row <= this.visibleScrollableRows) {
          return {
             area: "root",
-            point: { col, line: this.visibleRootStart + packet.row - 1 },
+            point: { col, line: this.visibleRootStart + packet.row - 1 }
          };
       }
 
@@ -1010,7 +1010,7 @@ export class TerminalSplitCompositor {
 
       return {
          area: "cluster",
-         point: { col, line: clusterLine },
+         point: { col, line: clusterLine }
       };
    }
 
@@ -1049,7 +1049,7 @@ export class TerminalSplitCompositor {
    private updateRootSelectionScroll(
       packet: SgrMousePacket,
       nextOffset: number,
-      focus: "top" | "bottom" | "pointer",
+      focus: "top" | "bottom" | "pointer"
    ): void {
       this.lastLeftPress = null;
       this.preserveSelectionFocusOnRelease = true;
@@ -1063,7 +1063,7 @@ export class TerminalSplitCompositor {
               : start + Math.max(0, Math.min(packet.row - 1, this.visibleScrollableRows - 1));
       this.selectionFocus = {
          col: Math.max(0, packet.col - 1),
-         line,
+         line
       };
       this.requestRender();
    }
@@ -1074,15 +1074,15 @@ export class TerminalSplitCompositor {
             col: Math.max(0, packet.col - 1),
             line: Math.max(
                0,
-               Math.min(packet.row - this.visibleScrollableRows - 1, this.visibleClusterLines.length - 1),
-            ),
+               Math.min(packet.row - this.visibleScrollableRows - 1, this.visibleClusterLines.length - 1)
+            )
          };
       }
 
       const row = Math.max(1, Math.min(packet.row, this.visibleScrollableRows));
       return {
          col: Math.max(0, packet.col - 1),
-         line: this.visibleRootStart + row - 1,
+         line: this.visibleRootStart + row - 1
       };
    }
 
@@ -1115,7 +1115,7 @@ export class TerminalSplitCompositor {
       const clampedCol = Math.max(0, Math.min(col, width - 1));
       const graphemes = [...graphemeSegmenter.segment(plain)].map(({ segment }) => ({
          segment,
-         width: Math.max(0, visibleWidth(segment)),
+         width: Math.max(0, visibleWidth(segment))
       }));
 
       // Map column → grapheme index
@@ -1158,12 +1158,6 @@ export class TerminalSplitCompositor {
       }
 
       return { end, start };
-   }
-
-   private selectionLineWidth(area: SelectionArea, lineIndex: number): number {
-      const lines = area === "root" ? this.visibleRootLines : this.visibleClusterLines;
-      const firstLine = area === "root" ? this.visibleRootStart : 0;
-      return visibleWidth(stripAnsi(lines[lineIndex - firstLine] ?? ""));
    }
 
    private getSelectedText(): string {
@@ -1221,7 +1215,7 @@ export class TerminalSplitCompositor {
 
    private getSelectionRangeForLine(
       lineIndex: number,
-      area: SelectionArea,
+      area: SelectionArea
    ): { startCol: number; endCol: number } | null {
       if (this.selectionArea !== area || !this.selectionAnchor || !this.selectionFocus) {
          return null;
@@ -1240,16 +1234,8 @@ export class TerminalSplitCompositor {
       const contentStartCol = area === "root" ? this.rootLineContentStart(lineIndex) : 0;
       return {
          endCol: lineIndex === end.line ? end.col : Number.POSITIVE_INFINITY,
-         startCol: Math.max(selectedStartCol, contentStartCol),
+         startCol: Math.max(selectedStartCol, contentStartCol)
       };
-   }
-
-   private isLocationInsideSelection(location: SelectionLocation | null): boolean {
-      if (!location || location.area !== this.selectionArea) {
-         return false;
-      }
-      const range = this.getSelectionRangeForLine(location.point.line, location.area);
-      return Boolean(range && location.point.col >= range.startCol && location.point.col < range.endCol);
    }
 
    private scrollBy(delta: number): void {
@@ -1284,7 +1270,7 @@ export class TerminalSplitCompositor {
       let buffer = beginSynchronizedOutput() + setScrollRegion(1, scrollableRows) + moveCursor(1, 1);
 
       const rootLines = this.visibleRootLines.map((line, row) =>
-         this.renderSelectionHighlight(line, start + row, "root"),
+         this.renderSelectionHighlight(line, start + row, "root")
       );
       const decoratedLines = this.scrollBar ? this.decorateRootScrollbar(rootLines, width) : rootLines;
       for (let row = 0; row < scrollableRows; row++) {
@@ -1346,7 +1332,7 @@ export class TerminalSplitCompositor {
       }
 
       let remainingRestores = Math.ceil(
-         CONTEXT_MENU_SELECTION_RESTORE_WINDOW_MS / CONTEXT_MENU_CLIPBOARD_RESTORE_INTERVAL_MS,
+         CONTEXT_MENU_SELECTION_RESTORE_WINDOW_MS / CONTEXT_MENU_CLIPBOARD_RESTORE_INTERVAL_MS
       );
       const scheduleClipboardRestore = () => {
          this.clipboardRestoreTimer = setTimeout(() => {
@@ -1414,7 +1400,7 @@ export class TerminalSplitCompositor {
             clearScreen() +
             (restoreMainScreenMode && activeMode ? enableExtendedKeyboardMode(activeMode) : "") +
             (options.resetExtendedKeyboardModes ? resetExtendedKeyboardModes() : "") +
-            endSynchronizedOutput(),
+            endSynchronizedOutput()
       );
    }
 
@@ -1491,7 +1477,7 @@ export class TerminalSplitCompositor {
 
       return {
          ...cluster,
-         lines: cluster.lines.map((line, index) => this.renderSelectionHighlight(line, index, "cluster")),
+         lines: cluster.lines.map((line, index) => this.renderSelectionHighlight(line, index, "cluster"))
       };
    }
 

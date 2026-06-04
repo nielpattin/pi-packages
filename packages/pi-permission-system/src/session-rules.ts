@@ -20,7 +20,7 @@ export class SessionRules {
          pattern,
          action: "allow",
          layer: "session",
-         origin: "session",
+         origin: "session"
       });
    }
 

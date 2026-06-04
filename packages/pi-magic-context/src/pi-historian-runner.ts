@@ -42,7 +42,7 @@ import {
    appendCompartments,
    getCompartments,
    getSessionFacts,
-   replaceSessionFacts,
+   replaceSessionFacts
 } from "#core/features/magic-context/compartment-storage";
 import { promoteSessionFactsToMemory } from "#core/features/magic-context/memory";
 import { resolveProjectIdentity } from "#core/features/magic-context/memory/project-identity";
@@ -51,7 +51,7 @@ import {
    clearEmergencyRecovery,
    clearHistorianFailureState,
    incrementHistorianFailure,
-   setPendingPiCompactionMarkerState,
+   setPendingPiCompactionMarkerState
 } from "#core/features/magic-context/storage";
 import { updateSessionMeta } from "#core/features/magic-context/storage-meta";
 import { insertUserMemoryCandidates } from "#core/features/magic-context/user-memory/storage-user-memory";
@@ -59,7 +59,7 @@ import {
    buildCompartmentAgentPrompt,
    buildHistorianEditorPrompt,
    COMPARTMENT_AGENT_SYSTEM_PROMPT,
-   HISTORIAN_EDITOR_SYSTEM_PROMPT,
+   HISTORIAN_EDITOR_SYSTEM_PROMPT
 } from "#core/hooks/magic-context/compartment-prompt";
 import { queueDropsForCompartmentalizedMessages } from "#core/hooks/magic-context/compartment-runner-drop-queue";
 import { buildExistingStateXml } from "#core/hooks/magic-context/compartment-runner-state-xml";
@@ -67,11 +67,11 @@ import {
    buildHistorianRepairPrompt,
    validateChunkCoverage,
    validateHistorianOutput,
-   validateStoredCompartments,
+   validateStoredCompartments
 } from "#core/hooks/magic-context/compartment-runner-validation";
 import {
    cleanupHistorianStateFile,
-   maybeWriteHistorianStateFile,
+   maybeWriteHistorianStateFile
 } from "#core/hooks/magic-context/historian-state-file";
 import { renderMemoryBlock } from "#core/hooks/magic-context/inject-compartments";
 import { onNoteTrigger } from "#core/hooks/magic-context/note-nudger";
@@ -79,7 +79,7 @@ import {
    getProtectedTailStartOrdinal,
    type RawMessageProvider,
    readSessionChunk,
-   withRawMessageProvider,
+   withRawMessageProvider
 } from "#core/hooks/magic-context/read-session-chunk";
 import { describeError } from "#core/shared/error-message";
 import { sessionLog } from "#core/shared/logger";
@@ -148,7 +148,7 @@ export interface PiHistorianDeps {
       firstKeptEntryId: string,
       tokensBefore: number,
       details?: unknown,
-      fromHook?: boolean,
+      fromHook?: boolean
    ) => string | undefined;
    /** Optional raw Pi branch entries used to map raw ordinals back to entry ids. */
    readBranchEntries?: () => unknown[];
@@ -174,7 +174,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
       onPublished,
       compartmentLeaseHolderId,
       readBranchEntries,
-      notifyIssue,
+      notifyIssue
    } = deps;
 
    const notify = async (message: string): Promise<void> => {
@@ -186,7 +186,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          await notifyIssue?.(message);
       } catch (error) {
          sessionLog(sessionId, "historian notify failed", {
-            error: describeError(error).brief,
+            error: describeError(error).brief
          });
       }
    };
@@ -220,7 +220,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          if (protectedTailStart <= offset) {
             sessionLog(
                sessionId,
-               `historian no-op: protectedTailStart=${protectedTailStart} <= offset=${offset} — nothing to compact`,
+               `historian no-op: protectedTailStart=${protectedTailStart} <= offset=${offset} — nothing to compact`
             );
             clearEmergencyRecovery(db, sessionId);
             return;
@@ -230,7 +230,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          if (!chunk.text || chunk.messageCount === 0) {
             sessionLog(
                sessionId,
-               `historian no-op: chunk empty after filtering (messageCount=${chunk.messageCount}, textLen=${chunk.text?.length ?? 0}) range=${offset}-${protectedTailStart - 1}`,
+               `historian no-op: chunk empty after filtering (messageCount=${chunk.messageCount}, textLen=${chunk.text?.length ?? 0}) range=${offset}-${protectedTailStart - 1}`
             );
             clearEmergencyRecovery(db, sessionId);
             return;
@@ -240,7 +240,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          if (chunkCoverageError) {
             sessionLog(
                sessionId,
-               `historian failure: source=chunk-coverage reason="${chunkCoverageError}" chunkRange=${chunk.startIndex}-${chunk.endIndex}`,
+               `historian failure: source=chunk-coverage reason="${chunkCoverageError}" chunkRange=${chunk.startIndex}-${chunk.endIndex}`
             );
             incrementHistorianFailure(db, sessionId, chunkCoverageError);
             await notify(`Historian skipped: raw chunk could not be safely chunked: ${chunkCoverageError}`);
@@ -279,14 +279,14 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          if (stateFilePath) {
             sessionLog(
                sessionId,
-               `historian: existing state offloaded to file (${existingState.length} chars) → ${stateFilePath}`,
+               `historian: existing state offloaded to file (${existingState.length} chars) → ${stateFilePath}`
             );
          }
 
          const prompt = buildCompartmentAgentPrompt(
             existingState,
             `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-            { stateFilePath },
+            { stateFilePath }
          );
 
          // Defensive: use MAX(sequence) + 1 over .length to survive any old
@@ -296,7 +296,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
 
          sessionLog(
             sessionId,
-            `historian: invoking subagent (model=${historianModel}, chunk=${chunk.startIndex}-${chunk.endIndex}, ${chunk.messageCount} msgs, ~${chunk.tokenEstimate} tokens)`,
+            `historian: invoking subagent (model=${historianModel}, chunk=${chunk.startIndex}-${chunk.endIndex}, ${chunk.messageCount} msgs, ~${chunk.tokenEstimate} tokens)`
          );
 
          // Per-pass milestone tracing for the Pi child run. We log the
@@ -315,12 +315,12 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                   if (event.type === "spawned") {
                      sessionLog(
                         sessionId,
-                        `historian[${passLabel}] spawned pid=${event.pid ?? "?"} argv=${event.argv.length} args`,
+                        `historian[${passLabel}] spawned pid=${event.pid ?? "?"} argv=${event.argv.length} args`
                      );
                   } else if (event.type === "terminal") {
                      sessionLog(
                         sessionId,
-                        `historian[${passLabel}] terminal @${event.ms}ms stopReason=${event.stopReason ?? "?"} textLen=${event.textLength} hasToolCall=${event.hasToolCall}`,
+                        `historian[${passLabel}] terminal @${event.ms}ms stopReason=${event.stopReason ?? "?"} textLen=${event.textLength} hasToolCall=${event.hasToolCall}`
                      );
                   } else if (event.type === "stderr") {
                      const cleaned = event.chunk.replace(/\s+/g, " ").trim();
@@ -330,7 +330,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                   } else if (event.type === "child_exit") {
                      sessionLog(
                         sessionId,
-                        `historian[${passLabel}] child_exit @${event.ms}ms code=${event.code} signal=${event.signal}`,
+                        `historian[${passLabel}] child_exit @${event.ms}ms code=${event.code} signal=${event.signal}`
                      );
                   } else if (traceRawEvents) {
                      if (event.type === "raw_event") {
@@ -345,12 +345,12 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                         }
                         sessionLog(
                            sessionId,
-                           `historian[${passLabel}] raw_event @${event.ms}ms type=${event.eventType ?? "?"}: ${serialized}`,
+                           `historian[${passLabel}] raw_event @${event.ms}ms type=${event.eventType ?? "?"}: ${serialized}`
                         );
                      } else if (event.type === "first_event") {
                         sessionLog(
                            sessionId,
-                           `historian[${passLabel}] first_event @${event.ms}ms type=${event.eventType}`,
+                           `historian[${passLabel}] first_event @${event.ms}ms type=${event.eventType}`
                         );
                      }
                   }
@@ -372,7 +372,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
             thinkingLevel,
             onProgress: buildProgressLogger("first"),
             accountingSessionId: sessionId,
-            accountingSubagent: "historian",
+            accountingSubagent: "historian"
          });
 
          let validatedPass = await validateHistorianResult(
@@ -380,7 +380,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
             sessionId,
             chunk,
             priorCompartments,
-            sequenceOffset,
+            sequenceOffset
          );
          // Track which subagent run actually produced the validated
          // draft. This matters for the optional two-pass editor refinement
@@ -396,7 +396,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
          if (validatedPass.kind === "validation-failed") {
             sessionLog(
                sessionId,
-               `historian: first pass validation failed, retrying with repair prompt: ${validatedPass.error}`,
+               `historian: first pass validation failed, retrying with repair prompt: ${validatedPass.error}`
             );
             const repairPrompt = buildHistorianRepairPrompt(prompt, validatedPass.rawText, validatedPass.error);
             const repairResult = await runner.run({
@@ -410,14 +410,14 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                thinkingLevel,
                onProgress: buildProgressLogger("repair"),
                accountingSessionId: sessionId,
-               accountingSubagent: "historian",
+               accountingSubagent: "historian"
             });
             validatedPass = await validateHistorianResult(
                repairResult,
                sessionId,
                chunk,
                priorCompartments,
-               sequenceOffset,
+               sequenceOffset
             );
             // If repair produced a valid result, that's the draft we
             // want the editor to refine. (If repair also failed,
@@ -469,14 +469,14 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                   thinkingLevel,
                   onProgress: buildProgressLogger("editor"),
                   accountingSessionId: sessionId,
-                  accountingSubagent: "historian_editor",
+                  accountingSubagent: "historian_editor"
                });
                const editorPass = await validateHistorianResult(
                   editorResult,
                   sessionId,
                   chunk,
                   priorCompartments,
-                  sequenceOffset,
+                  sequenceOffset
                );
                if (editorPass.kind === "ok") {
                   sessionLog(sessionId, `historian two-pass: editor accepted, replacing draft`);
@@ -500,7 +500,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
             const errorMsg = `historian returned compartments that did not advance past raw message ${offset - 1}`;
             sessionLog(
                sessionId,
-               `historian failure: source=no-progress newCompartmentCount=${newCompartments.length} lastNewEnd=${lastNewEnd} priorEnd=${offset - 1}`,
+               `historian failure: source=no-progress newCompartmentCount=${newCompartments.length} lastNewEnd=${lastNewEnd} priorEnd=${offset - 1}`
             );
             incrementHistorianFailure(db, sessionId, errorMsg);
             await notify(`Historian failed: ${errorMsg}`);
@@ -516,13 +516,13 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                if (!firstKeptEntryId) {
                   sessionLog(
                      sessionId,
-                     `historian: native compaction queue skipped; no firstKeptEntryId after ordinal ${lastNewEnd}`,
+                     `historian: native compaction queue skipped; no firstKeptEntryId after ordinal ${lastNewEnd}`
                   );
                }
             } catch (error) {
                sessionLog(
                   sessionId,
-                  `historian: native compaction queue lookup failed: ${error instanceof Error ? error.message : String(error)}`,
+                  `historian: native compaction queue lookup failed: ${error instanceof Error ? error.message : String(error)}`
                );
             }
          }
@@ -555,8 +555,8 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                      content: obs,
                      sessionId,
                      sourceCompartmentStart: newCompartments[0]?.startMessage,
-                     sourceCompartmentEnd: lastNewEnd,
-                  })),
+                     sourceCompartmentEnd: lastNewEnd
+                  }))
                );
             }
             if (firstKeptEntryId && lastNewEndMessageId) {
@@ -566,7 +566,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
                   ordinal: lastNewEnd,
                   tokensBefore: chunk.tokenEstimate,
                   summary: markerSummary,
-                  publishedAt: Date.now(),
+                  publishedAt: Date.now()
                });
             }
             db.exec("COMMIT");
@@ -603,7 +603,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
 
          sessionLog(
             sessionId,
-            `historian: published ${newCompartments.length} compartment(s), ${validatedPass.facts?.length ?? 0} fact(s) covering messages ${chunk.startIndex}-${lastNewEnd}`,
+            `historian: published ${newCompartments.length} compartment(s), ${validatedPass.facts?.length ?? 0} fact(s) covering messages ${chunk.startIndex}-${lastNewEnd}`
          );
          completedSuccessfully = true;
       });
@@ -611,7 +611,7 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
       const desc = describeError(error);
       sessionLog(
          sessionId,
-         `historian failure: source=exception ${desc.brief}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`,
+         `historian failure: source=exception ${desc.brief}${desc.stackHead ? ` stackHead="${desc.stackHead}"` : ""}`
       );
       incrementHistorianFailure(db, sessionId, desc.brief);
       await notify(`Historian failed unexpectedly: ${desc.brief}`);
@@ -652,13 +652,13 @@ async function validateHistorianResult(
    sessionId: string,
    chunk: Parameters<typeof validateHistorianOutput>[2],
    priorCompartments: Parameters<typeof validateHistorianOutput>[3],
-   sequenceOffset: number,
+   sequenceOffset: number
 ): Promise<ValidationOutcome> {
    if (!result.ok) {
       return {
          kind: "spawn-failed",
          reason: result.reason,
-         error: result.error,
+         error: result.error
       };
    }
    if (result.assistantText.trim().length === 0) {
@@ -670,20 +670,20 @@ async function validateHistorianResult(
       sessionId,
       chunk,
       priorCompartments,
-      sequenceOffset,
+      sequenceOffset
    );
    if (validation.ok) {
       return {
          kind: "ok",
          compartments: validation.compartments,
          facts: validation.facts,
-         userObservations: validation.userObservations,
+         userObservations: validation.userObservations
       };
    }
    return {
       kind: "validation-failed",
       error: validation.error,
-      rawText: result.assistantText,
+      rawText: result.assistantText
    };
 }
 
@@ -692,7 +692,7 @@ export function buildPiCompactionSummary(
       title: string;
       startMessage: number;
       endMessage: number;
-   }>,
+   }>
 ): string {
    if (compartments.length === 0) return "Magic Context compacted prior history.";
    const titles = compartments.map((c) => c.title.trim()).filter((title) => title.length > 0);

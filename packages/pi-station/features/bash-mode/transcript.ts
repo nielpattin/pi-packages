@@ -39,7 +39,7 @@ export class BashTranscriptStore {
          output: [],
          outputBytes: 0,
          startedAt: Date.now(),
-         truncated: false,
+         truncated: false
       };
 
       this.commands.push(entry);
@@ -89,11 +89,11 @@ export class BashTranscriptStore {
       return {
          commands: this.commands.map((command) => ({
             ...command,
-            output: [...command.output],
+            output: [...command.output]
          })),
          totalBytes: this.totalBytes,
          totalLines: this.totalLines,
-         truncatedCommands: this.truncatedCommands,
+         truncatedCommands: this.truncatedCommands
       };
    }
 

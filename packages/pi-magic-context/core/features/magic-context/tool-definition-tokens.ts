@@ -147,7 +147,7 @@ export function recordToolDefinition(
    agentName: string | undefined,
    toolID: string,
    description: string,
-   parameters: unknown,
+   parameters: unknown
 ): void {
    if (!providerID || !modelID || !toolID) return;
    const key = keyFor(providerID, modelID, agentName);
@@ -206,7 +206,7 @@ export function recordToolDefinition(
             cachedInsertStmt = persistenceDb.prepare(
                `INSERT OR REPLACE INTO tool_definition_measurements
                      (provider_id, model_id, agent_name, tool_id, token_count, recorded_at)
-                     VALUES (?, ?, ?, ?, ?, ?)`,
+                     VALUES (?, ?, ?, ?, ?, ?)`
             );
          }
          cachedInsertStmt.run(providerID, modelID, agent, toolID, tokens, Date.now());
@@ -229,7 +229,7 @@ export function recordToolDefinition(
 export function getMeasuredToolDefinitionTokens(
    providerID: string,
    modelID: string,
-   agentName: string | undefined,
+   agentName: string | undefined
 ): number | undefined {
    if (!providerID || !modelID) return undefined;
    const inner = measurements.get(keyFor(providerID, modelID, agentName));

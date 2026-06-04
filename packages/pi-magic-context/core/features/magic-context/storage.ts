@@ -6,13 +6,13 @@ export {
    getSessionFacts,
    replaceAllCompartmentState,
    replaceAllCompartmentStateAndBumpDepth,
-   type SessionFact,
+   type SessionFact
 } from "./compartment-storage";
 export {
    clearCompressionDepth,
    getAverageCompressionDepth,
    getMaxCompressionDepth,
-   incrementCompressionDepth,
+   incrementCompressionDepth
 } from "./compression-depth-storage";
 export { clearIndexedMessages, deleteIndexedMessage } from "./message-index";
 export {
@@ -20,7 +20,7 @@ export {
    closeDatabase,
    getDatabasePersistenceError,
    isDatabasePersisted,
-   openDatabase,
+   openDatabase
 } from "./storage-db";
 export {
    type AppendAutoSearchHintOutcome,
@@ -82,7 +82,7 @@ export {
    setPersistedTodoSyntheticAnchor,
    setSessionWorkMetrics,
    setStrippedPlaceholderIds,
-   updateSessionMeta,
+   updateSessionMeta
 } from "./storage-meta";
 export {
    addNote,
@@ -99,7 +99,7 @@ export {
    type NoteStatus,
    type NoteType,
    replaceAllSessionNotes,
-   updateNote,
+   updateNote
 } from "./storage-notes";
 export { clearPendingOps, getPendingOps, queuePendingOp, removePendingOp } from "./storage-ops";
 export { getSourceContents, replaceSourceContent, saveSourceContent } from "./storage-source";
@@ -110,7 +110,7 @@ export {
    type SubagentInvocationInput,
    type SubagentInvocationRow,
    type SubagentKind,
-   type SubagentTotals,
+   type SubagentTotals
 } from "./storage-subagent-invocations";
 export {
    deleteTagsByMessageId,
@@ -125,5 +125,5 @@ export {
    updateCavemanDepth,
    updateTagDropMode,
    updateTagMessageId,
-   updateTagStatus,
+   updateTagStatus
 } from "./storage-tags";

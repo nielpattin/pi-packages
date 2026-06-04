@@ -8,7 +8,7 @@ import {
    clearProjectCommitEmbeddings,
    getDistinctCommitEmbeddingModelIds,
    loadUnembeddedCommits,
-   saveCommitEmbedding,
+   saveCommitEmbedding
 } from "./git-commits/storage-git-commit-embeddings";
 import { invalidateProject } from "./memory/embedding-cache";
 import { getEmbeddingProviderIdentity } from "./memory/embedding-identity";
@@ -18,7 +18,7 @@ import type { EmbeddingProvider } from "./memory/embedding-provider";
 import {
    clearEmbeddingsForProject,
    getDistinctStoredModelIds,
-   saveEmbedding,
+   saveEmbedding
 } from "./memory/storage-memory-embeddings";
 
 const OFF_PROVIDER_IDENTITY = "embedding-provider:off";
@@ -70,7 +70,7 @@ function resolveEmbeddingConfig(config?: EmbeddingConfig): EmbeddingConfig {
    if (!config || config.provider === "local") {
       return {
          provider: "local",
-         model: config?.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL,
+         model: config?.model?.trim() || DEFAULT_LOCAL_EMBEDDING_MODEL
       };
    }
 
@@ -80,7 +80,7 @@ function resolveEmbeddingConfig(config?: EmbeddingConfig): EmbeddingConfig {
          provider: "openai-compatible",
          model: config.model.trim(),
          endpoint: config.endpoint.trim(),
-         ...(apiKey ? { api_key: apiKey } : {}),
+         ...(apiKey ? { api_key: apiKey } : {})
       };
    }
 
@@ -100,7 +100,7 @@ function createProvider(config: EmbeddingConfig): EmbeddingProvider | null {
       return new OpenAICompatibleEmbeddingProvider({
          endpoint: config.endpoint,
          model: config.model,
-         apiKey: config.api_key,
+         apiKey: config.api_key
       });
    }
 
@@ -146,7 +146,7 @@ function snapshotFor(registration: ProjectEmbeddingRegistration): ProjectEmbeddi
       features: { ...registration.features },
       enabled,
       gitCommitEnabled,
-      modelId: registration.observationMode || !providerIsOn ? "off" : registration.modelId,
+      modelId: registration.observationMode || !providerIsOn ? "off" : registration.modelId
    };
 }
 
@@ -171,7 +171,7 @@ function maybeWipeStaleEmbeddings(
    db: Database,
    projectIdentity: string,
    currentProviderIdentity: string,
-   features: EmbeddingFeatures,
+   features: EmbeddingFeatures
 ): boolean {
    if (currentProviderIdentity === OFF_PROVIDER_IDENTITY) {
       return false;
@@ -205,7 +205,7 @@ export function registerProjectEmbeddingAndMaybeWipe(
    projectIdentity: string,
    config: EmbeddingConfig,
    features: EmbeddingFeatures,
-   sourceDirectory: string,
+   sourceDirectory: string
 ): ProjectEmbeddingRegistrationSnapshot {
    const resolvedConfig = resolveEmbeddingConfig(config);
    const providerIdentity = getEmbeddingProviderIdentity(resolvedConfig);
@@ -234,7 +234,7 @@ export function registerProjectEmbeddingAndMaybeWipe(
       generation,
       features: { ...features },
       modelId: providerIdentity === OFF_PROVIDER_IDENTITY ? "off" : providerIdentity,
-      observationMode: false,
+      observationMode: false
    };
 
    projectRegistrations.set(projectIdentity, registration);
@@ -251,7 +251,7 @@ export function registerProjectInObservationMode(
    projectIdentity: string,
    sourceDirectory: string,
    failedConfig: EmbeddingConfig,
-   failureSummary: string,
+   failureSummary: string
 ): ProjectEmbeddingRegistrationSnapshot {
    void db;
    const prior = projectRegistrations.get(projectIdentity);
@@ -270,7 +270,7 @@ export function registerProjectInObservationMode(
       generation,
       features: { memoryEnabled: false, gitCommitEnabled: false },
       modelId: "off",
-      observationMode: true,
+      observationMode: true
    };
 
    projectRegistrations.set(projectIdentity, registration);
@@ -307,7 +307,7 @@ function getOrCreateProjectProvider(registration: ProjectEmbeddingRegistration):
 export async function embedTextForProject(
    projectIdentity: string,
    text: string,
-   signal?: AbortSignal,
+   signal?: AbortSignal
 ): Promise<{ vector: Float32Array; modelId: string; generation: number } | null> {
    const registration = projectRegistrations.get(projectIdentity);
    if (!registration) return null;
@@ -334,7 +334,7 @@ export async function embedTextForProject(
 export async function embedBatchForProject(
    projectIdentity: string,
    texts: string[],
-   signal?: AbortSignal,
+   signal?: AbortSignal
 ): Promise<{ vectors: (Float32Array | null)[]; modelId: string; generation: number } | null> {
    if (texts.length === 0) {
       const registration = projectRegistrations.get(projectIdentity);
@@ -369,7 +369,7 @@ function getLoadUnembeddedMemoriesStatement(db: Database): PreparedStatement {
    let stmt = loadUnembeddedMemoriesStatements.get(db);
    if (!stmt) {
       stmt = db.prepare(
-         "SELECT m.id AS id, m.content AS content FROM memories m LEFT JOIN memory_embeddings me ON m.id = me.memory_id WHERE m.project_path = ? AND m.status = 'active' AND me.memory_id IS NULL LIMIT ?",
+         "SELECT m.id AS id, m.content AS content FROM memories m LEFT JOIN memory_embeddings me ON m.id = me.memory_id WHERE m.project_path = ? AND m.status = 'active' AND me.memory_id IS NULL LIMIT ?"
       );
       loadUnembeddedMemoriesStatements.set(db, stmt);
    }
@@ -379,7 +379,7 @@ function getLoadUnembeddedMemoriesStatement(db: Database): PreparedStatement {
 export async function embedUnembeddedMemoriesForProject(
    db: Database,
    projectIdentity: string,
-   batchSize = 10,
+   batchSize = 10
 ): Promise<number> {
    const snapshot = getProjectEmbeddingSnapshot(projectIdentity);
    if (!snapshot?.enabled) return 0;
@@ -393,7 +393,7 @@ export async function embedUnembeddedMemoriesForProject(
    try {
       const result = await embedBatchForProject(
          projectIdentity,
-         memories.map((memory) => memory.content),
+         memories.map((memory) => memory.content)
       );
       if (!result) return 0;
 
@@ -416,7 +416,7 @@ export async function embedUnembeddedMemoriesForProject(
 async function embedUnembeddedCommitsForProject(
    db: Database,
    projectIdentity: string,
-   batchSize: number,
+   batchSize: number
 ): Promise<number> {
    const snapshot = getProjectEmbeddingSnapshot(projectIdentity);
    if (!snapshot?.gitCommitEnabled) return 0;
@@ -426,7 +426,7 @@ async function embedUnembeddedCommitsForProject(
 
    const result = await embedBatchForProject(
       projectIdentity,
-      commits.map((commit) => commit.message),
+      commits.map((commit) => commit.message)
    );
    if (!result) return 0;
 
@@ -444,7 +444,7 @@ async function embedUnembeddedCommitsForProject(
 
 export async function sweepAllRegisteredProjects(
    db: Database,
-   batchSize = 10,
+   batchSize = 10
 ): Promise<{
    memoriesEmbedded: number;
    commitsEmbedded: number;
@@ -497,7 +497,7 @@ export async function sweepAllRegisteredProjects(
 }
 
 export function _setTestProviderFactoryForProject(
-   factory: ((config: EmbeddingConfig) => EmbeddingProvider | null) | null,
+   factory: ((config: EmbeddingConfig) => EmbeddingProvider | null) | null
 ): void {
    testProviderFactory = factory;
 }

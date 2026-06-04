@@ -13,7 +13,7 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
          subagentType: "general-purpose",
          rawType: "general-purpose",
          fellBack: false,
-         displayName: "General-purpose",
+         displayName: "General-purpose"
       },
       execution: {
          prompt: "do something",
@@ -32,8 +32,8 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
             isolated: false,
             inheritContext: false,
             runInBackground: true,
-            isolation: undefined,
-         },
+            isolation: undefined
+         }
       },
       presentation: {
          modelName: undefined,
@@ -43,10 +43,10 @@ function makeConfig(overrides: Partial<ResolvedSpawnConfig> = {}): ResolvedSpawn
             description: "bg task",
             subagentType: "general-purpose",
             modelName: undefined,
-            tags: undefined,
-         },
+            tags: undefined
+         }
       },
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -56,7 +56,7 @@ function makeParams(overrides: Partial<BackgroundParams> = {}): BackgroundParams
       snapshot: STUB_SNAPSHOT,
       parentSession: { parentSessionFile: "/sessions/parent.jsonl", parentSessionId: "session-1", toolCallId: "tc-1" },
       settings: { maxConcurrent: 4 },
-      ...overrides,
+      ...overrides
    };
 }
 
@@ -106,11 +106,11 @@ describe("spawnBackground", () => {
                      isolated: false,
                      inheritContext: false,
                      runInBackground: true,
-                     isolation: undefined,
-                  },
-               },
-            }),
-         }),
+                     isolation: undefined
+                  }
+               }
+            })
+         })
       );
       expect(result.content[0].text).toContain("agent-1");
       expect(result.content[0].text).toContain("my task");
@@ -121,14 +121,14 @@ describe("spawnBackground", () => {
          manager: {
             ...createToolDeps().manager,
             spawn: vi.fn().mockReturnValue("bg-2"),
-            getRecord: vi.fn().mockReturnValue(createTestAgent({ status: "queued" })),
-         },
+            getRecord: vi.fn().mockReturnValue(createTestAgent({ status: "queued" }))
+         }
       });
       const result = spawnBackground(
          deps.manager,
          deps.runtime,
          deps.runtime.agentActivity,
-         makeParams({ settings: { maxConcurrent: 4 } }),
+         makeParams({ settings: { maxConcurrent: 4 } })
       );
       expect(result.content[0].text).toContain("queued");
       expect(result.content[0].text).toContain("max 4 concurrent");
@@ -147,7 +147,7 @@ describe("spawnBackground", () => {
 
       expect(text).toContain("You will be notified when this agent completes.");
       expect(text).toContain(
-         "Do not call get_subagent_result while it is still running unless the user asked to wait.",
+         "Do not call get_subagent_result while it is still running unless the user asked to wait."
       );
       expect(text).not.toContain("Use get_subagent_result to retrieve full results");
    });
@@ -159,8 +159,8 @@ describe("spawnBackground", () => {
          manager: {
             ...createToolDeps().manager,
             spawn: vi.fn().mockReturnValue("bg-3"),
-            getRecord: vi.fn().mockReturnValue(record),
-         },
+            getRecord: vi.fn().mockReturnValue(record)
+         }
       });
       const result = spawnBackground(deps.manager, deps.runtime, deps.runtime.agentActivity, makeParams());
       expect(result.content[0].text).toContain("/sessions/bg.jsonl");
@@ -173,8 +173,8 @@ describe("spawnBackground", () => {
             spawn: vi.fn().mockImplementation(() => {
                throw new Error("spawn failed");
             }),
-            getRecord: vi.fn(),
-         },
+            getRecord: vi.fn()
+         }
       });
       const result = spawnBackground(deps.manager, deps.runtime, deps.runtime.agentActivity, makeParams());
       expect(result.content[0].text).toContain("spawn failed");

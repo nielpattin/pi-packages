@@ -34,7 +34,7 @@ export class SessionLifecycleHandler {
       private readonly runtime: LifecycleRuntime,
       private readonly manager: LifecycleManager,
       private readonly disposeNotifications: () => void,
-      private readonly unpublishService: () => void,
+      private readonly unpublishService: () => void
    ) {}
 
    handleSessionStart(_event: unknown, ctx: unknown): void {

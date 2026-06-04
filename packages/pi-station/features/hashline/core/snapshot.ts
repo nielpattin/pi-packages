@@ -24,6 +24,6 @@ export async function getFileSnapshot(absolutePath: string): Promise<SnapshotInf
    return {
       snapshotId: formatSnapshotId(canonicalPath, stats),
       mtimeMs: stats.mtimeMs,
-      size: stats.size,
+      size: stats.size
    };
 }
