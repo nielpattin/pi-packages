@@ -5,6 +5,7 @@ This folder documents the local Pi Magic Context package as implemented in code.
 ## Files
 
 - [Architecture](./architecture.md). Package structure, entrypoints, startup lifecycle, and major subsystems.
+- [Runtime diagrams](./diagrams.md). Mermaid diagrams for startup, transform, auto-search, Historian, Dreamer, tools, status overlay, demo mode, and failure handling.
 - [Configuration](./configuration.md). Config file locations, merge behavior, and supported config sections.
 - [Commands](./commands.md). Slash commands registered by the extension.
 - [Tools](./tools.md). Agent-facing tools registered by the extension.
