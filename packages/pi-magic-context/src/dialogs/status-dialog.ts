@@ -8,6 +8,7 @@ import {
    wrapTextWithAnsi,
 } from "@earendil-works/pi-tui";
 import { getCompartments, getSessionFacts } from "#core/features/magic-context/compartment-storage";
+import { getDreamState } from "#core/features/magic-context/dreamer/storage-dream-state";
 import { getMemoryCount } from "#core/features/magic-context/memory/storage-memory";
 import type { ContextDatabase } from "#core/features/magic-context/storage";
 import { getOrCreateSessionMeta } from "#core/features/magic-context/storage-meta";
@@ -17,9 +18,10 @@ import { resolveExecuteThresholdDetail } from "#core/hooks/magic-context/event-r
 import { formatBytes } from "#core/hooks/magic-context/format-bytes";
 import { estimateTokens } from "#core/hooks/magic-context/read-session-formatting";
 import { formatThresholdPercent } from "#core/shared/format-threshold";
+import { log, sessionLog } from "#core/shared/logger";
 import packageJson from "../../package.json";
 import { resolveSessionId } from "../commands/pi-command-utils";
-import { sessionLog } from "#core/shared/logger";
+import type { StatusDemoController } from "../demo/status-demo";
 
 const COLORS = {
    system: "#c084fc",
@@ -51,9 +53,10 @@ export interface StatusDialogDeps {
       default?: number;
       [modelKey: string]: number | undefined;
    };
+   dreamer?: { runnable?: boolean; schedule?: string };
 }
 
-interface StatusDialogDetail {
+export interface StatusDialogDetail {
    sessionId: string;
    usagePercentage: number;
    inputTokens: number;
@@ -69,6 +72,9 @@ interface StatusDialogDetail {
    historianFailureCount: number;
    historianLastFailureAt: number | null;
    historianLastError: string | null;
+   dreamerEnabled: boolean;
+   dreamerSchedule: string | null;
+   dreamerLastRunAt: number | null;
    cacheTtl: string;
    lastResponseTime: number;
    cacheRemainingMs: number;
@@ -76,6 +82,7 @@ interface StatusDialogDetail {
    lastNudgeTokens: number;
    lastNudgeBand: string;
    lastTransformError: string | null;
+   issueLines: string[];
    isSubagent: boolean;
    contextLimit: number;
    executeThreshold: number;
@@ -132,6 +139,95 @@ export async function showStatusDialog(
       sessionId,
       `status-dialog: ctx.ui.custom resolved after ${(performance.now() - showStart).toFixed(0)}ms`,
    );
+}
+
+export async function showDemoStatusDialog(
+   ctx: ExtensionCommandContext,
+   controller: StatusDemoController,
+   emitLogs: (lines: string[]) => void = (lines) => lines.forEach((line) => log(line)),
+): Promise<void> {
+   await ctx.ui.custom<undefined>(
+      (tui, theme, _keybindings, done) => new DemoStatusDialogComponent({ controller, theme, tui, done, emitLogs }),
+      {
+         overlay: true,
+         overlayOptions: { anchor: "center", width: "88%", minWidth: 78, margin: 1 },
+      },
+   );
+}
+
+interface DemoStatusDialogProps {
+   controller: StatusDemoController;
+   theme: Theme;
+   tui: TUI;
+   done: (value: undefined) => void;
+   emitLogs: (lines: string[]) => void;
+}
+
+class DemoStatusDialogComponent implements Component {
+   private readonly props: DemoStatusDialogProps;
+   private refreshTimer: ReturnType<typeof setInterval> | null = null;
+
+   constructor(props: DemoStatusDialogProps) {
+      this.props = props;
+      this.props.emitLogs(this.props.controller.current().logs);
+      this.refreshTimer = setInterval(() => this.props.tui.requestRender(), REFRESH_INTERVAL_MS);
+   }
+
+   handleInput(data: string): void {
+      const lower = data.toLowerCase();
+      if (matchesKey(data, "escape") || matchesKey(data, "ctrl+c") || matchesKey(data, "return")) {
+         this.close();
+         return;
+      }
+      if (lower === "n" || data === "\u001b[C") {
+         this.props.emitLogs(this.props.controller.next().logs);
+         this.props.tui.requestRender();
+         return;
+      }
+      if (lower === "p" || data === "\u001b[D") {
+         this.props.emitLogs(this.props.controller.previous().logs);
+         this.props.tui.requestRender();
+         return;
+      }
+      if (lower === "r") {
+         this.props.emitLogs(this.props.controller.reset().logs);
+         this.props.tui.requestRender();
+         return;
+      }
+      if (lower === "l") {
+         this.props.emitLogs(this.props.controller.current().logs);
+      }
+   }
+
+   invalidate(): void {
+      // stateless render; nothing to invalidate
+   }
+
+   render(width: number): string[] {
+      const snapshot = this.props.controller.current();
+      const innerWidth = Math.max(20, width - 4);
+      const inner = wrapStatusLines(
+         renderDemoInner(snapshot.banner, snapshot.detail, this.props.theme, innerWidth),
+         innerWidth,
+      );
+      return drawBorder(inner, width, this.props.theme);
+   }
+
+   private close(): void {
+      this.clearTimer();
+      this.props.done(undefined);
+   }
+
+   private clearTimer(): void {
+      if (this.refreshTimer) {
+         clearInterval(this.refreshTimer);
+         this.refreshTimer = null;
+      }
+   }
+
+   dispose(): void {
+      this.clearTimer();
+   }
 }
 
 interface StatusDialogProps {
@@ -253,6 +349,17 @@ class StatusDialogComponent implements Component {
    }
 }
 
+function renderDemoInner(banner: string, detail: StatusDialogDetail, theme: Theme, innerWidth: number): string[] {
+   const lines = [
+      theme.fg("warning", theme.bold(banner)),
+      theme.fg("muted", "Fixture-only. No database opened. No real state changed."),
+      "",
+      ...renderInner(detail, theme, innerWidth),
+   ];
+   lines[lines.length - 1] = theme.fg("muted", "N next · P previous · R reset · L log · Escape close");
+   return lines;
+}
+
 function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): string[] {
    const pctColor = s.usagePercentage >= 80 ? "error" : s.usagePercentage >= 65 ? "warning" : "accent";
    const lines: string[] = [];
@@ -295,12 +402,15 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
             : ""
       }`,
    );
+   const dreamerLine = renderDreamerLine(s, theme);
+   if (dreamerLine) lines.push(dreamerLine);
    lines.push(`Pending drops: ${s.pendingOpsCount}`);
    lines.push(
       `Cache TTL: ${s.cacheTtl} · last response ${
          s.lastResponseTime > 0 ? `${Math.round((Date.now() - s.lastResponseTime) / 1000)}s ago` : "never"
       } · ${s.cacheExpired ? theme.fg("warning", "expired") : `${Math.round(s.cacheRemainingMs / 1000)}s remaining`}`,
    );
+   for (const issue of s.issueLines) lines.push(theme.fg("warning", `⚠ ${issue}`));
    lines.push("");
 
    // Tags
@@ -410,6 +520,9 @@ function buildCachedPiStatusDetail(
       historianLastFailureAt:
          typeof metaRow?.historian_last_failure_at === "number" ? metaRow.historian_last_failure_at : null,
       historianLastError: metaRow?.historian_last_error ?? null,
+      dreamerEnabled: deps.dreamer?.runnable === true,
+      dreamerSchedule: deps.dreamer?.schedule?.trim() || null,
+      dreamerLastRunAt: readDreamerLastRunAt(deps.db, deps.projectIdentity),
       cacheTtl,
       lastResponseTime: meta.lastResponseTime,
       cacheRemainingMs,
@@ -417,6 +530,7 @@ function buildCachedPiStatusDetail(
       lastNudgeTokens: meta.lastNudgeTokens,
       lastNudgeBand: meta.lastNudgeBand ?? "",
       lastTransformError: meta.lastTransformError,
+      issueLines: [],
       isSubagent: meta.isSubagent,
       contextLimit,
       executeThreshold: threshold.percentage,
@@ -602,6 +716,9 @@ export function buildPiStatusDetail(
       historianLastFailureAt:
          typeof metaRow?.historian_last_failure_at === "number" ? metaRow.historian_last_failure_at : null,
       historianLastError: metaRow?.historian_last_error ?? null,
+      dreamerEnabled: deps.dreamer?.runnable === true,
+      dreamerSchedule: deps.dreamer?.schedule?.trim() || null,
+      dreamerLastRunAt: readDreamerLastRunAt(deps.db, deps.projectIdentity),
       cacheTtl,
       lastResponseTime: meta.lastResponseTime,
       cacheRemainingMs,
@@ -609,6 +726,7 @@ export function buildPiStatusDetail(
       lastNudgeTokens: meta.lastNudgeTokens,
       lastNudgeBand: meta.lastNudgeBand ?? "",
       lastTransformError: meta.lastTransformError,
+      issueLines: [],
       isSubagent: meta.isSubagent,
       contextLimit,
       executeThreshold: threshold.percentage,
@@ -725,6 +843,24 @@ function renderBar(s: StatusDialogDetail, innerWidth: number): string {
       sum++;
    }
    return segs.map((seg, i) => colorHex(seg.color, "█".repeat(widths[i] ?? 0))).join("");
+}
+
+function renderDreamerLine(s: StatusDialogDetail, theme: Theme): string | null {
+   const shouldShow = s.dreamerEnabled || s.readySmartNoteCount > 0 || s.dreamerLastRunAt !== null;
+   if (!shouldShow) return null;
+
+   const state = s.dreamerEnabled ? (s.dreamerSchedule ? `scheduled ${s.dreamerSchedule}` : "manual-only") : "disabled";
+   const parts = [`Dreamer: ${theme.fg(s.dreamerEnabled ? "accent" : "muted", state)}`];
+   if (s.readySmartNoteCount > 0) parts.push(`${s.readySmartNoteCount} smart ready`);
+   if (s.dreamerLastRunAt !== null) parts.push(`last ${relTime(s.dreamerLastRunAt)}`);
+   return parts.join(" · ");
+}
+
+function readDreamerLastRunAt(db: ContextDatabase, projectIdentity: string): number | null {
+   const value = getDreamState(db, `last_dream_at:${projectIdentity}`);
+   if (!value) return null;
+   const parsed = Number(value);
+   return Number.isFinite(parsed) && parsed > 0 ? parsed : null;
 }
 
 function readSessionMetaRow(db: ContextDatabase, sessionId: string) {

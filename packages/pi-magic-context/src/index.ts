@@ -48,12 +48,16 @@ import { registerCtxDreamCommand } from "./commands/ctx-dream";
 import { registerCtxFlushCommand } from "./commands/ctx-flush";
 import { registerCtxRecompCommand } from "./commands/ctx-recomp";
 import { registerCtxStatusCommand } from "./commands/ctx-status";
+import { registerCtxHistorianCommand } from "./commands/ctx-historian";
 import { loadPiConfig } from "./config";
+import { registerStatusDemoMode } from "./demo/register-demo-mode";
+import { getStatusDemoEnv } from "./demo/status-demo";
 import {
    awaitInFlightHistorians,
    clearContextHandlerSession,
    clearSystemPromptRefresh,
    hasSystemPromptRefresh,
+   isHistorianInFlight,
    type PiAutoSearchHandlerOptions,
    type PiHistorianOptions,
    type PiNudgeOptions,
@@ -68,6 +72,7 @@ import {
    signalPiSystemPromptRefreshForProject,
    trackSessionForProject,
 } from "./context-handler";
+
 import { awaitInFlightDreamers, registerPiDreamerProject, unregisterPiDreamerProject } from "./dreamer";
 import { ensureProjectRegisteredFromPiDirectory } from "./embedding-bootstrap";
 import { computePiPressure, extractAssistantUsage } from "./pi-pressure";
@@ -372,6 +377,11 @@ export function resolveDreamerFromConfig(config: MagicContextConfig): DreamerCon
  * All driven by the user's `magic-context.jsonc` (Pi convention paths).
  */
 export default async function (pi: ExtensionAPI): Promise<void> {
+   if (getStatusDemoEnv().enabled) {
+      registerStatusDemoMode(pi);
+      return;
+   }
+
    const storageDir = getMagicContextStorageDir();
    const dbPath = join(storageDir, "context.db");
 
@@ -409,7 +419,7 @@ export default async function (pi: ExtensionAPI): Promise<void> {
       );
    }
 
-   info(`loaded v${PLUGIN_VERSION} | harness=pi | db=${dbPath} | ` + `project=${projectIdentity} | dir=${projectDir}`);
+   info(`loaded v${PLUGIN_VERSION} | harness=pi | db=${dbPath} | project=${projectIdentity} | dir=${projectDir}`);
 
    // Step 5b: load the user's full magic-context.jsonc config. The loader
    // reads $cwd/.pi/magic-context.jsonc and ~/.pi/agent/magic-context.jsonc
@@ -591,6 +601,16 @@ export default async function (pi: ExtensionAPI): Promise<void> {
 
    registerCtxFlushCommand(pi, { db });
    info("registered /ctx-flush");
+   registerCtxHistorianCommand(pi, {
+      db,
+      isInFlight: isHistorianInFlight,
+      historianModel: historianConfig?.model,
+      historianFallbackModels: historianConfig?.fallbackModels,
+      historianTimeoutMs: config.historian_timeout_ms,
+      historianTwoPass: historianConfig?.twoPass,
+      historianThinkingLevel: historianConfig?.thinkingLevel,
+   });
+   info("registered /ctx-historian");
 
    // /ctx-recomp uses its own PiSubagentRunner instance — recomp can run
    // concurrently with normal historian, and giving each its own runner
