@@ -1722,6 +1722,10 @@ const inFlightCompressor = new Map<string, Promise<unknown>>();
  * compartments before the process exits. Returns immediately if no
  * runs are in-flight.
  */
+export function isHistorianInFlight(sessionId: string): boolean {
+   return inFlightHistorian.has(sessionId);
+}
+
 export async function awaitInFlightHistorians(): Promise<void> {
    if (inFlightHistorian.size === 0 && inFlightCompressor.size === 0) return;
    const promises = [...Array.from(inFlightHistorian.values()), ...Array.from(inFlightCompressor.values())];
@@ -1764,11 +1768,14 @@ export function resolvePiHistorianTriggerInputs(args: {
       db: args.db,
       sessionID: args.sessionId,
    });
+   // When Pi reports a context window via usage data, prefer it over
+   // the models-cache baseline if it's larger. The cache may be stale,
+   // missing the model (fallback to 128K default), or not yet loaded.
    if (
-      (providerID === undefined || modelID === undefined) &&
       typeof args.usageContextLimit === "number" &&
       Number.isFinite(args.usageContextLimit) &&
-      args.usageContextLimit > 0
+      args.usageContextLimit > 0 &&
+      args.usageContextLimit > contextLimit
    ) {
       contextLimit = args.usageContextLimit;
    }
@@ -2241,6 +2248,7 @@ function maybeFireHistorian(args: {
          triggerInputs.dropToolStructure,
          triggerInputs.commitClusterTrigger,
          args.activeTags,
+         triggerInputs.contextLimit,
       );
 
       if (!trigger.shouldFire) {

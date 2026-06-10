@@ -39,7 +39,9 @@ export function getProactiveCompartmentTriggerPercentage(
    contextLimit?: number,
 ): number {
    if (typeof contextLimit === "number" && contextLimit > LARGE_CONTEXT_CAP_TOKENS) {
-      return (LARGE_CONTEXT_CAP_TOKENS / contextLimit) * 100;
+      return (
+         (LARGE_CONTEXT_CAP_TOKENS / contextLimit) * (executeThresholdPercentage - PROACTIVE_TRIGGER_OFFSET_PERCENTAGE)
+      );
    }
    return Math.max(0, executeThresholdPercentage - PROACTIVE_TRIGGER_OFFSET_PERCENTAGE);
 }
@@ -200,28 +202,32 @@ export function checkCompartmentTrigger(
 
    const tailInfo = getUnsummarizedTailInfo(db, sessionId, triggerBudget);
    if (!tailInfo.hasNewRawHistory) {
-      // Diagnostic data collection is best-effort. The helpers can throw if
-      // the Host session DB is unavailable (e.g. in unit-test env or
-      // when the harness has not yet wired a RawMessageProvider). A throw
-      // here would propagate to the caller's try/catch and prevent
-      // downstream state updates (e.g. session-meta writes in event-handler
-      // line 542). Swallow any failure and log without the diagnostic
-      // fields so callers see no behavioral change.
-      try {
-         const lastCompartmentEnd = getLastCompartmentEndMessage(db, sessionId);
-         const rawMessageCount = getRawSessionMessageCount(sessionId);
-         const protectedTailStart = getProtectedTailStartOrdinal(sessionId);
+      // At high pressure, bypass the raw-history gate so force-80 can still fire.
+      // This handles sessions with massive initial tool output but few user turns
+      // where protectedTailStart covers everything.
+      if (usage.percentage >= FORCE_COMPARTMENT_PERCENTAGE) {
          sessionLog(
             sessionId,
-            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} lastCompartmentEnd=${lastCompartmentEnd} rawMessageCount=${rawMessageCount} protectedTailStart=${protectedTailStart})`,
+            `compartment trigger: bypassing no-raw-history gate at ${usage.percentage.toFixed(1)}% (>= ${FORCE_COMPARTMENT_PERCENTAGE}%)`,
          );
-      } catch (error) {
-         sessionLog(
-            sessionId,
-            `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} diagnostic-collection-failed: ${error instanceof Error ? error.message : String(error)})`,
-         );
+         // Fall through to force-80 check below
+      } else {
+         try {
+            const lastCompartmentEnd = getLastCompartmentEndMessage(db, sessionId);
+            const rawMessageCount = getRawSessionMessageCount(sessionId);
+            const protectedTailStart = getProtectedTailStartOrdinal(sessionId);
+            sessionLog(
+               sessionId,
+               `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} lastCompartmentEnd=${lastCompartmentEnd} rawMessageCount=${rawMessageCount} protectedTailStart=${protectedTailStart})`,
+            );
+         } catch (error) {
+            sessionLog(
+               sessionId,
+               `compartment trigger: skipped — no new raw history (usage=${usage.percentage.toFixed(1)}% nextStartOrdinal=${tailInfo.nextStartOrdinal} diagnostic-collection-failed: ${error instanceof Error ? error.message : String(error)})`,
+            );
+         }
+         return { shouldFire: false };
       }
-      return { shouldFire: false };
    }
 
    const projectedPostDropPercentage = estimateProjectedPostDropPercentage(
@@ -287,10 +293,16 @@ export function checkCompartmentTrigger(
       return { shouldFire: false };
    }
 
-   if (projectedPostDropPercentage !== null && projectedPostDropPercentage <= relativePostDropTarget) {
+   // Use proactiveTriggerPercentage (not executeThresholdPercentage) for the
+   // post-drop target in the proactive path. For large-context models where
+   // the proactive floor is far below the execute threshold, the original
+   // relativePostDropTarget (65% * 0.75 = 48.75%) is always above current
+   // usage, causing the trigger to never fire.
+   const proactivePostDropTarget = proactiveTriggerPercentage * POST_DROP_TARGET_RATIO;
+   if (projectedPostDropPercentage !== null && projectedPostDropPercentage <= proactivePostDropTarget) {
       sessionLog(
          sessionId,
-         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${relativePostDropTarget.toFixed(1)}%)`,
+         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${proactivePostDropTarget.toFixed(1)}%)`,
       );
       return { shouldFire: false };
    }
@@ -305,7 +317,7 @@ export function checkCompartmentTrigger(
 
    sessionLog(
       sessionId,
-      `compartment trigger: proactive fire at ${usage.percentage.toFixed(1)}% (floor=${proactiveTriggerPercentage}% projected post-drop=${projectedPostDropPercentage?.toFixed(1) ?? "none"}% target=${relativePostDropTarget.toFixed(1)}%)`,
+      `compartment trigger: proactive fire at ${usage.percentage.toFixed(1)}% (floor=${proactiveTriggerPercentage}% projected post-drop=${projectedPostDropPercentage?.toFixed(1) ?? "none"}% target=${proactivePostDropTarget.toFixed(1)}%)`,
    );
    return { shouldFire: true, reason: "projected_headroom" };
 }
