@@ -19,3 +19,4 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Bypass protected-tail gate when usage >= 80% so force-80 trigger can fire even when all messages are protected (fewer than 5 user turns).
 - Use proactiveTriggerPercentage instead of executeThreshold for post-drop target comparison, fixing proactive trigger never firing on large-context models where projected post-drop was always below 48.75%.
 - Prefer `usageContextLimit` from session_meta over models cache when it is larger, ensuring accurate context window for non-cached models.
+- Skip projected-post-drop gate when scheduler defers drops, fixing historian never triggering because drops were counted as "will fix" but never actually applied.

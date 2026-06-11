@@ -1529,6 +1529,7 @@ export function registerPiContextHandler(pi: ExtensionAPI, options: PiContextHan
                isFirstContextPassForSession,
                activeTags: result.activeTags,
                rawMessageProvider,
+               schedulerDecision,
             });
             maybeFireCompressor({
                ctx,
@@ -2117,6 +2118,7 @@ function maybeFireHistorian(args: {
    rawMessageProvider?: {
       readMessages: () => ReturnType<typeof readPiSessionMessages>;
    };
+   schedulerDecision?: "execute" | "defer";
 }): void {
    const { ctx, sessionId, db, historian, isFirstContextPassForSession } = args;
 
@@ -2249,6 +2251,7 @@ function maybeFireHistorian(args: {
          triggerInputs.commitClusterTrigger,
          args.activeTags,
          triggerInputs.contextLimit,
+         args.schedulerDecision === "defer",
       );
 
       if (!trigger.shouldFire) {

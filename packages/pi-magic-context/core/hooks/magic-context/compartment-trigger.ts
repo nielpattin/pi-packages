@@ -191,6 +191,7 @@ export function checkCompartmentTrigger(
    commitClusterTrigger?: { enabled: boolean; min_clusters: number },
    preloadedActiveTags?: readonly TagEntry[],
    contextLimit?: number,
+   dropsDeferred?: boolean,
 ): CompartmentTriggerResult {
    if (sessionMeta.compartmentInProgress) {
       sessionLog(
@@ -300,11 +301,20 @@ export function checkCompartmentTrigger(
    // usage, causing the trigger to never fire.
    const proactivePostDropTarget = proactiveTriggerPercentage * POST_DROP_TARGET_RATIO;
    if (projectedPostDropPercentage !== null && projectedPostDropPercentage <= proactivePostDropTarget) {
-      sessionLog(
-         sessionId,
-         `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${proactivePostDropTarget.toFixed(1)}%)`,
-      );
-      return { shouldFire: false };
+      // When scheduler defers, drops won't actually be applied this turn.
+      // Skip the projected-post-drop gate so the historian can fire.
+      if (dropsDeferred) {
+         sessionLog(
+            sessionId,
+            `compartment trigger: ignoring projected post-drop gate at ${usage.percentage.toFixed(1)}% — drops deferred (projected=${projectedPostDropPercentage.toFixed(1)}% target=${proactivePostDropTarget.toFixed(1)}%)`,
+         );
+      } else {
+         sessionLog(
+            sessionId,
+            `compartment trigger: not firing at ${usage.percentage.toFixed(1)}% because projected post-drop usage is ${projectedPostDropPercentage.toFixed(1)}% (target ${proactivePostDropTarget.toFixed(1)}%)`,
+         );
+         return { shouldFire: false };
+      }
    }
 
    if (!tailInfo.isMeaningful) {
