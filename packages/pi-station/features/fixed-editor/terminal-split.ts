@@ -227,79 +227,80 @@ function isMouseRelease(packet: SgrMousePacket): boolean {
    return packet.final === "m";
 }
 
+const CSI_SEQUENCE_PATTERN = String.raw`\x1b\[[0-9;?]*[ -/]*[@-~]`;
+
+// OSC sequences are terminated by either BEL or ST (ESC + backslash).
+// Do not use /\x1b\][^\x07]*(?:\x07|\x1b\\)/ here: [^\x07]* also
+// consumes ST, which makes an ST-terminated OSC 8 opener swallow visible
+// file-path text until the later BEL-terminated OSC 8 closer.
+const OSC_BEL_PATTERN = String.raw`\x07`;
+const OSC_ST_PATTERN = String.raw`\x1b\\`;
+const OSC_PAYLOAD_PATTERN = `(?:(?!${OSC_ST_PATTERN})[^${OSC_BEL_PATTERN}])*`;
+const OSC_TERMINATOR_PATTERN = `(?:${OSC_BEL_PATTERN}|${OSC_ST_PATTERN})`;
+const OSC_SEQUENCE_PATTERN = [String.raw`\x1b\]`, OSC_PAYLOAD_PATTERN, OSC_TERMINATOR_PATTERN].join("");
+
+const CSI_SEQUENCE_RE = new RegExp(CSI_SEQUENCE_PATTERN, "g");
+const OSC_SEQUENCE_RE = new RegExp(OSC_SEQUENCE_PATTERN, "g");
+const ANSI_SEQUENCE_RE = new RegExp(`${CSI_SEQUENCE_PATTERN}|${OSC_SEQUENCE_PATTERN}`, "g");
+
 function stripOscSequences(line: string): string {
-   return line.replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g, "");
+   return line.replace(OSC_SEQUENCE_RE, "");
 }
 
 function stripAnsi(line: string): string {
-   return stripOscSequences(line).replace(/\x1b\[[0-9;?]*[ -/]*[@-~]/g, "");
+   return stripOscSequences(line).replace(CSI_SEQUENCE_RE, "");
 }
 
 const graphemeSegmenter = new Intl.Segmenter(undefined, { granularity: "grapheme" });
 
-function sliceStyledColumns(line: string, boundaries: number[]): string[] {
-   const result: string[] = [];
-   let boundaryIdx = 0;
+function insertSelectionHighlight(line: string, startCol: number, endCol: number): string {
+   const ansiRe = ANSI_SEQUENCE_RE;
    let col = 0;
-   let out = "";
-   let sgrState = "";
-
-   const emitBoundary = () => {
-      if (boundaryIdx < boundaries.length) {
-         result.push(sgrState ? `${out}\x1b[0m` : out);
-         out = sgrState;
-         boundaryIdx++;
-      }
-   };
-
-   const addGrapheme = (segment: string, w: number) => {
-      while (boundaryIdx < boundaries.length - 1 && col >= boundaries[boundaryIdx + 1]) {
-         emitBoundary();
-      }
-      out += segment;
-      col += w;
-   };
-
-   // Walk string, splitting ANSI sequences and grapheme segments
-   const ansiRe = /\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*(?:\x07|\x1b\\)/g;
+   let result = "";
    let lastIdx = 0;
-   for (const m of line.matchAll(ansiRe)) {
-      // Process visible text before this escape
-      if (m.index > lastIdx) {
-         const chunk = line.slice(lastIdx, m.index);
-         for (const { segment } of graphemeSegmenter.segment(chunk)) {
-            addGrapheme(segment, Math.max(0, visibleWidth(segment)));
+   let highlighted = false;
+
+   const appendVisible = (text: string) => {
+      for (const { segment } of graphemeSegmenter.segment(text)) {
+         const width = Math.max(0, visibleWidth(segment));
+         const intersectsSelection = col < endCol && col + width > startCol;
+
+         if (!highlighted && intersectsSelection) {
+            result += "\x1b[7m";
+            highlighted = true;
          }
+
+         result += segment;
+         col += width;
+
+         if (highlighted && col >= endCol) {
+            result += "\x1b[27m";
+            highlighted = false;
+         }
+      }
+   };
+
+   for (const match of line.matchAll(ansiRe)) {
+      if (match.index > lastIdx) {
+         appendVisible(line.slice(lastIdx, match.index));
       }
 
-      const seq = m[0];
-      // Track SGR state (only \x1b[...m sequences) - skip OSC entirely
-      if (seq[1] === "[" && seq[seq.length - 1] === "m") {
-         while (boundaryIdx < boundaries.length - 1 && col >= boundaries[boundaryIdx + 1]) {
-            emitBoundary();
-         }
-         out += seq;
-         const inner = seq.slice(2, -1);
-         sgrState = inner === "0" || inner === "" ? "" : seq;
+      const seq = match[0];
+      if (seq.startsWith("\x1b]8;")) {
+         result += seq;
+      } else if (seq[1] === "[" && seq[seq.length - 1] === "m") {
+         result += seq;
       }
-      lastIdx = m.index + seq.length;
+      lastIdx = match.index + seq.length;
    }
 
-   // Remaining visible text after last escape
    if (lastIdx < line.length) {
-      const chunk = line.slice(lastIdx);
-      for (const { segment } of graphemeSegmenter.segment(chunk)) {
-         addGrapheme(segment, Math.max(0, visibleWidth(segment)));
-      }
+      appendVisible(line.slice(lastIdx));
    }
 
-   // Emit remaining segments
-   while (boundaryIdx < boundaries.length - 1) {
-      emitBoundary();
+   if (highlighted) {
+      result += "\x1b[27m";
    }
-
-   // Always push final segment
-   result.push(sgrState ? `${out}\x1b[0m` : out);
 
    return result;
 }
@@ -1099,8 +1100,7 @@ export class TerminalSplitCompositor {
          return line;
       }
 
-      const parts = sliceStyledColumns(line, [0, startCol, endCol, Number.POSITIVE_INFINITY]);
-      return `${parts[0]}\x1b[7m${parts[1]}\x1b[27m${parts[2]}`;
+      return insertSelectionHighlight(line, startCol, endCol);
    }
 
    private findWordBoundaries(area: SelectionArea, lineIndex: number, col: number): { start: number; end: number } {

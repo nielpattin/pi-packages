@@ -1058,6 +1058,56 @@ test("terminal split restores app-owned selection after context menu copy", () =
    }
 });
 
+test("terminal split selection preserves OSC 8 hyperlinks", () => {
+   const terminal = new FakeTerminal();
+   terminal.columns = 120;
+   let inputListener: ((data: string) => { consume?: boolean; data?: string } | undefined) | null = null;
+   const path = "C:\\Users\\niel\\.pi\\agent\\packages\\file.ts";
+   const href = "file:///C:/Users/niel/.pi/agent/packages/file.ts";
+   const osc8Open = `\x1b]8;;${href}\x1b\\`;
+   const osc8Close = "\x1b]8;;\x07";
+   const line = `read ${osc8Open}${path}${osc8Close}:1-10`;
+   const rootLines = ["old-0", "old-1", "old-2", "old-3", "old-4", "alpha", "bravo", "charlie", "delta", line];
+
+   const tui = {
+      addInputListener(listener: (data: string) => { consume?: boolean; data?: string } | undefined) {
+         inputListener = listener;
+         return () => {
+            inputListener = null;
+         };
+      },
+      render() {
+         return rootLines;
+      },
+      requestRender() {},
+      terminal,
+   };
+
+   const compositor = new TerminalSplitCompositor({
+      renderCluster: () => ({ cursor: null, lines: ["cluster-a", "cluster-b"] }),
+      terminal,
+      tui,
+   });
+
+   compositor.install();
+   tui.render(120);
+
+   const startCol = "read ".length + 1;
+   const endCol = "read ".length + path.length + 1;
+   assert.deepEqual(inputListener?.(`\x1b[<0;${startCol};10M`), { consume: true });
+   assert.deepEqual(inputListener?.(`\x1b[<32;${endCol};10M`), { consume: true });
+
+   const selectedLine = tui.render(120).at(-1) ?? "";
+   const oscSequenceRe = /\x1b\](?:(?!\x1b\\)[^\x07])*(?:\x07|\x1b\\)/g;
+   const csiSequenceRe = /\x1b\[[0-9;?]*[ -/]*[@-~]/g;
+   const selectedText = selectedLine.replace(oscSequenceRe, "").replace(csiSequenceRe, "");
+
+   assert.ok(selectedLine.includes(`${osc8Open}\x1b[7m${path}\x1b[27m${osc8Close}`));
+   assert.equal(selectedText, `read ${path}:1-10`);
+
+   compositor.dispose();
+});
+
 test("terminal split selection does not expose OSC control sequences as text", () => {
    const terminal = new FakeTerminal();
    terminal.columns = 20;
