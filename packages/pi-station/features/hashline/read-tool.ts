@@ -7,7 +7,6 @@ import {
    truncateHead,
    type TruncationResult,
 } from "@earendil-works/pi-coding-agent";
-import { Text } from "@earendil-works/pi-tui";
 import { Type } from "@sinclair/typebox";
 import { constants } from "fs";
 import { readFileSync } from "fs";
@@ -18,7 +17,6 @@ import { formatHashlineRegion } from "./core/hashline.ts";
 import { resolveToCwd } from "./core/path-utils.ts";
 import { throwIfAborted } from "./core/runtime.ts";
 import { getFileSnapshot } from "./core/snapshot.ts";
-import { ReadCallRow } from "./ui/read-call-row.ts";
 
 const READ_DESC = readFileSync(new URL("./prompts/read.md", import.meta.url), "utf-8")
    .replaceAll("{{DEFAULT_MAX_LINES}}", String(DEFAULT_MAX_LINES))
@@ -138,16 +136,6 @@ export function registerReadTool(pi: ExtensionAPI): void {
             }),
          ),
       }),
-
-      renderShell: "self",
-
-      renderCall(args, theme, context) {
-         return new ReadCallRow(args, theme, context.cwd);
-      },
-
-      renderResult() {
-         return new Text("", 0, 0);
-      },
 
       async execute(_toolCallId, params, signal, _onUpdate, ctx) {
          const rawPath = params.path;
