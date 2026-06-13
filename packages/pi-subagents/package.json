@@ -22,25 +22,30 @@
       "directory": "packages/pi-subagents"
    },
    "files": [
-      "src",
+      "dist",
       ".pi/agents",
       "README.md",
       "CHANGELOG.md",
       "LICENSE"
    ],
    "type": "module",
-   "main": "./src/index.ts",
+   "main": "./dist/src/index.js",
+   "types": "./dist/src/index.d.ts",
    "imports": {
-      "#src/*": "./src/*",
-      "#test/*": "./test/*"
+      "#src/*": "./dist/src/*.js"
    },
    "exports": {
-      ".": "./src/service/service.ts"
+      ".": {
+         "types": "./dist/src/service/service.d.ts",
+         "default": "./dist/src/service/service.js"
+      },
+      "./package.json": "./package.json"
    },
    "publishConfig": {
       "access": "public"
    },
    "scripts": {
+      "build": "node scripts/build.mjs",
       "test": "vitest run --config vitest.config.ts",
       "check": "pnpm test && tsc --noEmit -p tsconfig.json"
    },
@@ -55,7 +60,7 @@
    },
    "pi": {
       "extensions": [
-         "./src/index.ts"
+         "./dist/src/index.js"
       ]
    }
 }
