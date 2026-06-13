@@ -224,3 +224,16 @@ describe("AgentTool — foreground execution", () => {
       expect(result.content[0].text).toContain("spawn failure");
    });
 });
+
+describe("AgentTool — tool definition schema", () => {
+   it("uses StringEnum (not Type.Literal) for isolation parameter", () => {
+      const def = makeTool(createToolDeps()).toToolDefinition();
+      const isolationSchema = (def.parameters as any).properties.isolation;
+      // StringEnum produces { type: "string", enum: [...] }
+      // Type.Literal produces { type: "string", const: ... }
+      // The inner schema is wrapped in Type.Optional, so we need to unwrap it
+      const inner = isolationSchema.anyOf?.[1] ?? isolationSchema;
+      expect(inner.enum).toEqual(["worktree"]);
+      expect(inner.const).toBeUndefined();
+   });
+});

@@ -2,6 +2,7 @@
 import type { AgentToolResult } from "@earendil-works/pi-coding-agent";
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
+import { StringEnum } from "@earendil-works/pi-ai";
 import { Type } from "typebox";
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import type { AgentSpawnConfig } from "#src/lifecycle/agent-manager";
@@ -225,7 +226,7 @@ Guidelines:
                }),
             ),
             isolation: Type.Optional(
-               Type.Literal("worktree", {
+               StringEnum(["worktree"], {
                   description:
                      'Set to "worktree" to run the agent in a temporary git worktree (isolated copy of the repo). Changes are saved to a branch on completion.',
                }),
