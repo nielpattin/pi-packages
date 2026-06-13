@@ -86,12 +86,14 @@ export function createRunnerDeps(overrides?: {
    exec?: ShellExec;
    registry?: AgentConfigLookup;
    lifecycle?: ReturnType<typeof createChildLifecycleMock>;
+   leanExtensionPaths?: string[];
 }) {
    return {
       io: overrides?.io ?? createRunnerIO(),
       exec: overrides?.exec ?? vi.fn(),
       registry: overrides?.registry ?? createAgentLookup(),
       lifecycle: overrides?.lifecycle ?? createChildLifecycleMock(),
+      ...(overrides?.leanExtensionPaths ? { leanExtensionPaths: overrides.leanExtensionPaths } : {}),
    };
 }
 

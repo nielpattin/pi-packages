@@ -47,7 +47,6 @@ export interface SessionManagerLike {
    getSessionFile(): string | undefined;
 }
 
-/** Options passed to EnvironmentIO/SessionFactoryIO methods. */
 export interface ResourceLoaderOptions {
    cwd: string;
    agentDir: string;
@@ -59,6 +58,8 @@ export interface ResourceLoaderOptions {
    systemPromptOverride?: () => string;
    /** Override the append system prompt. Receives the current base value; return the replacement. */
    appendSystemPromptOverride?: (base: string[]) => string[];
+   /** Paths to extension entry files to load instead of full extension discovery. */
+   additionalExtensionPaths?: string[];
 }
 
 /** Options passed to SessionFactoryIO.createSession. */
@@ -121,6 +122,8 @@ export interface RunnerDeps {
    registry: AgentConfigLookup;
    /** Publishes the child-execution lifecycle so consumers can observe it. */
    lifecycle: ChildLifecyclePublisher;
+   /** Paths to lean extension entries that replace full extension discovery. */
+   leanExtensionPaths?: string[];
 }
 
 // ── Public interfaces ─────────────────────────────────────────────────────────
@@ -291,16 +294,25 @@ export async function runAgent(
    // would defeat prompt_mode: replace and isolated: true. Parent context, if
    // wanted, reaches the subagent via prompt_mode: append (parentSystemPrompt
    // is embedded in systemPromptOverride) or inherit_context (conversation).
+   // When extensions are requested AND lean paths are available, skip full extension
+   // discovery and load only the lean paths. This avoids recursion risk (historian/
+   // dreamer spawning subagents), wasted startup (resource discovery, timer wiring),
+   // and unexpected prompt injection from the full magic-context extension in children.
+   // When no lean paths are available, fall back to the original behavior.
+   const hasLeanPaths = deps.leanExtensionPaths && deps.leanExtensionPaths.length > 0;
+   const noExtensions = hasLeanPaths ? true : !cfg.extensions;
+
    const loader = deps.io.createResourceLoader({
       cwd: cfg.effectiveCwd,
       agentDir,
-      noExtensions: !cfg.extensions,
+      noExtensions,
       noSkills: cfg.noSkills,
       noPromptTemplates: true,
       noThemes: true,
       noContextFiles: true,
       systemPromptOverride: () => cfg.systemPrompt,
       appendSystemPromptOverride: () => [],
+      ...(hasLeanPaths ? { additionalExtensionPaths: deps.leanExtensionPaths } : {}),
    });
    await loader.reload();
 

@@ -42,6 +42,7 @@ import { resolveModel } from "#src/session/model-resolver";
 import { buildAgentPrompt } from "#src/session/prompts";
 import { deriveSubagentSessionDir } from "#src/session/session-dir";
 import { preloadSkills } from "#src/session/skill-loader";
+import { resolveLeanMagicContextEntry } from "#src/session/lean-extensions";
 import { SettingsManager } from "#src/settings";
 import { AgentTool } from "#src/tools/agent-tool";
 import { GetResultTool } from "#src/tools/get-result-tool";
@@ -51,6 +52,12 @@ import { AgentsMenuHandler } from "#src/ui/agent-menu";
 import { AgentWidget } from "#src/ui/agent-widget";
 
 export default function (pi: ExtensionAPI) {
+   // ---- Resolve lean magic-context entry for subagent children ----
+   // When available, subagents load only the tool surface (ctx_search, ctx_memory,
+   // ctx_note, ctx_expand) instead of the full magic-context extension, avoiding
+   // recursion risk, wasted startup, and unexpected prompt injection.
+   const leanEntryPath = resolveLeanMagicContextEntry();
+
    // ---- Register custom notification renderer ----
    pi.registerMessageRenderer<NotificationDetails>("subagent-notification", createNotificationRenderer());
 
@@ -161,6 +168,7 @@ export default function (pi: ExtensionAPI) {
       exec: (cmd, args, opts) => pi.exec(cmd, args, opts),
       registry,
       lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data)),
+      ...(leanEntryPath ? { leanExtensionPaths: [leanEntryPath] } : {}),
    };
 
    // ConcurrencyQueue: scheduling extracted from AgentManager.
