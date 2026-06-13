@@ -62,6 +62,15 @@ export type AgentToolSettings = {
    readonly maxConcurrent: number;
 };
 
+// ---- AgentToolDeps interface ----
+
+/** Mutable deps container shared via index.ts. Filled during session_start. */
+export interface AgentToolDeps {
+   manager: AgentToolManager;
+   runtime: AgentToolRuntime;
+   settings: AgentToolSettings;
+}
+
 // ---- Class ----
 
 export class AgentTool {
@@ -69,12 +78,12 @@ export class AgentTool {
    private readonly availableTypesText: string;
 
    constructor(
-      private readonly manager: AgentToolManager,
-      private readonly runtime: AgentToolRuntime,
-      private readonly settings: AgentToolSettings,
+      private readonly deps: AgentToolDeps,
       private readonly registry: AgentTypeRegistry,
       private readonly agentDir: string,
    ) {
+      // deps.manager/runtime/settings may be undefined at construction —
+      // they are filled lazily by session_start before any execute() call.
       this.typeListText = buildTypeListText(registry, agentDir);
       this.availableTypesText = registry.getAvailableTypes().join(", ");
    }
@@ -87,30 +96,30 @@ export class AgentTool {
       ctx: any,
    ) {
       // Ensure we have UI context for widget rendering
-      this.runtime.setUICtx(ctx.ui as UICtx);
+      this.deps.runtime.setUICtx(ctx.ui as UICtx);
 
       // Reload custom agents so new .pi/agents/*.md files are picked up without restart
       this.registry.reload();
 
       // ---- Config resolution (pure) ----
-      const config = resolveSpawnConfig(params, this.registry, this.runtime.getModelInfo(), this.settings);
+      const config = resolveSpawnConfig(params, this.registry, this.deps.runtime.getModelInfo(), this.deps.settings);
       if ("error" in config) throw new Error(config.error);
 
       // ---- Boundary extraction (after config so inheritContext is resolved) ----
-      const snapshot = this.runtime.buildSnapshot(config.execution.inheritContext);
-      const { parentSessionFile, parentSessionId } = this.runtime.getSessionInfo();
+      const snapshot = this.deps.runtime.buildSnapshot(config.execution.inheritContext);
+      const { parentSessionFile, parentSessionId } = this.deps.runtime.getSessionInfo();
       const parentSession: ParentSessionInfo = { parentSessionFile, parentSessionId, toolCallId };
 
       // ---- Resume existing agent ----
       if (params.resume) {
-         const existing = this.manager.getRecord(params.resume as string);
+         const existing = this.deps.manager.getRecord(params.resume as string);
          if (!existing) {
             throw new Error(`Agent not found: "${params.resume}". It may have been cleaned up.`);
          }
          if (!existing.session) {
             throw new Error(`Agent "${params.resume}" has no active session to resume.`);
          }
-         const record = await this.manager.resume(
+         const record = await this.deps.manager.resume(
             params.resume as string,
             params.prompt as string,
             signal ?? new AbortController().signal,
@@ -126,19 +135,19 @@ export class AgentTool {
 
       // ---- Background execution ----
       if (config.execution.runInBackground) {
-         return spawnBackground(this.manager, this.runtime, this.runtime.agentActivity, {
+         return spawnBackground(this.deps.manager, this.deps.runtime, this.deps.runtime.agentActivity, {
             config,
             snapshot,
             parentSession,
-            settings: this.settings,
+            settings: this.deps.settings,
          });
       }
 
       // ---- Foreground execution — stream progress via onUpdate ----
       return runForeground(
-         this.manager,
-         this.runtime,
-         this.runtime.agentActivity,
+         this.deps.manager,
+         this.deps.runtime,
+         this.deps.runtime.agentActivity,
          { config, snapshot, parentSession },
          signal,
          onUpdate,

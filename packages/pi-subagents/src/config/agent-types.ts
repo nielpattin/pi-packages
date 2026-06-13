@@ -35,7 +35,11 @@ export class AgentTypeRegistry implements AgentConfigLookup {
    static readonly DEFAULT_AGENT_NAMES = ["general-purpose", "explore", "plan", "omni"] as const;
 
    constructor(private loadUserAgents: () => Map<string, AgentConfig>) {
-      this.reload();
+      // Populate defaults only at construction time. No filesystem I/O.
+      // Callers must call reload() before first use (session_start does).
+      for (const [name, config] of DEFAULT_AGENTS) {
+         this.agents.set(name, config);
+      }
    }
 
    /**

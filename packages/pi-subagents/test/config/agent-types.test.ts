@@ -20,7 +20,9 @@ function makeAgentConfig(overrides: Partial<AgentConfig> = {}): AgentConfig {
 
 describe("AgentTypeRegistry", () => {
    function makeRegistry(userAgents: Map<string, AgentConfig> = new Map()): AgentTypeRegistry {
-      return new AgentTypeRegistry(() => userAgents);
+      const registry = new AgentTypeRegistry(() => userAgents);
+      registry.reload();
+      return registry;
    }
 
    describe("construction and reload", () => {
@@ -31,16 +33,16 @@ describe("AgentTypeRegistry", () => {
          expect(registry.isValidType("Plan")).toBe(true);
       });
 
-      it("does not call loadUserAgents until construction", () => {
+      it("does not call loadUserAgents until explicit reload", () => {
          let callCount = 0;
          const registry = new AgentTypeRegistry(() => {
             callCount++;
             return new Map();
          });
-         // constructor calls reload() once
-         expect(callCount).toBe(1);
+         // constructor loads defaults only — no call to loadUserAgents
+         expect(callCount).toBe(0);
          registry.reload();
-         expect(callCount).toBe(2);
+         expect(callCount).toBe(1);
       });
 
       it("reload picks up new agents from loader", () => {
@@ -58,6 +60,7 @@ describe("AgentTypeRegistry", () => {
       it("reload clears previous user agents", () => {
          const userAgents = new Map([["auditor", makeAgentConfig({ name: "auditor" })]]);
          const registry = new AgentTypeRegistry(() => userAgents);
+         registry.reload();
          expect(registry.isValidType("auditor")).toBe(true);
 
          userAgents.clear();
@@ -273,9 +276,8 @@ describe("AgentTypeRegistry", () => {
       it("replaces the loader and affects next reload", () => {
          const initial = new Map([["initial", makeAgentConfig({ name: "initial" })]]);
          const registry = new AgentTypeRegistry(() => initial);
-
+         registry.reload();
          expect(registry.isValidType("initial")).toBe(true);
-         expect(registry.isValidType("replaced")).toBe(false);
 
          const replacement = new Map([["replaced", makeAgentConfig({ name: "replaced" })]]);
          registry.setLoader(() => replacement);

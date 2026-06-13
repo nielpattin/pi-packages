@@ -29,25 +29,25 @@ async function execute(
    notifications: GetResultToolNotifications,
    params: { agent_id: string; wait?: boolean },
 ) {
-   const tool = new GetResultTool(manager, notifications, testRegistry);
+   const tool = new GetResultTool({ manager, notifications }, testRegistry);
    return tool.execute("tc-1", params, new AbortController().signal, undefined, STUB_CTX);
 }
 
 describe("GetResultTool", () => {
    it("returns tool definition with correct name", () => {
-      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const tool = new GetResultTool({ manager: makeManager(), notifications: makeNotifications() }, testRegistry);
       expect(tool.toToolDefinition().name).toBe("get_subagent_result");
    });
 
    it("includes promptSnippet", () => {
-      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const tool = new GetResultTool({ manager: makeManager(), notifications: makeNotifications() }, testRegistry);
       expect(tool.toToolDefinition().promptSnippet).toBe(
          "get_subagent_result: Check status and retrieve results from a background agent.",
       );
    });
 
    it("exposes only agent_id and wait parameters", () => {
-      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const tool = new GetResultTool({ manager: makeManager(), notifications: makeNotifications() }, testRegistry);
       const parameters = tool.toToolDefinition().parameters as {
          properties: Record<string, unknown>;
       };
@@ -58,7 +58,7 @@ describe("GetResultTool", () => {
    });
 
    it("describes wait as an explicit blocking action", () => {
-      const tool = new GetResultTool(makeManager(), makeNotifications(), testRegistry);
+      const tool = new GetResultTool({ manager: makeManager(), notifications: makeNotifications() }, testRegistry);
       const parameters = tool.toToolDefinition().parameters as {
          properties: { wait?: { description?: string } };
       };
@@ -73,7 +73,10 @@ describe("GetResultTool", () => {
 
    it("renders collapsed and expanded result output", async () => {
       const records = new Map([["agent-1", createTestAgent({ result: "line one\nline two", completedAt: 3500 })]]);
-      const tool = new GetResultTool(makeManager(records), makeNotifications(), testRegistry);
+      const tool = new GetResultTool(
+         { manager: makeManager(records), notifications: makeNotifications() },
+         testRegistry,
+      );
       const result = await tool.execute(
          "tc-1",
          { agent_id: "agent-1" },
@@ -101,7 +104,10 @@ describe("GetResultTool", () => {
    it("renders every expanded result line without overflow or verbose hints", async () => {
       const manyLines = Array.from({ length: 55 }, (_, i) => `line ${i + 1}`).join("\n");
       const records = new Map([["agent-1", createTestAgent({ result: manyLines, completedAt: 3500 })]]);
-      const tool = new GetResultTool(makeManager(records), makeNotifications(), testRegistry);
+      const tool = new GetResultTool(
+         { manager: makeManager(records), notifications: makeNotifications() },
+         testRegistry,
+      );
       const result = await tool.execute(
          "tc-1",
          { agent_id: "agent-1" },
@@ -205,7 +211,10 @@ describe("GetResultTool", () => {
       const session = createMockSession({ messages: [{ role: "user", content: "hello" }] });
       record.execution = { session: toAgentSession(session), outputFile: undefined };
       const records = new Map([["agent-1", record]]);
-      const result = await new GetResultTool(makeManager(records), makeNotifications(), testRegistry).execute(
+      const result = await new GetResultTool(
+         { manager: makeManager(records), notifications: makeNotifications() },
+         testRegistry,
+      ).execute(
          "tc-1",
          { agent_id: "agent-1", verbose: true } as never,
          new AbortController().signal,

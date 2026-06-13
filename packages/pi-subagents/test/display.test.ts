@@ -22,6 +22,7 @@ describe("getDisplayName", () => {
          ],
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
+      registry.reload();
       expect(getDisplayName("my-agent", registry)).toBe("My Agent");
    });
 
@@ -40,6 +41,7 @@ describe("getDisplayName", () => {
          ],
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
+      registry.reload();
       expect(getDisplayName("my-agent", registry)).toBe("my-agent");
    });
 
@@ -68,6 +70,7 @@ describe("getPromptModeLabel", () => {
          ],
       ]);
       const registry = new AgentTypeRegistry(() => customAgents);
+      registry.reload();
       expect(getPromptModeLabel("twin-agent", registry)).toBe("twin");
    });
 

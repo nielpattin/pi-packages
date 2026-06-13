@@ -76,8 +76,11 @@ describe("/agents command mode guard", () => {
    });
 
    it("sends a message and returns early when not in TUI mode", async () => {
-      const { pi, commands } = makePi();
+      const { pi, commands, handlers } = makePi();
       subagentsExtension(pi);
+
+      // Fire session_start to initialize lazy services
+      await handlers.get("session_start")?.({}, makeCtx({ hasUI: false }));
 
       const agentsCmd = commands.get("agents");
       expect(agentsCmd).toBeDefined();
@@ -97,8 +100,11 @@ describe("/agents command mode guard", () => {
    });
 
    it("allows /agents in TUI mode", async () => {
-      const { pi, commands } = makePi();
+      const { pi, commands, handlers } = makePi();
       subagentsExtension(pi);
+
+      // Fire session_start to initialize lazy services
+      await handlers.get("session_start")?.({}, makeCtx({ hasUI: true }));
 
       const agentsCmd = commands.get("agents");
       const handleSpy = vi.mocked(AgentsMenuHandler.prototype.handle);

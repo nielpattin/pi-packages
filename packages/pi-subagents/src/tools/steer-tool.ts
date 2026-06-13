@@ -13,14 +13,18 @@ export interface SteerToolManager {
 export interface SteerToolEvents {
    emit(name: string, data: unknown): void;
 }
+// ---- SteerToolDeps interface ----
+
+/** Mutable deps container shared via index.ts. Filled during session_start. */
+export interface SteerToolDeps {
+   manager: SteerToolManager;
+   events: SteerToolEvents;
+}
 
 // ---- Class ----
 
 export class SteerTool {
-   constructor(
-      private readonly manager: SteerToolManager,
-      private readonly events: SteerToolEvents,
-   ) {}
+   constructor(private readonly deps: SteerToolDeps) {}
 
    async execute(
       _toolCallId: string,
@@ -29,7 +33,7 @@ export class SteerTool {
       _onUpdate: unknown,
       _ctx: unknown,
    ) {
-      const record = this.manager.getRecord(params.agent_id);
+      const record = this.deps.manager.getRecord(params.agent_id);
       if (!record) {
          throw new Error(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
       }
@@ -42,7 +46,7 @@ export class SteerTool {
       if (!session) {
          // Session not ready yet — buffer on the agent for delivery once initialized
          record.queueSteer(params.message);
-         this.events.emit("subagents:steered", { id: record.id, message: params.message });
+         this.deps.events.emit("subagents:steered", { id: record.id, message: params.message });
          return textResult(
             `Steering message queued for agent ${record.id}. It will be delivered once the session initializes.`,
          );
@@ -50,7 +54,7 @@ export class SteerTool {
 
       try {
          await session.steer(params.message);
-         this.events.emit("subagents:steered", { id: record.id, message: params.message });
+         this.deps.events.emit("subagents:steered", { id: record.id, message: params.message });
          const tokens = formatLifetimeTokens(record);
          const contextPercent = getSessionContextPercent(session);
          const stateParts: string[] = [];

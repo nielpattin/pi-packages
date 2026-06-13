@@ -18,12 +18,19 @@ export interface GetResultToolNotifications {
    cancelNudge(key: string): void;
 }
 
+// ---- GetResultToolDeps interface ----
+
+/** Mutable deps container shared via index.ts. Filled during session_start. */
+export interface GetResultToolDeps {
+   manager: GetResultToolManager;
+   notifications: GetResultToolNotifications;
+}
+
 // ---- Class ----
 
 export class GetResultTool {
    constructor(
-      private readonly manager: GetResultToolManager,
-      private readonly notifications: GetResultToolNotifications,
+      private readonly deps: GetResultToolDeps,
       private readonly registry: AgentConfigLookup,
    ) {}
 
@@ -34,7 +41,7 @@ export class GetResultTool {
       _onUpdate: unknown,
       _ctx: unknown,
    ) {
-      const record = this.manager.getRecord(params.agent_id);
+      const record = this.deps.manager.getRecord(params.agent_id);
       if (!record) {
          throw new Error(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
       }
@@ -47,7 +54,7 @@ export class GetResultTool {
          // Pre-mark consumed BEFORE awaiting — onComplete fires inside .then() and
          // always runs before this await resumes. Prevents a redundant notification.
          record.notification?.markConsumed();
-         this.notifications.cancelNudge(params.agent_id);
+         this.deps.notifications.cancelNudge(params.agent_id);
          await record.promise;
       }
 
@@ -77,7 +84,7 @@ export class GetResultTool {
       // Mark result as consumed — suppresses the completion notification
       if (record.status !== "running" && record.status !== "queued") {
          record.notification?.markConsumed();
-         this.notifications.cancelNudge(params.agent_id);
+         this.deps.notifications.cancelNudge(params.agent_id);
       }
 
       const invocationTags = buildInvocationTags(record.invocation);

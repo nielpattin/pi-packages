@@ -20,18 +20,18 @@ async function execute(
    events: SteerToolEvents,
    params: { agent_id: string; message: string },
 ) {
-   const tool = new SteerTool(manager, events);
+   const tool = new SteerTool({ manager: manager, events: events });
    return tool.execute("tc-1", params, new AbortController().signal, undefined, STUB_CTX);
 }
 
 describe("SteerTool", () => {
    it("returns tool definition with correct name", () => {
-      const tool = new SteerTool(makeManager(), makeEvents());
+      const tool = new SteerTool({ manager: makeManager(), events: makeEvents() });
       expect(tool.toToolDefinition().name).toBe("steer_subagent");
    });
 
    it("includes promptSnippet", () => {
-      const tool = new SteerTool(makeManager(), makeEvents());
+      const tool = new SteerTool({ manager: makeManager(), events: makeEvents() });
       expect(tool.toToolDefinition().promptSnippet).toBe(
          "steer_subagent: Send a mid-run message to redirect a running background agent.",
       );

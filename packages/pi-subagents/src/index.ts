@@ -11,7 +11,6 @@
  *   /agents                 — Interactive agent management menu
  *   /orchestrator           - Toggle orchestrator mode (injects sub-agent guidance into system prompt)
  */
-
 import { join } from "node:path";
 import {
    createAgentSession,
@@ -24,75 +23,47 @@ import {
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import { loadCustomAgents } from "#src/config/custom-agents";
 import { buildOrchestratorGuidance } from "#src/config/orchestrator-guidance";
-import { SessionLifecycleHandler, ToolStartHandler } from "#src/handlers/index";
-import { AgentManager, type AgentManagerObserver } from "#src/lifecycle/agent-manager";
-import { ConcreteAgentRunner, type RunnerDeps } from "#src/lifecycle/agent-runner";
-import { createChildLifecyclePublisher } from "#src/lifecycle/child-lifecycle";
-import { ConcurrencyQueue } from "#src/lifecycle/concurrency-queue";
-import { buildParentSnapshot } from "#src/lifecycle/parent-snapshot";
-import { GitWorktreeManager } from "#src/lifecycle/worktree";
-import { buildEventData, type NotificationDetails, NotificationManager } from "#src/observation/notification";
+import { ToolStartHandler } from "#src/handlers/index";
+import type { AgentManagerObserver } from "#src/lifecycle/agent-manager";
+import { buildEventData, type NotificationDetails } from "#src/observation/notification";
 import { createNotificationRenderer } from "#src/observation/renderer";
 import { createSubagentRuntime } from "#src/runtime";
-import { publishSubagentsService, unpublishSubagentsService } from "#src/service/service";
-import { SubagentsServiceAdapter } from "#src/service/service-adapter";
-import { detectEnv } from "#src/session/env";
-
-import { resolveModel } from "#src/session/model-resolver";
-import { buildAgentPrompt } from "#src/session/prompts";
-import { deriveSubagentSessionDir } from "#src/session/session-dir";
-import { preloadSkills } from "#src/session/skill-loader";
-import { resolveLeanMagicContextEntry } from "#src/session/lean-extensions";
 import { SettingsManager } from "#src/settings";
 import { AgentTool } from "#src/tools/agent-tool";
 import { GetResultTool } from "#src/tools/get-result-tool";
 import { SteerTool } from "#src/tools/steer-tool";
 import { FsAgentFileOps } from "#src/ui/agent-file-ops";
-import { AgentsMenuHandler } from "#src/ui/agent-menu";
-import { AgentWidget } from "#src/ui/agent-widget";
+import type { RunnerDeps } from "#src/lifecycle/agent-runner";
 
 export default function (pi: ExtensionAPI) {
-   // ---- Resolve lean magic-context entry for subagent children ----
-   // When available, subagents load only the tool surface (ctx_search, ctx_memory,
-   // ctx_note, ctx_expand) instead of the full magic-context extension, avoiding
-   // recursion risk, wasted startup, and unexpected prompt injection.
-   const leanEntryPath = resolveLeanMagicContextEntry();
-
    // ---- Register custom notification renderer ----
    pi.registerMessageRenderer<NotificationDetails>("subagent-notification", createNotificationRenderer());
 
-   // Mutable session state for trust-gating project agents.
-   // Start global-only; session_start updates from ctx.
+   // ---- Mutable state set at load time ----
    let currentCwd = process.cwd();
+   // Registry loads defaults only at construction — custom agents are loaded in session_start.
    const registry = new AgentTypeRegistry(() => loadCustomAgents(currentCwd, { includeProject: false }));
 
-   // ---- Runtime: all mutable extension state in one place ----
+   // ---- Runtime: cheap container for mutable extension state ----
    const runtime = createSubagentRuntime();
 
-   // ---- Notification system ----
-   // runtime.widget is assigned after AgentManager construction; arrow closures
-   // capture `runtime` by reference so they always read the current value.
-   const notifications = new NotificationManager(
-      (msg, opts) => pi.sendMessage(msg, opts),
-      runtime.agentActivity,
-      (id) => runtime.markFinished(id),
-      () => runtime.update(),
-   );
+   // ---- Lazy-initialized services (filled by initialize()) ----
+   let _initialized = false;
+   let _notifications: import("#src/observation/notification").NotificationManager;
+   let _settings: SettingsManager;
+   let _queue: import("#src/lifecycle/concurrency-queue").ConcurrencyQueue;
+   let _manager: import("#src/lifecycle/agent-manager").AgentManager;
+   let _lifecycle: import("#src/handlers/lifecycle").SessionLifecycleHandler;
+   let _agentsMenu: import("#src/ui/agent-menu").AgentsMenuHandler | undefined;
 
-   // Settings: owns all three in-memory values and handles load/save/emit.
-   // onMaxConcurrentChanged is wired to the queue directly (closure captures by reference).
-   const settings = new SettingsManager({
-      emit: (event, payload) => pi.events.emit(event, payload),
-      cwd: () => currentCwd,
-      agentDir: getAgentDir(),
-      onMaxConcurrentChanged: () => queue.drain(),
-   });
-   settings.load();
+   // Shared mutable deps container for tool objects — filled by initialize(), read at execute() time.
+   const agentToolDeps = {} as import("#src/tools/agent-tool").AgentToolDeps;
+   const getResultToolDeps = {} as import("#src/tools/get-result-tool").GetResultToolDeps;
+   const steerToolDeps = {} as import("#src/tools/steer-tool").SteerToolDeps;
 
-   // Observer: receives agent lifecycle notifications and dispatches events/notifications.
+   // ---- Observer: references lazy _notifications via closure (set during initialize) ----
    const observer: AgentManagerObserver = {
       onAgentStarted(record) {
-         // Emit started event when agent transitions to running (including from queue).
          pi.events.emit("subagents:started", {
             id: record.id,
             type: record.type,
@@ -100,7 +71,6 @@ export default function (pi: ExtensionAPI) {
          });
       },
       onAgentCompleted(record) {
-         // Emit lifecycle event based on terminal status.
          const isError = record.status === "error" || record.status === "stopped" || record.status === "aborted";
          const eventData = buildEventData(record);
          if (isError) {
@@ -123,14 +93,13 @@ export default function (pi: ExtensionAPI) {
 
          // Skip notification if result was already consumed via get_subagent_result.
          if (record.notification?.resultConsumed) {
-            notifications.cleanupCompleted(record.id);
+            _notifications.cleanupCompleted(record.id);
             return;
          }
 
-         notifications.sendCompletion(record);
+         _notifications.sendCompletion(record);
       },
       onAgentCompacted(record, info) {
-         // Emit compacted event when agent's session compacts (preserves count on record).
          pi.events.emit("subagents:compacted", {
             id: record.id,
             type: record.type,
@@ -141,7 +110,6 @@ export default function (pi: ExtensionAPI) {
          });
       },
       onAgentCreated(record) {
-         // Emit created event for background agents (before startAgent / queue drain).
          pi.events.emit("subagents:created", {
             id: record.id,
             type: record.type,
@@ -151,89 +119,193 @@ export default function (pi: ExtensionAPI) {
       },
    };
 
-   const runnerDeps: RunnerDeps = {
-      io: {
-         detectEnv,
-         getAgentDir,
-         createResourceLoader: (opts) => new DefaultResourceLoader(opts),
-         deriveSessionDir: deriveSubagentSessionDir,
-         createSessionManager: (cwd, dir) => SessionManager.create(cwd, dir),
-         createSettingsManager: (cwd, dir) => SdkSettingsManager.create(cwd, dir),
-         createSession: (opts) => createAgentSession(opts as any),
-         assemblerIO: {
-            preloadSkills,
-            buildAgentPrompt,
+   // ---- Lazy initialization — runs once on first session_start ----
+   async function fullInit(ctxAny: { cwd?: string; isProjectTrusted?: () => boolean }): Promise<void> {
+      currentCwd = ctxAny.cwd ?? process.cwd();
+
+      // Dynamic imports — defer loading heavy modules until first session.
+      const [
+         { NotificationManager },
+         { ConcurrencyQueue },
+         { AgentManager },
+         { SessionLifecycleHandler },
+         { resolveLeanMagicContextEntry },
+         { resolveModel },
+         { SubagentsServiceAdapter },
+         { publishSubagentsService, unpublishSubagentsService },
+         { ConcreteAgentRunner },
+         { GitWorktreeManager },
+         { createChildLifecyclePublisher },
+         { detectEnv },
+         { buildAgentPrompt },
+         { preloadSkills },
+         { deriveSubagentSessionDir },
+         { AgentWidget },
+         { AgentsMenuHandler },
+      ] = await Promise.all([
+         import("#src/observation/notification"),
+         import("#src/lifecycle/concurrency-queue"),
+         import("#src/lifecycle/agent-manager"),
+         import("#src/handlers/lifecycle"),
+         import("#src/session/lean-extensions"),
+         import("#src/session/model-resolver"),
+         import("#src/service/service-adapter"),
+         import("#src/service/service"),
+         import("#src/lifecycle/agent-runner"),
+         import("#src/lifecycle/worktree"),
+         import("#src/lifecycle/child-lifecycle"),
+         import("#src/session/env"),
+         import("#src/session/prompts"),
+         import("#src/session/skill-loader"),
+         import("#src/session/session-dir"),
+         import("#src/ui/agent-widget"),
+         import("#src/ui/agent-menu"),
+      ]);
+
+      // Resolve lean magic-context entry for subagent children.
+      const leanEntryPath = resolveLeanMagicContextEntry();
+
+      // Settings
+      _settings = new SettingsManager({
+         emit: (event, payload) => pi.events.emit(event, payload),
+         cwd: () => currentCwd,
+         agentDir: getAgentDir(),
+         onMaxConcurrentChanged: () => _queue!.drain(),
+      });
+      _settings.load();
+
+      // Runner deps (used by ConcreteAgentRunner)
+      const runnerDeps: RunnerDeps = {
+         io: {
+            detectEnv,
+            getAgentDir,
+            createResourceLoader: (opts) => new DefaultResourceLoader(opts),
+            deriveSessionDir: deriveSubagentSessionDir,
+            createSessionManager: (cwd, dir) => SessionManager.create(cwd, dir),
+            createSettingsManager: (cwd, dir) => SdkSettingsManager.create(cwd, dir),
+            createSession: (opts) => createAgentSession(opts as any),
+            assemblerIO: {
+               preloadSkills,
+               buildAgentPrompt,
+            },
          },
-      },
-      exec: (cmd, args, opts) => pi.exec(cmd, args, opts),
-      registry,
-      lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data)),
-      ...(leanEntryPath ? { leanExtensionPaths: [leanEntryPath] } : {}),
-   };
+         exec: (cmd, args, opts) => pi.exec(cmd, args, opts),
+         registry,
+         lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data)),
+         ...(leanEntryPath ? { leanExtensionPaths: [leanEntryPath] } : {}),
+      };
 
-   // ConcurrencyQueue: scheduling extracted from AgentManager.
-   // startAgent callback forward-references manager via closure (safe — drain is never called during construction).
-   const queue = new ConcurrencyQueue(
-      () => settings.maxConcurrent,
-      (id) => {
-         const agent = manager.getRecord(id);
-         if (agent?.status !== "queued") return;
-         agent.promise = agent.run();
-      },
-   );
+      // Concurrency queue
+      _queue = new ConcurrencyQueue(
+         () => _settings!.maxConcurrent,
+         (id) => {
+            const agent = _manager.getRecord(id);
+            if (agent?.status !== "queued") return;
+            agent.promise = agent.run();
+         },
+      );
 
-   const manager = new AgentManager({
-      runner: new ConcreteAgentRunner(runnerDeps),
-      worktrees: new GitWorktreeManager(() => currentCwd),
-      baseCwd: () => currentCwd,
-      observer,
-      queue,
-      getRunConfig: () => settings,
-   });
+      // Agent manager
+      _manager = new AgentManager({
+         runner: new ConcreteAgentRunner(runnerDeps),
+         worktrees: new GitWorktreeManager(() => currentCwd),
+         baseCwd: () => currentCwd,
+         observer,
+         queue: _queue,
+         getRunConfig: () => _settings!,
+      });
 
-   // Typed service published via Symbol.for() for cross-extension access.
-   // Consumers: const { getSubagentsService } = await import("@nielpattin/pi-subagents");
-   const service = new SubagentsServiceAdapter(manager, resolveModel, runtime);
-   publishSubagentsService(service);
+      // Notification system
+      _notifications = new NotificationManager(
+         (msg, opts) => pi.sendMessage(msg, opts),
+         runtime.agentActivity,
+         (id) => runtime.markFinished(id),
+         () => runtime.update(),
+      );
 
-   const lifecycle = new SessionLifecycleHandler(
-      runtime,
-      manager,
-      () => notifications.dispose(),
-      unpublishSubagentsService,
-   );
+      // Typed service published via Symbol.for() for cross-extension access.
+      const service = new SubagentsServiceAdapter(_manager, resolveModel, runtime);
+      publishSubagentsService(service);
 
-   pi.on("session_start", (event, ctx) => {
-      lifecycle.handleSessionStart(event, ctx);
-      // Trust-gate project agents: update loader from session ctx.
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any -- isProjectTrusted is a runtime method on ExtensionContext not yet in SDK types
-      const ctxAny = ctx as any;
-      currentCwd = ctxAny.cwd as string;
+      // Session lifecycle handler
+      _lifecycle = new SessionLifecycleHandler(
+         runtime,
+         _manager,
+         () => _notifications.dispose(),
+         unpublishSubagentsService,
+      );
+
+      // Live widget: show running agents above editor
+      runtime.widget = new AgentWidget(_manager, runtime.agentActivity, registry);
+
+      // Agent menu
+      _agentsMenu = new AgentsMenuHandler(
+         _manager,
+         registry,
+         runtime.agentActivity,
+         _settings,
+         new FsAgentFileOps(),
+         join(getAgentDir(), "agents"),
+         () => join(currentCwd, ".pi", "agents"),
+      );
+      // Fill shared tool deps (closures captured by execute methods)
+      agentToolDeps.manager = _manager;
+      agentToolDeps.runtime = runtime;
+      agentToolDeps.settings = _settings;
+      getResultToolDeps.manager = _manager;
+      getResultToolDeps.notifications = _notifications;
+      steerToolDeps.manager = _manager;
+      steerToolDeps.events = pi.events;
+   }
+
+   // ---- Session-switch update: cwd, trust-gating, settings ----
+   function updateForSession(ctxAny: { cwd?: string; isProjectTrusted?: () => boolean }): void {
+      currentCwd = ctxAny.cwd ?? currentCwd;
       const trusted = typeof ctxAny.isProjectTrusted === "function" ? (ctxAny.isProjectTrusted() as boolean) : true;
       registry.setLoader(() => loadCustomAgents(currentCwd, { includeProject: trusted }));
       registry.reload();
-   });
-   pi.on("session_before_switch", () => lifecycle.handleSessionBeforeSwitch());
-   pi.on("session_shutdown", () => lifecycle.handleSessionShutdown());
+      _settings?.load(); // re-load on session switch (project-local settings may differ)
+   }
 
-   // Live widget: show running agents above editor
-   runtime.widget = new AgentWidget(manager, runtime.agentActivity, registry);
+   // ---- Register tools at load time (execute deps resolved lazily via toolDeps) ----
+
+   pi.registerTool(new AgentTool(agentToolDeps, registry, getAgentDir()).toToolDefinition());
+   pi.registerTool(new GetResultTool(getResultToolDeps, registry).toToolDefinition());
+   pi.registerTool(new SteerTool(steerToolDeps).toToolDefinition());
+
+   // ---- Event handlers ----
+
+   pi.on("session_start", async (event, ctx) => {
+      try {
+         const ctxAny = ctx as { cwd?: string; isProjectTrusted?: () => boolean };
+         if (!_initialized) {
+            _initialized = true;
+            await fullInit(ctxAny);
+         }
+         if (!_lifecycle) return; // init failed
+         updateForSession(ctxAny);
+         _lifecycle.handleSessionStart(event, ctx);
+      } catch (err) {
+         console.error("[pi-subagents] session_start failed:", err);
+      }
+   });
+
+   pi.on("session_before_switch", () => {
+      _lifecycle?.handleSessionBeforeSwitch();
+   });
+
+   pi.on("session_shutdown", () => {
+      if (_lifecycle) {
+         void _lifecycle.handleSessionShutdown();
+      } else {
+         // Before first init — just clear runtime state
+         runtime.clearSessionContext();
+      }
+   });
 
    // Grab UI context from first tool execution + clear lingering widget on new turn
    const toolStart = new ToolStartHandler(runtime);
    pi.on("tool_execution_start", (event, ctx) => toolStart.handleToolExecutionStart(event, ctx));
-
-   // ---- Agent tool ----
-
-   pi.registerTool(new AgentTool(manager, runtime, settings, registry, getAgentDir()).toToolDefinition());
-
-   // ---- get_subagent_result tool ----
-
-   pi.registerTool(new GetResultTool(manager, notifications, registry).toToolDefinition());
-
-   // ---- steer_subagent tool ----
-
-   pi.registerTool(new SteerTool(manager, pi.events).toToolDefinition());
 
    // ---- Orchestrator mode ----
 
@@ -290,19 +362,17 @@ export default function (pi: ExtensionAPI) {
 
    // ---- /agents interactive menu ----
 
-   const agentsMenu = new AgentsMenuHandler(
-      manager,
-      registry,
-      runtime.agentActivity,
-      settings,
-      new FsAgentFileOps(),
-      join(getAgentDir(), "agents"),
-      () => join(currentCwd, ".pi", "agents"),
-   );
-
    pi.registerCommand("agents", {
       description: "Manage agents",
       handler: async (_args, ctx) => {
+         if (!_agentsMenu) {
+            pi.sendMessage({
+               customType: "agents",
+               content: "Subagents extension not yet initialized. Please wait for session to start.",
+               display: true,
+            });
+            return;
+         }
          if (!ctx.hasUI) {
             pi.sendMessage({
                customType: "agents",
@@ -312,7 +382,8 @@ export default function (pi: ExtensionAPI) {
             return;
          }
 
-         await agentsMenu.handle({
+         const { buildParentSnapshot } = await import("#src/lifecycle/parent-snapshot");
+         await _agentsMenu.handle({
             ui: ctx.ui,
             modelRegistry: ctx.modelRegistry,
             parentSnapshot: buildParentSnapshot(ctx),
