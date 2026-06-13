@@ -76,7 +76,7 @@ export default function (pi: ExtensionAPI) {
    // onMaxConcurrentChanged is wired to the queue directly (closure captures by reference).
    const settings = new SettingsManager({
       emit: (event, payload) => pi.events.emit(event, payload),
-      cwd: process.cwd(),
+      cwd: () => currentCwd,
       agentDir: getAgentDir(),
       onMaxConcurrentChanged: () => queue.drain(),
    });
@@ -176,8 +176,8 @@ export default function (pi: ExtensionAPI) {
 
    const manager = new AgentManager({
       runner: new ConcreteAgentRunner(runnerDeps),
-      worktrees: new GitWorktreeManager(process.cwd()),
-      baseCwd: process.cwd(),
+      worktrees: new GitWorktreeManager(() => currentCwd),
+      baseCwd: () => currentCwd,
       observer,
       queue,
       getRunConfig: () => settings,
@@ -289,7 +289,7 @@ export default function (pi: ExtensionAPI) {
       settings,
       new FsAgentFileOps(),
       join(getAgentDir(), "agents"),
-      join(process.cwd(), ".pi", "agents"),
+      () => join(currentCwd, ".pi", "agents"),
    );
 
    pi.registerCommand("agents", {

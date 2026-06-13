@@ -58,12 +58,21 @@ export function buildEjectContent(cfg: AgentConfig): string {
 // ---- Class ----
 
 export class AgentConfigEditor {
+   private readonly _projectAgentsDir: string | (() => string);
+
    constructor(
       private readonly fileOps: AgentFileOps,
       private readonly registry: AgentTypeRegistry,
       private readonly personalAgentsDir: string,
-      private readonly projectAgentsDir: string,
-   ) {}
+      projectAgentsDir: string | (() => string),
+   ) {
+      this._projectAgentsDir = projectAgentsDir;
+   }
+
+   /** Resolve projectAgentsDir — supports both string and getter for session-aware cwd. */
+   private get projectAgentsDir(): string {
+      return typeof this._projectAgentsDir === "function" ? this._projectAgentsDir() : this._projectAgentsDir;
+   }
 
    private agentDirs(): string[] {
       return [this.projectAgentsDir, this.personalAgentsDir];

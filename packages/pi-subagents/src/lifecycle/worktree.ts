@@ -184,7 +184,16 @@ export interface WorktreeManager {
  * Captures `cwd` (the repository root) at construction and delegates each method.
  */
 export class GitWorktreeManager implements WorktreeManager {
-   constructor(private readonly cwd: string) {}
+   private readonly _cwd: string | (() => string);
+
+   constructor(cwd: string | (() => string)) {
+      this._cwd = cwd;
+   }
+
+   /** Resolve cwd — supports both string and getter for session-aware cwd. */
+   private get cwd(): string {
+      return typeof this._cwd === "function" ? this._cwd() : this._cwd;
+   }
 
    create(id: string): WorktreeInfo | undefined {
       return createWorktree(this.cwd, id);

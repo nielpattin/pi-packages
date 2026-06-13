@@ -31,15 +31,25 @@ export class SettingsManager {
    private _maxConcurrent: number = DEFAULT_MAX_CONCURRENT;
 
    private readonly emit: SettingsEmit;
-   private readonly cwd: string;
+   private readonly _cwd: string | (() => string);
    private readonly agentDir: string;
    private readonly onMaxConcurrentChanged: (() => void) | undefined;
 
-   constructor(deps: { emit: SettingsEmit; cwd: string; agentDir: string; onMaxConcurrentChanged?: () => void }) {
+   constructor(deps: {
+      emit: SettingsEmit;
+      cwd: string | (() => string);
+      agentDir: string;
+      onMaxConcurrentChanged?: () => void;
+   }) {
       this.emit = deps.emit;
-      this.cwd = deps.cwd;
+      this._cwd = deps.cwd;
       this.agentDir = deps.agentDir;
       this.onMaxConcurrentChanged = deps.onMaxConcurrentChanged;
+   }
+
+   /** Resolve cwd — supports both string and getter for session-aware cwd. */
+   private get cwd(): string {
+      return typeof this._cwd === "function" ? this._cwd() : this._cwd;
    }
 
    // ── defaultMaxTurns: 0 or undefined → unlimited (undefined); else max(1, n) ──

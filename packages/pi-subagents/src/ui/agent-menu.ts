@@ -74,7 +74,7 @@ export class AgentsMenuHandler {
       private readonly settings: AgentMenuSettings,
       fileOps: AgentFileOps,
       personalAgentsDir: string,
-      projectAgentsDir: string,
+      projectAgentsDir: string | (() => string),
    ) {
       this.editor = new AgentConfigEditor(fileOps, registry, personalAgentsDir, projectAgentsDir);
       this.wizard = new AgentCreationWizard(fileOps, manager, registry, personalAgentsDir, projectAgentsDir);

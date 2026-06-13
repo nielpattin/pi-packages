@@ -42,7 +42,7 @@ export interface AgentManagerOptions {
    /** Concurrency queue — owns scheduling, limit checks, and drain logic. */
    queue: ConcurrencyQueue;
    /** Base working directory handed to a workspace provider (the parent cwd). */
-   baseCwd: string;
+   baseCwd: string | (() => string);
    getRunConfig?: () => RunConfig;
    observer?: AgentManagerObserver;
 }
@@ -80,7 +80,7 @@ export class AgentManager {
    private readonly runner: AgentRunner;
    private readonly worktrees: WorktreeManager;
    private readonly queue: ConcurrencyQueue;
-   private readonly baseCwd: string;
+   private readonly _baseCwd: string | (() => string);
    private getRunConfig?: () => RunConfig;
    private _workspaceProvider?: WorkspaceProvider;
 
@@ -93,12 +93,17 @@ export class AgentManager {
       this.runner = options.runner;
       this.worktrees = options.worktrees;
       this.queue = options.queue;
-      this.baseCwd = options.baseCwd;
+      this._baseCwd = options.baseCwd;
       this.observer = options.observer;
       this.getRunConfig = options.getRunConfig;
       // Cleanup completed agents after 10 minutes (but keep sessions for resume)
       this.cleanupInterval = setInterval(() => this.cleanup(), 60_000);
       this.cleanupInterval.unref();
+   }
+
+   /** Resolve baseCwd — supports both string and getter for session-aware cwd. */
+   private get baseCwd(): string {
+      return typeof this._baseCwd === "function" ? this._baseCwd() : this._baseCwd;
    }
 
    /**

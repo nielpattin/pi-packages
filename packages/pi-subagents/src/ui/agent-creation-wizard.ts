@@ -34,13 +34,22 @@ export interface WizardRegistry {
 // ---- Class ----
 
 export class AgentCreationWizard {
+   private readonly _projectAgentsDir: string | (() => string);
+
    constructor(
       private readonly fileOps: AgentFileOps,
       private readonly manager: WizardManager,
       private readonly registry: WizardRegistry,
       private readonly personalAgentsDir: string,
-      private readonly projectAgentsDir: string,
-   ) {}
+      projectAgentsDir: string | (() => string),
+   ) {
+      this._projectAgentsDir = projectAgentsDir;
+   }
+
+   /** Resolve projectAgentsDir — supports both string and getter for session-aware cwd. */
+   private get projectAgentsDir(): string {
+      return typeof this._projectAgentsDir === "function" ? this._projectAgentsDir() : this._projectAgentsDir;
+   }
 
    async showCreateWizard(ui: MenuUI, parentSnapshot: ParentSnapshot): Promise<void> {
       const location = await ui.select("Choose location", [
