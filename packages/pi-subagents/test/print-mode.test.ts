@@ -2,9 +2,15 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("#src/lifecycle/agent-runner", async () => {
    const actual = await vi.importActual<typeof import("#src/lifecycle/agent-runner")>("#src/lifecycle/agent-runner");
+   const mockRunAgent = vi.fn();
    return {
       ...actual,
-      runAgent: vi.fn(),
+      runAgent: mockRunAgent,
+      ConcreteAgentRunner: class {
+         constructor(_deps?: unknown) {}
+         run = (...args: unknown[]) => mockRunAgent(...args);
+         resume = vi.fn();
+      },
    };
 });
 
