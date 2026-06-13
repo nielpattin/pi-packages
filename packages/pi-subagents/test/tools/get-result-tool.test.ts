@@ -124,8 +124,9 @@ describe("GetResultTool", () => {
    });
 
    it("returns not-found message for unknown agent ID", async () => {
-      const result = await execute(makeManager(), makeNotifications(), { agent_id: "unknown" });
-      expect(result.content[0].text).toContain("Agent not found");
+      await expect(execute(makeManager(), makeNotifications(), { agent_id: "unknown" })).rejects.toThrow(
+         "Agent not found",
+      );
    });
 
    it("returns status and result for completed agent", async () => {

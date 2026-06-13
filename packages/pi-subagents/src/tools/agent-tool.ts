@@ -94,7 +94,7 @@ export class AgentTool {
 
       // ---- Config resolution (pure) ----
       const config = resolveSpawnConfig(params, this.registry, this.runtime.getModelInfo(), this.settings);
-      if ("error" in config) return textResult(config.error);
+      if ("error" in config) throw new Error(config.error);
 
       // ---- Boundary extraction (after config so inheritContext is resolved) ----
       const snapshot = this.runtime.buildSnapshot(config.execution.inheritContext);
@@ -105,10 +105,10 @@ export class AgentTool {
       if (params.resume) {
          const existing = this.manager.getRecord(params.resume as string);
          if (!existing) {
-            return textResult(`Agent not found: "${params.resume}". It may have been cleaned up.`);
+            throw new Error(`Agent not found: "${params.resume}". It may have been cleaned up.`);
          }
          if (!existing.session) {
-            return textResult(`Agent "${params.resume}" has no active session to resume.`);
+            throw new Error(`Agent "${params.resume}" has no active session to resume.`);
          }
          const record = await this.manager.resume(
             params.resume as string,
@@ -116,7 +116,7 @@ export class AgentTool {
             signal ?? new AbortController().signal,
          );
          if (!record) {
-            return textResult(`Failed to resume agent "${params.resume}".`);
+            throw new Error(`Failed to resume agent "${params.resume}".`);
          }
          return textResult(
             record.result?.trim() ?? record.error?.trim() ?? "No output.",

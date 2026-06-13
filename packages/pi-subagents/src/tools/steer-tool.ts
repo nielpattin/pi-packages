@@ -31,10 +31,10 @@ export class SteerTool {
    ) {
       const record = this.manager.getRecord(params.agent_id);
       if (!record) {
-         return textResult(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
+         throw new Error(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
       }
       if (record.status !== "running") {
-         return textResult(
+         throw new Error(
             `Agent "${params.agent_id}" is not running (status: ${record.status}). Cannot steer a non-running agent.`,
          );
       }
@@ -64,7 +64,7 @@ export class SteerTool {
                `Current state: ${stateParts.join(" · ")}`,
          );
       } catch (err) {
-         return textResult(`Failed to steer agent: ${err instanceof Error ? err.message : String(err)}`);
+         throw new Error(`Failed to steer agent: ${err instanceof Error ? err.message : String(err)}`);
       }
    }
 

@@ -36,7 +36,7 @@ export class GetResultTool {
    ) {
       const record = this.manager.getRecord(params.agent_id);
       if (!record) {
-         return textResult(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
+         throw new Error(`Agent not found: "${params.agent_id}". It may have been cleaned up.`);
       }
 
       // Wait for completion if requested.

@@ -74,26 +74,28 @@ describe("AgentTool — resume path", () => {
    it("returns not-found when resume ID does not exist", async () => {
       const deps = createToolDeps();
       deps.manager.getRecord = vi.fn().mockReturnValue(undefined);
-      const result = await execute(deps, {
-         prompt: "continue",
-         description: "resume",
-         subagent_type: "general-purpose",
-         resume: "nonexistent",
-      });
-      expect(result.content[0].text).toContain("Agent not found");
+      await expect(
+         execute(deps, {
+            prompt: "continue",
+            description: "resume",
+            subagent_type: "general-purpose",
+            resume: "nonexistent",
+         }),
+      ).rejects.toThrow("Agent not found");
    });
 
    it("returns no-session when agent has no active session", async () => {
       const deps = createToolDeps();
       // No execution state set — session not yet created
       deps.manager.getRecord = vi.fn().mockReturnValue(createTestAgent());
-      const result = await execute(deps, {
-         prompt: "continue",
-         description: "resume",
-         subagent_type: "general-purpose",
-         resume: "agent-1",
-      });
-      expect(result.content[0].text).toContain("no active session");
+      await expect(
+         execute(deps, {
+            prompt: "continue",
+            description: "resume",
+            subagent_type: "general-purpose",
+            resume: "agent-1",
+         }),
+      ).rejects.toThrow("no active session");
    });
 
    it("returns result text on successful resume", async () => {
@@ -115,14 +117,14 @@ describe("AgentTool — resume path", () => {
 describe("AgentTool — model resolution error", () => {
    it("returns error when model resolution fails", async () => {
       const deps = createToolDeps();
-      const result = await execute(deps, {
-         prompt: "test",
-         description: "test",
-         subagent_type: "general-purpose",
-         model: "nonexistent-model-xyz",
-      });
-      // User-specified model that doesn't resolve → error message
-      expect(result.content[0].text).toContain("nonexistent-model-xyz");
+      await expect(
+         execute(deps, {
+            prompt: "test",
+            description: "test",
+            subagent_type: "general-purpose",
+            model: "nonexistent-model-xyz",
+         }),
+      ).rejects.toThrow(/nonexistent-model-xyz/);
    });
 });
 

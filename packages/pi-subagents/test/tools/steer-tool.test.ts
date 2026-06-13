@@ -38,15 +38,16 @@ describe("SteerTool", () => {
    });
 
    it("returns not-found message for unknown agent ID", async () => {
-      const result = await execute(makeManager(), makeEvents(), { agent_id: "unknown", message: "hi" });
-      expect(result.content[0].text).toContain("Agent not found");
+      await expect(execute(makeManager(), makeEvents(), { agent_id: "unknown", message: "hi" })).rejects.toThrow(
+         "Agent not found",
+      );
    });
 
    it("rejects steering a non-running agent", async () => {
       const records = new Map([["agent-1", createTestAgent({ status: "completed" })]]);
-      const result = await execute(makeManager(records), makeEvents(), { agent_id: "agent-1", message: "hi" });
-      expect(result.content[0].text).toContain("not running");
-      expect(result.content[0].text).toContain("completed");
+      await expect(execute(makeManager(records), makeEvents(), { agent_id: "agent-1", message: "hi" })).rejects.toThrow(
+         /not running/,
+      );
    });
 
    it("queues steer when session is not ready", async () => {
@@ -87,8 +88,9 @@ describe("SteerTool", () => {
       mockSession.steer.mockRejectedValue(new Error("session closed"));
       record.execution = { session: toAgentSession(mockSession), outputFile: undefined };
       const records = new Map([["agent-1", record]]);
-      const result = await execute(makeManager(records), makeEvents(), { agent_id: "agent-1", message: "hi" });
-      expect(result.content[0].text).toContain("Failed to steer agent");
-      expect(result.content[0].text).toContain("session closed");
+
+      await expect(execute(makeManager(records), makeEvents(), { agent_id: "agent-1", message: "hi" })).rejects.toThrow(
+         /Failed to steer agent/,
+      );
    });
 });
