@@ -295,6 +295,15 @@ export default function (pi: ExtensionAPI) {
    pi.registerCommand("agents", {
       description: "Manage agents",
       handler: async (_args, ctx) => {
+         if (!ctx.hasUI) {
+            pi.sendMessage({
+               customType: "agents",
+               content: "/agents is only available in TUI mode.",
+               display: true,
+            });
+            return;
+         }
+
          await agentsMenu.handle({
             ui: ctx.ui,
             modelRegistry: ctx.modelRegistry,
