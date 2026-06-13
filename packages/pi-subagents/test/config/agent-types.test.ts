@@ -269,6 +269,23 @@ describe("AgentTypeRegistry", () => {
       });
    });
 
+   describe("setLoader", () => {
+      it("replaces the loader and affects next reload", () => {
+         const initial = new Map([["initial", makeAgentConfig({ name: "initial" })]]);
+         const registry = new AgentTypeRegistry(() => initial);
+
+         expect(registry.isValidType("initial")).toBe(true);
+         expect(registry.isValidType("replaced")).toBe(false);
+
+         const replacement = new Map([["replaced", makeAgentConfig({ name: "replaced" })]]);
+         registry.setLoader(() => replacement);
+         registry.reload();
+
+         expect(registry.isValidType("initial")).toBe(false);
+         expect(registry.isValidType("replaced")).toBe(true);
+      });
+   });
+
    describe("instance isolation", () => {
       it("two registries have independent state", () => {
          const r1 = makeRegistry(new Map([["auditor", makeAgentConfig({ name: "auditor" })]]));

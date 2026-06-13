@@ -39,6 +39,14 @@ export class AgentTypeRegistry implements AgentConfigLookup {
    }
 
    /**
+    * Replace the user-agent loader callback.
+    * Call this before `reload()` when the trust/cwd state changes (e.g., session_start).
+    */
+   setLoader(loader: () => Map<string, AgentConfig>): void {
+      this.loadUserAgents = loader;
+   }
+
+   /**
     * Re-scan user agents and rebuild the registry.
     * Starts with DEFAULT_AGENTS, then overlays whatever `loadUserAgents()` returns.
     */

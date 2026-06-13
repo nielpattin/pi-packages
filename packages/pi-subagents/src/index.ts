@@ -54,7 +54,10 @@ export default function (pi: ExtensionAPI) {
    // ---- Register custom notification renderer ----
    pi.registerMessageRenderer<NotificationDetails>("subagent-notification", createNotificationRenderer());
 
-   const registry = new AgentTypeRegistry(() => loadCustomAgents(process.cwd()));
+   // Mutable session state for trust-gating project agents.
+   // Start global-only; session_start updates from ctx.
+   let currentCwd = process.cwd();
+   const registry = new AgentTypeRegistry(() => loadCustomAgents(currentCwd, { includeProject: false }));
 
    // ---- Runtime: all mutable extension state in one place ----
    const runtime = createSubagentRuntime();
@@ -192,7 +195,16 @@ export default function (pi: ExtensionAPI) {
       unpublishSubagentsService,
    );
 
-   pi.on("session_start", (event, ctx) => lifecycle.handleSessionStart(event, ctx));
+   pi.on("session_start", (event, ctx) => {
+      lifecycle.handleSessionStart(event, ctx);
+      // Trust-gate project agents: update loader from session ctx.
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any -- isProjectTrusted is a runtime method on ExtensionContext not yet in SDK types
+      const ctxAny = ctx as any;
+      currentCwd = ctxAny.cwd as string;
+      const trusted = typeof ctxAny.isProjectTrusted === "function" ? (ctxAny.isProjectTrusted() as boolean) : true;
+      registry.setLoader(() => loadCustomAgents(currentCwd, { includeProject: trusted }));
+      registry.reload();
+   });
    pi.on("session_before_switch", () => lifecycle.handleSessionBeforeSwitch());
    pi.on("session_shutdown", () => lifecycle.handleSessionShutdown());
 

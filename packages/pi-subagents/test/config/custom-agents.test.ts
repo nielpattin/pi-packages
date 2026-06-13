@@ -503,4 +503,108 @@ Bad isolation.`,
          rmSync(altAgentDir, { recursive: true, force: true });
       }
    });
+   it("loads global agents but skips project agents when includeProject is false", () => {
+      const altAgentDir = mkdtempSync(join(tmpdir(), "pi-alt-agent-2"));
+      const originalEnv = process.env.PI_CODING_AGENT_DIR;
+      process.env.PI_CODING_AGENT_DIR = altAgentDir;
+      try {
+         // Write a global agent
+         const globalAgentsDir = join(altAgentDir, "agents");
+         mkdirSync(globalAgentsDir, { recursive: true });
+         writeFileSync(join(globalAgentsDir, "global-agent.md"), "---\ndescription: Global Agent\n---\n\nGlobal body.");
+
+         // Write a project agent
+         writeAgent("project-agent", "---\ndescription: Project Agent\n---\n\nProject body.");
+
+         const result = loadCustomAgents(tmpDir, { includeProject: false });
+
+         // Global agent is loaded
+         expect(result.has("global-agent")).toBe(true);
+         expect(result.get("global-agent")!.source).toBe("global");
+
+         // Project agent is excluded
+         expect(result.has("project-agent")).toBe(false);
+      } finally {
+         if (originalEnv == null) delete process.env.PI_CODING_AGENT_DIR;
+         else process.env.PI_CODING_AGENT_DIR = originalEnv;
+         rmSync(altAgentDir, { recursive: true, force: true });
+      }
+   });
+
+   it("loads both global and project agents when includeProject is true (explicit)", () => {
+      const altAgentDir = mkdtempSync(join(tmpdir(), "pi-alt-agent-3"));
+      const originalEnv = process.env.PI_CODING_AGENT_DIR;
+      process.env.PI_CODING_AGENT_DIR = altAgentDir;
+      try {
+         const globalAgentsDir = join(altAgentDir, "agents");
+         mkdirSync(globalAgentsDir, { recursive: true });
+         writeFileSync(join(globalAgentsDir, "global-agent.md"), "---\ndescription: Global Agent\n---\n\nGlobal body.");
+
+         writeAgent("project-agent", "---\ndescription: Project Agent\n---\n\nProject body.");
+
+         const result = loadCustomAgents(tmpDir, { includeProject: true });
+
+         expect(result.has("global-agent")).toBe(true);
+         expect(result.has("project-agent")).toBe(true);
+      } finally {
+         if (originalEnv == null) delete process.env.PI_CODING_AGENT_DIR;
+         else process.env.PI_CODING_AGENT_DIR = originalEnv;
+         rmSync(altAgentDir, { recursive: true, force: true });
+      }
+   });
+
+   it("defaults includeProject to true when opts is omitted (backward compat)", () => {
+      writeAgent("my-agent", "---\ndescription: My Agent\n---\n\nBody.");
+
+      const result = loadCustomAgents(tmpDir);
+
+      expect(result.has("my-agent")).toBe(true);
+      expect(result.get("my-agent")!.source).toBe("project");
+   });
+
+   it("project agents override global agents with the same name when includeProject is true", () => {
+      const altAgentDir = mkdtempSync(join(tmpdir(), "pi-alt-agent-4"));
+      const originalEnv = process.env.PI_CODING_AGENT_DIR;
+      process.env.PI_CODING_AGENT_DIR = altAgentDir;
+      try {
+         const globalAgentsDir = join(altAgentDir, "agents");
+         mkdirSync(globalAgentsDir, { recursive: true });
+         writeFileSync(join(globalAgentsDir, "shared.md"), "---\ndescription: Global Shared\n---\n\nGlobal body.");
+
+         writeAgent("shared", "---\ndescription: Project Shared\n---\n\nProject body.");
+
+         const result = loadCustomAgents(tmpDir, { includeProject: true });
+
+         // Project wins over global
+         expect(result.get("shared")!.description).toBe("Project Shared");
+         expect(result.get("shared")!.source).toBe("project");
+      } finally {
+         if (originalEnv == null) delete process.env.PI_CODING_AGENT_DIR;
+         else process.env.PI_CODING_AGENT_DIR = originalEnv;
+         rmSync(altAgentDir, { recursive: true, force: true });
+      }
+   });
+
+   it("global-only override appears when includeProject is false", () => {
+      const altAgentDir = mkdtempSync(join(tmpdir(), "pi-alt-agent-5"));
+      const originalEnv = process.env.PI_CODING_AGENT_DIR;
+      process.env.PI_CODING_AGENT_DIR = altAgentDir;
+      try {
+         const globalAgentsDir = join(altAgentDir, "agents");
+         mkdirSync(globalAgentsDir, { recursive: true });
+         writeFileSync(join(globalAgentsDir, "shared.md"), "---\ndescription: Global Shared\n---\n\nGlobal body.");
+
+         writeAgent("shared", "---\ndescription: Project Shared\n---\n\nProject body.");
+
+         const result = loadCustomAgents(tmpDir, { includeProject: false });
+
+         // Only global version present
+         expect(result.get("shared")!.description).toBe("Global Shared");
+         expect(result.get("shared")!.source).toBe("global");
+      } finally {
+         if (originalEnv == null) delete process.env.PI_CODING_AGENT_DIR;
+         else process.env.PI_CODING_AGENT_DIR = originalEnv;
+         rmSync(altAgentDir, { recursive: true, force: true });
+      }
+   });
 });
