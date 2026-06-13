@@ -12,11 +12,12 @@
    ],
    "license": "MIT",
    "type": "module",
-   "main": "./src/index.ts",
+   "main": "./dist/src/index.js",
    "imports": {
-      "#core/*": "./core/*.ts"
+      "#core/*": "./dist/core/*.js"
    },
    "scripts": {
+      "build": "node scripts/build.mjs",
       "typecheck": "tsc --noEmit",
       "doctor": "node scripts/doctor.mjs",
       "smoke": "node scripts/smoke.mjs",
@@ -40,7 +41,7 @@
    },
    "pi": {
       "extensions": [
-         "./src/index.ts"
+         "./dist/src/index.js"
       ]
    }
 }

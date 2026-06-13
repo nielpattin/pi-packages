@@ -19,7 +19,15 @@ import { formatBytes } from "#core/hooks/magic-context/format-bytes";
 import { estimateTokens } from "#core/hooks/magic-context/read-session-formatting";
 import { formatThresholdPercent } from "#core/shared/format-threshold";
 import { log, sessionLog } from "#core/shared/logger";
-import packageJson from "../../package.json";
+import { readFileSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+// Read version from the root package.json, walking up from this file's
+// location. Works from both src/ (TS source) and dist/ (compiled JS).
+const _thisFile = fileURLToPath(import.meta.url);
+const _rootDir = resolve(dirname(_thisFile), _thisFile.includes("dist") ? "../../../" : "../../");
+const { version: MC_VERSION } = JSON.parse(readFileSync(resolve(_rootDir, "package.json"), "utf8"));
 import { resolveSessionId } from "../commands/pi-command-utils";
 import type { StatusDemoController } from "../demo/status-demo";
 
@@ -365,9 +373,7 @@ function renderInner(s: StatusDialogDetail, theme: Theme, innerWidth: number): s
    const lines: string[] = [];
 
    // Header
-   lines.push(
-      `${theme.fg("accent", theme.bold("⚡ Magic Context Status"))}   ${theme.fg("muted", `v${packageJson.version}`)}`,
-   );
+   lines.push(`${theme.fg("accent", theme.bold("⚡ Magic Context Status"))}   ${theme.fg("muted", `v${MC_VERSION}`)}`);
    lines.push("");
 
    // Context summary
