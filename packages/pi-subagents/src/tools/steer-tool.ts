@@ -1,5 +1,5 @@
 import { defineTool } from "@earendil-works/pi-coding-agent";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { getSessionContextPercent } from "#src/lifecycle/usage";
 import { formatLifetimeTokens, textResult } from "#src/tools/helpers";
 import type { Agent } from "#src/types";

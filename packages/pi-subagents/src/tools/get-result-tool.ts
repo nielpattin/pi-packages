@@ -1,6 +1,6 @@
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import type { AgentConfigLookup } from "#src/config/agent-types";
 import { getSessionContextPercent } from "#src/lifecycle/usage";
 import { buildDetails, formatLifetimeTokens, textResult } from "#src/tools/helpers";

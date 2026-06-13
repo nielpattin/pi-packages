@@ -2,7 +2,7 @@
 import type { AgentToolResult } from "@earendil-works/pi-coding-agent";
 import { defineTool } from "@earendil-works/pi-coding-agent";
 import { Text } from "@earendil-works/pi-tui";
-import { Type } from "@sinclair/typebox";
+import { Type } from "typebox";
 import { AgentTypeRegistry } from "#src/config/agent-types";
 import type { AgentSpawnConfig } from "#src/lifecycle/agent-manager";
 import type { ParentSnapshot } from "#src/lifecycle/parent-snapshot";
