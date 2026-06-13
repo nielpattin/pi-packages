@@ -29,7 +29,7 @@
       "LICENSE"
    ],
    "type": "module",
-   "main": "./dist/src/index.js",
+   "main": "./dist/index.js",
    "types": "./dist/src/index.d.ts",
    "imports": {
       "#src/*": "./dist/src/*.js"
@@ -49,6 +49,9 @@
       "test": "vitest run --config vitest.config.ts",
       "check": "pnpm test && tsc --noEmit -p tsconfig.json"
    },
+   "devDependencies": {
+      "esbuild": "^0.28.0"
+   },
    "peerDependencies": {
       "@earendil-works/pi-ai": "*",
       "@earendil-works/pi-coding-agent": "*",
@@ -60,7 +63,7 @@
    },
    "pi": {
       "extensions": [
-         "./dist/src/index.js"
+         "./dist/index.js"
       ]
    }
 }
