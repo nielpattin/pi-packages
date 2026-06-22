@@ -1,0 +1,180 @@
+import type { RotationMode, SupportedProviderId } from "../types.js";
+import type { UsageSnapshot } from "../usage/types.js";
+
+/**
+ * Cooldown metadata recorded when a credential should be skipped temporarily.
+ */
+export interface CooldownInfo {
+   until: number;
+   reason: string;
+   appliedAt: number;
+}
+
+export type BalancerQuotaState =
+   | {
+        state: "available";
+     }
+   | {
+        state: "exhausted";
+        exhaustedUntil?: number;
+     }
+   | {
+        state: "unknown";
+     };
+
+export interface BalancerUsageSnapshot {
+   snapshot: UsageSnapshot | null;
+   usedPercent: number | null;
+   quotaState: BalancerQuotaState;
+   fromCache: boolean;
+   needsRefresh?: boolean;
+}
+
+export interface BalancerQuotaDrainState {
+   draining: boolean;
+   enteredAt?: number;
+   lastUsedPercent?: number;
+   updatedAt: number;
+}
+
+/**
+ * In-memory balancer state for one provider's credential pool.
+ */
+export interface BalancerCredentialState {
+   weights: Record<string, number>;
+   cooldowns: Partial<Record<string, CooldownInfo>>;
+   activeRequests: Record<string, number>;
+   lastUsedAt: Record<string, number>;
+   healthScores?: Record<string, number>;
+   quotaDrainStates?: Record<string, BalancerQuotaDrainState>;
+}
+
+/**
+ * Lease token returned when a credential is reserved for a session.
+ */
+export interface CredentialLease {
+   sessionId: string;
+   credentialId: string;
+   acquiredAt: number;
+   expiresAt: number;
+}
+
+/**
+ * Context used to select a credential for the next request.
+ */
+export interface SelectionContext {
+   providerId: SupportedProviderId;
+   excludedIds: readonly string[];
+   requestingSessionId: string;
+   modelId?: string;
+   /** Effective rotation mode after extension config overrides are applied. */
+   rotationMode?: RotationMode;
+   /** Whether balancer mode may reuse the previous credential for this selection session. */
+   stickyCredential?: boolean;
+}
+
+export interface DelegatedCredentialRequest {
+   sessionId: string;
+   providerId: SupportedProviderId;
+   timeoutMs?: number;
+   modelId?: string;
+   modelRef?: string;
+   api?: string;
+   signal?: AbortSignal;
+   parentSessionId?: string;
+}
+
+export interface DelegatedRoutingCapabilities {
+   providerId: SupportedProviderId;
+   modelId?: string;
+   modelRef?: string;
+   api?: string;
+   credentialCounts: {
+      total: number;
+      structurallyEligible: number;
+      modelEligible: number;
+   };
+   modelConstraintApplied: boolean;
+   preferredCredentialCount?: number;
+   failureMessage?: string;
+}
+
+/**
+ * Runtime tuning options for the key distributor.
+ */
+export interface KeyDistributorConfig {
+   waitTimeoutMs: number;
+   defaultCooldownMs: number;
+   maxConcurrentPerKey: number;
+}
+
+export interface MetricSeriesSnapshot {
+   count: number;
+   min: number;
+   max: number;
+   average: number;
+   p50: number;
+   p95: number;
+   p99: number;
+}
+
+export interface KeyDistributorProviderMetrics {
+   providerId: SupportedProviderId;
+   acquisitionLatencyMs: MetricSeriesSnapshot;
+   waitLatencyMs: MetricSeriesSnapshot;
+   acquisitionCount: number;
+   successCount: number;
+   timeoutCount: number;
+   abortedCount: number;
+   activeWaiters: number;
+   peakWaiters: number;
+   lastAcquiredAt?: number;
+}
+
+export interface KeyDistributorMetrics {
+   providers: Record<string, KeyDistributorProviderMetrics>;
+}
+
+/**
+ * Cross-extension global contract for acquiring and releasing API key leases.
+ */
+export interface GlobalKeyDistributor {
+   acquireCredential(context: SelectionContext): Promise<CredentialLease | null>;
+   acquireForSubagent(request: DelegatedCredentialRequest): Promise<{ credentialId: string; apiKey: string }>;
+   acquireForSubagent(
+      sessionId: string,
+      providerId: SupportedProviderId,
+      options?: {
+         timeoutMs?: number;
+         modelId?: string;
+         modelRef?: string;
+         api?: string;
+         signal?: AbortSignal;
+         parentSessionId?: string;
+      },
+   ): Promise<{ credentialId: string; apiKey: string }>;
+   releaseFromSubagent(sessionId: string): void;
+   releaseCredential(lease: CredentialLease): Promise<void>;
+   applyCooldown(
+      providerId: SupportedProviderId,
+      credentialId: string,
+      reason: string,
+      cooldownMs?: number,
+      isWeekly?: boolean,
+      errorMessage?: string,
+   ): void;
+   clearTransientError?(credentialId: string, providerId?: SupportedProviderId): Promise<void> | void;
+   getState(providerId: SupportedProviderId): BalancerCredentialState;
+   getLeaseForSession?(
+      sessionId: string,
+   ): Promise<{ credentialId: string; apiKey: string } | null> | { credentialId: string; apiKey: string } | null;
+   shouldBypassDelegatedSubagentAcquisition?(
+      providerId: SupportedProviderId,
+      options?: { modelId?: string; modelRef?: string; api?: string; signal?: AbortSignal },
+   ): Promise<boolean> | boolean;
+   getDelegatedCredentialRoutingCapabilities?(
+      request: DelegatedCredentialRequest,
+   ): Promise<DelegatedRoutingCapabilities> | DelegatedRoutingCapabilities;
+   releaseLightweightSessionLeases?(parentSessionId: string, providerId?: SupportedProviderId): void;
+   getMetrics?(): KeyDistributorMetrics;
+}

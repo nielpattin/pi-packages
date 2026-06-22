@@ -1,0 +1,570 @@
+import {
+   parseRetryAfterCooldownMs,
+   TRANSIENT_COOLDOWN_BASE_MS,
+   TRANSIENT_COOLDOWN_MAX_MS,
+} from "./balancer/credential-backoff.js";
+import { quotaClassifier } from "./quota-classifier.js";
+import type { QuotaClassification, QuotaWindow, RecoveryAction } from "./types-quota.js";
+
+export type CredentialErrorKind =
+   | "rate_limit"
+   | "quota"
+   | "quota_weekly"
+   | "balance_exhausted"
+   | "authentication"
+   | "permission"
+   | "organization_disabled"
+   | "context_limit"
+   | "invalid_request"
+   | "provider_transient"
+   | "request_timeout"
+   | "unknown";
+
+export interface CredentialErrorClassification {
+   kind: CredentialErrorKind;
+   shouldRotateCredential: boolean;
+   shouldRetrySameCredential: boolean;
+   shouldApplyCooldown: boolean;
+   shouldDisableCredential: boolean;
+   reason: string;
+   quotaClassification?: QuotaClassification;
+   quotaWindow?: QuotaWindow;
+   recommendedCooldownMs?: number;
+   recoveryAction?: RecoveryAction;
+}
+
+export interface CredentialErrorContext {
+   providerId?: string;
+   modelId?: string;
+}
+
+const CONTEXT_LIMIT_PATTERNS: RegExp[] = [
+   /context length/i,
+   /context_length_exceeded/i,
+   /maximum context/i,
+   /max(?:imum)?\s+tokens?/i,
+   /token limit/i,
+   /prompt is too long/i,
+   /input is too long/i,
+   // Ollama context window patterns
+   /context window/i,
+   /num_ctx/i,
+];
+
+const AUTH_TOKEN_INVALIDATED_PATTERNS: RegExp[] = [
+   /(?:auth(?:entication)?|access|oauth)\s+token[^\n.]*invalidated/i,
+   /invalidated[^\n.]*\b(?:auth(?:entication)?|access|oauth)\s+token\b/i,
+   /(?:^|[^\p{L}\p{N}])token[_-]?(?:revoked|invalidated)(?:$|[^\p{L}\p{N}])/iu,
+   /try\s+signing\s+in\s+again/i,
+];
+
+const AUTH_PATTERNS: RegExp[] = [
+   /invalid[_-]?api[_-]?key/i,
+   /incorrect\s+api\s+key/i,
+   /invalid\s+auth(?:entication)?/i,
+   /\b401\b/i,
+   /unauthorized/i,
+   /expired\s+(?:token|session|credential)/i,
+   /access token expired/i,
+];
+
+const ORGANIZATION_DISABLED_PATTERNS: RegExp[] = [
+   /this organization has been disabled/i,
+   /organization has been disabled/i,
+   /organization[^\n]*disabled/i,
+   /invalid_request_error[^\n]*organization/i,
+   // Workspace/account-level deactivation surfaced by providers such as OpenAI Codex
+   // (`{"detail":{"code":"deactivated_workspace"}}`). Same recovery semantics as an
+   // administratively disabled organization: requires manual reactivation by the user.
+   /\bdeactivated[_\s-]?workspace\b/i,
+   /\bworkspace[_\s-]?deactivated\b/i,
+   /\bworkspace[^\n]*disabled\b/i,
+];
+
+const PERMISSION_PATTERNS: RegExp[] = [
+   /\b403\b/i,
+   /forbidden/i,
+   /permission[_\s-]?denied/i,
+   /does not have permission/i,
+   /must be a member of an organization/i,
+];
+
+const INVALID_REQUEST_PATTERNS: RegExp[] = [
+   /\b400\b/i,
+   /bad request/i,
+   /unsupported endpoint or method/i,
+   /unsupported[_\s-]?endpoint/i,
+   /invalid[_\s-]?request/i,
+   /unknown model/i,
+   /unsupported model/i,
+   /model[^\n]*(?:not found|not supported)/i,
+   /unknown parameter/i,
+];
+
+const RATE_LIMIT_PATTERNS: RegExp[] = [
+   /\b429\b/i,
+   /too many requests/i,
+   /rate\s*-?\s*limit(?:ed|s)?/i,
+   /rate_limit_(?:error|exceeded)/i,
+   /throttl(?:ed|ing)?/i,
+   /secondary rate limit/i,
+   /requests? per (?:minute|second|hour)/i,
+   // Ollama server/slot saturation patterns
+   /server\s+(?:is\s+)?busy/i,
+   /no\s+available\s+slots?/i,
+   /all\s+slots?\s+(?:are\s+)?busy/i,
+   /too\s+many\s+concurrent/i,
+];
+
+const QUOTA_PATTERNS: RegExp[] = [
+   /insufficient[_-]?quota/i,
+   /exceeded your current quota/i,
+   /quota exceeded/i,
+   /quota\s+exhausted/i,
+   /usage limit/i,
+   /you\s+have\s+reached\s+(?:(?:your|the)\s+)?(?:usage\s+)?limit/i,
+   /credit balance/i,
+   /out of credits?/i,
+   /monthly (?:spend|usage) limit/i,
+   /daily\s+free\s+allocation/i,
+   /used\s+up\s+your\s+daily/i,
+   /neurons?\s+per\s+day/i,
+   /\b10,?000\s+neurons\b/i,
+   /resource\s*exhausted/i,
+   /RESOURCE_EXHAUSTED/,
+   /limit[_\s-]?reached/i,
+   // Ollama resource exhaustion patterns
+   /out\s+of\s+memory/i,
+   /CUDA[\s_]out[\s_]of[\s_]memory/i,
+   /\bOOM\b/,
+];
+
+/**
+ * Patterns indicating balance exhaustion that requires manual intervention to restore.
+ * These credentials should be DISABLED (not just cooled down) because the account
+ * has no credits/balance and requires manual action to add funds.
+ * Examples: "outstanding_balance", "insufficient balance", "no credits remaining"
+ */
+const BALANCE_EXHAUSTED_PATTERNS: RegExp[] = [
+   /\bHTTP\s+402\b/i,
+   /\b402\b[^\n]*(?:payment|required|verification|top\s*up)/i,
+   /payment[_\s-]?required/i,
+   /requires?[^\n.]*verification/i,
+   /account[^\n.]*requires?[^\n.]*verification/i,
+   /verify[^\n.]*(?:phone|phone\s+number)/i,
+   /top\s*up/i,
+   /outstanding[_\s-]?balance/i,
+   /balance[_\s-]?too[_\s-]?low/i,
+   /insufficient[_\s-]?balance/i,
+   /account[^\n.]*balance[^\n.]*insufficient/i,
+   /balance[^\n.]*insufficient/i,
+   /no[_\s-]?credits?[_\s-]?(?:remaining|left)/i,
+   /account[_\s-]?has[_\s-]?no[_\s-]?credits/i,
+   /credits?[_\s-]?depleted/i,
+   /balance[_\s-]?depleted/i,
+   /please[_\s-]?add[_\s-]?credits/i,
+   /please[_\s-]?add[_\s-]?funds/i,
+   /insufficient[_\s-]?tokens/i,
+   /purchase[_\s-]?more[_\s-]?tokens/i,
+   /INSUFFICIENT_TOKENS/,
+];
+
+/**
+ * Patterns indicating a weekly/quota reset cycle that requires longer cooldown.
+ * These are permanent exhaustion until the weekly reset, not temporary rate limits.
+ * Examples: "you have reached your weekly usage limit", "7-day window"
+ */
+const WEEKLY_QUOTA_PATTERNS: RegExp[] = [
+   /weekly\s+(?:usage|credit|limit)/i,
+   /your\s+weekly/i,
+   /reached your weekly/i,
+   /\bweekly\b[^\n.]*\blimit\b/i,
+   /\bweekly\b[^\n.]*\bquota\b/i,
+   /7-?day\s+(?:limit|window)/i,
+   /upgrade for higher limits/i,
+];
+
+const REQUEST_TIMEOUT_PATTERNS: RegExp[] = [
+   /multi-auth stream timeout/i,
+   /\b(?:attempt|idle)_timeout\b/i,
+   /stream timed out/i,
+   /Kiro request timed out after \d+ms\.?/i,
+   /request timed out/i,
+];
+
+const TRANSIENT_BAD_REQUEST_GATEWAY_PATTERNS: RegExp[] = [
+   /400\s+(?:<|&lt;)html(?:>|&gt;)[\s\S]*(?:<|&lt;)title(?:>|&gt;)400\s+Bad Request(?:<\/|&lt;\/)title(?:>|&gt;)[\s\S]*(?:<|&lt;)center(?:>|&gt;)\s*alb\s*(?:<\/|&lt;\/)center(?:>|&gt;)/i,
+];
+
+/**
+ * Host/runtime initiated cancellations must remain terminal so Pi can stop the request
+ * immediately on user escape/cancel input. Multi-auth only retries its own explicit
+ * watchdog timeouts above, which are normalized into REQUEST_TIMEOUT_PATTERNS.
+ */
+const CANCELLATION_PATTERNS: RegExp[] = [
+   /request was aborted/i,
+   /operation was aborted/i,
+   /\bAbortError\b/i,
+   /\brequest aborted\b/i,
+   /\boperation aborted\b/i,
+];
+
+const TRANSIENT_PROVIDER_PATTERNS: RegExp[] = [
+   ...TRANSIENT_BAD_REQUEST_GATEWAY_PATTERNS,
+   /\b5\d\d\b/i,
+   /internal[_\s-]?server[_\s-]?error/i,
+   /internal_server_error/i,
+   /service unavailable/i,
+   /bad gateway/i,
+   /gateway timeout/i,
+   /upstream[^\n]*(?:timeout|error|failed|unavailable)/i,
+   /temporar(?:y|ily) unavailable/i,
+   /high traffic/i,
+   /Multi-auth rotation failed[\s\S]*Provider:\s*kiro\b[\s\S]*Reason:\s*I am experiencing high traffic,\s*please try again shortly\.?/i,
+   /please try again (?:later|shortly)/i,
+   /timeout/i,
+   /timed out/i,
+   /ECONNRESET/i,
+   /ECONNREFUSED/i,
+   /ETIMEDOUT/i,
+   /socket hang up/i,
+   /network error/i,
+   /fetch failed/i,
+   /ended (?:before|without) completion/i,
+   /without completion event/i,
+   /stream ended unexpectedly/i,
+   /stream returned an error/i,
+   // Ollama model lifecycle/runner patterns
+   /model\s+(?:is\s+)?not\s+loaded/i,
+   /failed\s+to\s+load\s+model/i,
+   /llama\s+runner/i,
+];
+
+const MODEL_NOT_SUPPORTED_PATTERNS: RegExp[] = [
+   /unsupported model/i,
+   /model[^\n]*(?:not found|not supported)/i,
+   /unknown model/i,
+];
+
+const CODEX_CREDENTIAL_MODEL_ACCESS_PATTERNS: RegExp[] = [
+   /model[^\n]*(?:not found|not supported|not available|not enabled)/i,
+   /not supported when using codex with a chatgpt account/i,
+   /(?:do not|don't|does not|doesn't) have access[^\n]*(?:model|gpt)/i,
+   /(?:account|plan|subscription)[^\n]*(?:cannot|can't|does not|doesn't|not allowed|not permitted)[^\n]*(?:access|use)/i,
+   /requires[^\n]*(?:plus|pro|team|business|enterprise|paid)/i,
+];
+
+const KIRO_CREDENTIAL_MODEL_ACCESS_PATTERNS: RegExp[] = [
+   /^invalid model\. please select a different model to continue\.?$/i,
+   /model[^\n]*(?:not found|not supported|not available|not enabled|invalid)/i,
+   /(?:do not|don't|does not|doesn't) have access[^\n]*(?:model|claude|opus|sonnet)/i,
+   /(?:account|plan|subscription)[^\n]*(?:cannot|can't|does not|doesn't|not allowed|not permitted)[^\n]*(?:access|use)/i,
+   /requires[^\n]*(?:pro|paid|upgrade|subscription)/i,
+];
+
+const BLAZEAPI_CREDENTIAL_MODEL_ACCESS_PATTERNS: RegExp[] = [
+   /model[^\n]*(?:only available to paid users|paid users only|requires a paid plan|requires paid)/i,
+   /(?:account|plan)[^\n]*(?:cannot|can't|does not|doesn't|not allowed|not permitted)[^\n]*(?:access|use)[^\n]*(?:model|claude|opus|sonnet)/i,
+   /paid[_\s-]?plan[_\s-]?required/i,
+];
+
+const BLAZEAPI_SELECTED_PROVIDER_FAILED_HTTP_400_PATTERNS: RegExp[] = [
+   /the selected provider failed this request\s*\(HTTP\s*400\)/i,
+];
+
+function matchesAny(message: string, patterns: readonly RegExp[]): boolean {
+   return patterns.some((pattern) => pattern.test(message));
+}
+
+function withQuotaClassification(
+   message: string,
+   classification: CredentialErrorClassification,
+): CredentialErrorClassification {
+   if (
+      classification.kind !== "rate_limit" &&
+      classification.kind !== "quota" &&
+      classification.kind !== "quota_weekly" &&
+      classification.kind !== "balance_exhausted" &&
+      classification.kind !== "organization_disabled"
+   ) {
+      return classification;
+   }
+
+   const quotaResult = quotaClassifier.classifyFromMessage(message);
+   const retryAfterCooldownMs = parseRetryAfterCooldownMs(message);
+   const recommendedCooldownMs =
+      classification.kind === "rate_limit" && quotaResult.classification === "unknown"
+         ? Math.min(retryAfterCooldownMs ?? TRANSIENT_COOLDOWN_BASE_MS, TRANSIENT_COOLDOWN_MAX_MS)
+         : quotaResult.cooldownMs;
+   return {
+      ...classification,
+      quotaClassification: quotaResult.classification,
+      quotaWindow: quotaResult.window,
+      recommendedCooldownMs,
+      recoveryAction: {
+         ...quotaResult.recoveryAction,
+         estimatedWaitMs: recommendedCooldownMs,
+      },
+   };
+}
+
+export function isCredentialModelIncompatibilityError(errorText: string, context?: CredentialErrorContext): boolean {
+   const message = errorText.trim();
+   const providerId = (context?.providerId ?? "").trim().toLowerCase();
+   const rawModelId = (context?.modelId ?? "").trim().toLowerCase();
+   const separatorIndex = rawModelId.indexOf("/");
+   const modelId = separatorIndex >= 0 ? rawModelId.slice(separatorIndex + 1).trim() : rawModelId;
+   if (!message) {
+      return false;
+   }
+
+   if (providerId === "openai-codex" && modelId.startsWith("gpt-")) {
+      return matchesAny(message, CODEX_CREDENTIAL_MODEL_ACCESS_PATTERNS);
+   }
+
+   if (providerId === "kiro" && modelId.startsWith("claude-")) {
+      return matchesAny(message, KIRO_CREDENTIAL_MODEL_ACCESS_PATTERNS);
+   }
+
+   if (providerId === "blazeapi") {
+      return matchesAny(message, BLAZEAPI_CREDENTIAL_MODEL_ACCESS_PATTERNS);
+   }
+
+   return false;
+}
+
+export function isRetryableModelAvailabilityError(errorText: string, context?: CredentialErrorContext): boolean {
+   const message = errorText.trim();
+   if (!message) {
+      return false;
+   }
+
+   if (isCredentialModelIncompatibilityError(message, context)) {
+      return true;
+   }
+
+   if ((context?.providerId ?? "").trim().toLowerCase() !== "vivgrid") {
+      return false;
+   }
+
+   return matchesAny(message, MODEL_NOT_SUPPORTED_PATTERNS);
+}
+
+export function classifyCredentialError(
+   rawMessage: string,
+   context?: CredentialErrorContext,
+): CredentialErrorClassification {
+   const message = rawMessage.trim();
+   if (!message) {
+      return {
+         kind: "unknown",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Empty error message",
+      };
+   }
+
+   if (matchesAny(message, CONTEXT_LIMIT_PATTERNS)) {
+      return {
+         kind: "context_limit",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Context/token limit error detected",
+      };
+   }
+
+   if (matchesAny(message, AUTH_TOKEN_INVALIDATED_PATTERNS)) {
+      return {
+         kind: "authentication",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: true,
+         reason: "Authentication token invalidated - credential disabled until re-authenticated",
+      };
+   }
+
+   if (matchesAny(message, AUTH_PATTERNS)) {
+      return {
+         kind: "authentication",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Authentication error detected",
+      };
+   }
+
+   if (matchesAny(message, ORGANIZATION_DISABLED_PATTERNS)) {
+      return withQuotaClassification(message, {
+         kind: "organization_disabled",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: true,
+         reason: "Organization is disabled for this credential",
+      });
+   }
+
+   // Balance exhaustion requires manual intervention (add credits/funds)
+   // These credentials should be DISABLED and only re-enabled manually
+   if (matchesAny(message, BALANCE_EXHAUSTED_PATTERNS)) {
+      return withQuotaClassification(message, {
+         kind: "balance_exhausted",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: true,
+         reason: "Account balance exhausted - credential disabled until manually re-enabled",
+      });
+   }
+
+   if (matchesAny(message, PERMISSION_PATTERNS)) {
+      return {
+         kind: "permission",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Permission error detected",
+      };
+   }
+
+   if (isRetryableModelAvailabilityError(message, context)) {
+      return {
+         kind: "invalid_request",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Provider reported the requested model is unavailable on this credential",
+      };
+   }
+
+   if (
+      (context?.providerId ?? "").trim().toLowerCase() === "blazeapi" &&
+      matchesAny(message, BLAZEAPI_SELECTED_PROVIDER_FAILED_HTTP_400_PATTERNS)
+   ) {
+      return {
+         kind: "provider_transient",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: true,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "BlazeAPI upstream route returned a transient provider HTTP 400",
+      };
+   }
+
+   if (matchesAny(message, TRANSIENT_BAD_REQUEST_GATEWAY_PATTERNS)) {
+      return {
+         kind: "provider_transient",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Transient provider gateway 400 response detected",
+      };
+   }
+
+   if (matchesAny(message, INVALID_REQUEST_PATTERNS)) {
+      return {
+         kind: "invalid_request",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Invalid or unsupported request detected",
+      };
+   }
+
+   const isRateLimited = matchesAny(message, RATE_LIMIT_PATTERNS);
+   const isQuotaError = matchesAny(message, QUOTA_PATTERNS);
+   const isWeeklyQuota = matchesAny(message, WEEKLY_QUOTA_PATTERNS);
+
+   // Weekly quota errors get special handling with exponential backoff
+   if (isWeeklyQuota) {
+      return withQuotaClassification(message, {
+         kind: "quota_weekly",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: true,
+         shouldDisableCredential: false,
+         reason: "Weekly quota exhaustion detected - requires exponential backoff",
+      });
+   }
+
+   if (isRateLimited || isQuotaError) {
+      return withQuotaClassification(message, {
+         kind: isQuotaError ? "quota" : "rate_limit",
+         shouldRotateCredential: true,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: true,
+         shouldDisableCredential: false,
+         reason: isQuotaError ? "Quota or spend exhaustion pattern detected" : "Rate-limit pattern detected",
+      });
+   }
+
+   if (matchesAny(message, CANCELLATION_PATTERNS)) {
+      return {
+         kind: "unknown",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: false,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Cancellation or abort detected; preserving caller-owned termination semantics",
+      };
+   }
+
+   if (matchesAny(message, REQUEST_TIMEOUT_PATTERNS)) {
+      return {
+         kind: "request_timeout",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: true,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Per-attempt request timeout detected",
+      };
+   }
+
+   if (matchesAny(message, TRANSIENT_PROVIDER_PATTERNS)) {
+      return {
+         kind: "provider_transient",
+         shouldRotateCredential: false,
+         shouldRetrySameCredential: true,
+         shouldApplyCooldown: false,
+         shouldDisableCredential: false,
+         reason: "Transient provider/server error detected",
+      };
+   }
+
+   return {
+      kind: "unknown",
+      shouldRotateCredential: false,
+      shouldRetrySameCredential: false,
+      shouldApplyCooldown: false,
+      shouldDisableCredential: false,
+      reason: "No known rotation pattern matched",
+   };
+}
+
+/**
+ * Lightweight check for quota or rate-limit errors without the full classification.
+ * Designed for external consumers (e.g. pi-agent-router) that only need to detect
+ * quota/rate-limit failures from subagent stderr output.
+ */
+export function isQuotaOrRateLimitError(errorText: string): boolean {
+   const text = errorText.trim();
+   if (!text) {
+      return false;
+   }
+   return (
+      matchesAny(text, RATE_LIMIT_PATTERNS) ||
+      matchesAny(text, QUOTA_PATTERNS) ||
+      matchesAny(text, WEEKLY_QUOTA_PATTERNS) ||
+      matchesAny(text, BALANCE_EXHAUSTED_PATTERNS)
+   );
+}

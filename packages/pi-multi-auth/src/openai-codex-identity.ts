@@ -1,0 +1,85 @@
+import { isRecord } from "./auth-error-utils.js";
+
+const OPENAI_AUTH_CLAIM_KEY = "https://api.openai.com/auth";
+const OPENAI_PROFILE_CLAIM_KEY = "https://api.openai.com/profile";
+
+export interface CodexCredentialIdentitySource {
+   access: string;
+   accountId?: unknown;
+   email?: unknown;
+   idToken?: unknown;
+}
+
+export interface CodexCredentialIdentity {
+   accountUserId: string | null;
+   email: string | null;
+   accountId: string | null;
+   planType: string | null;
+}
+
+function asNonEmptyString(value: unknown): string | null {
+   if (typeof value !== "string") {
+      return null;
+   }
+
+   const normalized = value.trim();
+   return normalized.length > 0 ? normalized : null;
+}
+
+export function decodeJwtPayload(token: string): Record<string, unknown> | null {
+   if (!token) {
+      return null;
+   }
+
+   const parts = token.split(".");
+   const payloadPart = parts[1];
+   if (!payloadPart) {
+      return null;
+   }
+
+   const normalized = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+   const padded = `${normalized}${"=".repeat((4 - (normalized.length % 4)) % 4)}`;
+
+   try {
+      const decoded = Buffer.from(padded, "base64").toString("utf-8");
+      const parsed = JSON.parse(decoded) as unknown;
+      return isRecord(parsed) ? parsed : null;
+   } catch {
+      return null;
+   }
+}
+
+export function extractCodexCredentialIdentity(credential: CodexCredentialIdentitySource): CodexCredentialIdentity {
+   const payload = decodeJwtPayload(credential.access);
+   const idToken = asNonEmptyString(credential.idToken);
+   const idTokenPayload = idToken ? decodeJwtPayload(idToken) : null;
+   const authClaimRaw = payload?.[OPENAI_AUTH_CLAIM_KEY];
+   const profileClaimRaw = payload?.[OPENAI_PROFILE_CLAIM_KEY];
+   const idTokenAuthClaimRaw = idTokenPayload?.[OPENAI_AUTH_CLAIM_KEY];
+   const idTokenProfileClaimRaw = idTokenPayload?.[OPENAI_PROFILE_CLAIM_KEY];
+   const authClaim = isRecord(authClaimRaw) ? authClaimRaw : null;
+   const profileClaim = isRecord(profileClaimRaw) ? profileClaimRaw : null;
+   const idTokenAuthClaim = isRecord(idTokenAuthClaimRaw) ? idTokenAuthClaimRaw : null;
+   const idTokenProfileClaim = isRecord(idTokenProfileClaimRaw) ? idTokenProfileClaimRaw : null;
+
+   return {
+      accountUserId:
+         asNonEmptyString(authClaim?.chatgpt_account_user_id) ??
+         asNonEmptyString(authClaim?.chatgpt_user_id) ??
+         asNonEmptyString(authClaim?.user_id) ??
+         asNonEmptyString(idTokenAuthClaim?.chatgpt_account_user_id) ??
+         asNonEmptyString(idTokenAuthClaim?.chatgpt_user_id) ??
+         asNonEmptyString(idTokenAuthClaim?.user_id),
+      email:
+         asNonEmptyString(credential.email) ??
+         asNonEmptyString(profileClaim?.email) ??
+         asNonEmptyString(payload?.email) ??
+         asNonEmptyString(idTokenProfileClaim?.email) ??
+         asNonEmptyString(idTokenPayload?.email),
+      accountId:
+         asNonEmptyString(credential.accountId) ??
+         asNonEmptyString(authClaim?.chatgpt_account_id) ??
+         asNonEmptyString(idTokenAuthClaim?.chatgpt_account_id),
+      planType: asNonEmptyString(authClaim?.chatgpt_plan_type) ?? asNonEmptyString(idTokenAuthClaim?.chatgpt_plan_type),
+   };
+}
