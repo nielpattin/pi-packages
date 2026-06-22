@@ -1,8 +1,11 @@
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
-const root = process.cwd();
+// Resolve from this test file's location so the test works regardless of the
+// process cwd (e.g. when run from the workspace root by `vitest run`).
+const root = fileURLToPath(new URL("..", import.meta.url));
 
 function readProjectFile(path: string): string {
    return readFileSync(join(root, path), "utf8");

@@ -15,11 +15,25 @@ import { fileURLToPath } from "node:url";
  * Returns the absolute path if found, undefined otherwise.
  */
 export function resolveLeanMagicContextEntry(): string | undefined {
-   // __dirname equivalent for ESM: pi-subagents/src/session/
-   const currentDir = fileURLToPath(new URL(".", import.meta.url));
+   // __dirname equivalent for ESM. May resolve to either the source
+   // (src/session/) or the compiled output (dist/src/session/) depending on
+   // how the module is loaded, so walk up the tree to locate the sibling
+   // pi-magic-context workspace package rather than hardcoding a depth.
+   let currentDir = fileURLToPath(new URL(".", import.meta.url));
 
-   // Navigate: src/session/ → src/ → pi-subagents/ → packages/ → pi-magic-context/
-   const magicContextDir = resolve(currentDir, "../../../pi-magic-context");
+   let magicContextDir: string | undefined;
+   for (let i = 0; i < 8; i++) {
+      const candidate = resolve(currentDir, "pi-magic-context");
+      if (existsSync(candidate)) {
+         magicContextDir = candidate;
+         break;
+      }
+      const parent = resolve(currentDir, "..");
+      if (parent === currentDir) break;
+      currentDir = parent;
+   }
+
+   if (!magicContextDir) return undefined;
 
    // Compiled entry (production build via pnpm build in pi-magic-context)
    const compiledEntry = resolve(magicContextDir, "dist/src/subagent-entry.js");
