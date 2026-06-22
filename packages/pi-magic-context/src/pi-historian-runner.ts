@@ -283,11 +283,12 @@ export async function runPiHistorian(deps: PiHistorianDeps): Promise<void> {
             );
          }
 
-         const prompt = buildCompartmentAgentPrompt(
-            existingState,
-            `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-            { stateFilePath },
-         );
+         const prompt = buildCompartmentAgentPrompt({
+            seedExamples: "",
+            sessionReferences: existingState,
+            projectMemory: "",
+            inputSource: `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
+         });
 
          // Defensive: use MAX(sequence) + 1 over .length to survive any old
          // recomp gaps. Same logic as Host runner.

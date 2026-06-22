@@ -1,6 +1,11 @@
 import { escapeXmlAttr, escapeXmlContent } from "../../features/magic-context/compartment-storage";
 
-export const COMPARTMENT_AGENT_SYSTEM_PROMPT = `You condense long AI coding sessions into two outputs:
+// The historian system prompt is the validated v8.7.3 artifact, generated from
+// historian-prompt.source.md (escape-safe). Edit the .md source + regenerate via
+// scripts/build-historian-prompt.ts — never hand-edit the generated constant.
+export { COMPARTMENT_AGENT_SYSTEM_PROMPT } from "./historian-prompt.generated";
+
+export const COMPARTMENT_AGENT_SYSTEM_PROMPT_OLD = `You condense long AI coding sessions into two outputs:
 
 1. compartments: completed logical work units
 2. facts: persistent cross-cutting information for future work
@@ -377,11 +382,63 @@ export function buildCompressorPrompt(
    return lines.join("\n");
 }
 
+export interface CompartmentPromptInputs {
+   /** `<compartment_examples_from_other_projects>` block (4-seed floor), or "". */
+   seedExamples: string;
+   /** `<session_references>` block (last-6 recency), or "" for a young session. */
+   sessionReferences: string;
+   /** `<project-memory>` block for fact dedup, or "" when memory disabled/empty. */
+   projectMemory: string;
+   /** Raw chunk to compartmentalize, pre-formatted `Messages X-Y:\n\n...`. */
+   inputSource: string;
+   /** When false, instruct the historian to SKIP fact extraction entirely.
+    *  v2 faithful facts are stored only as project memories; with memory
+    *  disabled there is no fact store, so emitting facts is pure waste
+    *  (and they would never be rendered). Defaults to enabled. */
+   memoryEnabled?: boolean;
+}
+
+/**
+ * Assemble the per-run historian USER prompt for the v8.7.3 system prompt.
+ *
+ * The system prompt (`COMPARTMENT_AGENT_SYSTEM_PROMPT`, from
+ * historian-prompt.generated.ts) carries ALL instructions. This builder only
+ * lays out the four input blocks in the order the prompt's Inputs section
+ * documents: cross-project examples → session references → project memory →
+ * `<new_messages>`. The unbounded v1 `existing_state` dump is GONE (v2) —
+ * bounded reference blocks replace it.
+ */
+export function buildCompartmentAgentPrompt(inputs: CompartmentPromptInputs): string;
+/**
+ * Legacy overload for Pi's existing-state-based prompt builder.
+ * Wraps the old (existingState, inputSource, options) signature into the new
+ * CompartmentPromptInputs shape so callers don't need to change immediately.
+ */
 export function buildCompartmentAgentPrompt(
-   existingState: string,
-   inputSource: string,
+   existingStateOrInputs: string | CompartmentPromptInputs,
+   inputSource?: string,
    options?: { userMemoriesEnabled?: boolean; stateFilePath?: string },
 ): string {
+   // New-style call: object with structured inputs
+   if (typeof existingStateOrInputs === "object" && existingStateOrInputs !== null) {
+      const inputs = existingStateOrInputs;
+      const parts: string[] = [];
+      if (inputs.seedExamples) parts.push(inputs.seedExamples);
+      if (inputs.sessionReferences) parts.push(inputs.sessionReferences);
+      if (inputs.projectMemory) parts.push(inputs.projectMemory);
+      if (inputs.memoryEnabled === false) {
+         parts.push(
+            "<fact_extraction>disabled</fact_extraction>\nMemory is disabled for this project: do NOT emit a <facts> block. Produce compartments only.",
+         );
+      }
+      parts.push("<new_messages>");
+      parts.push(inputs.inputSource);
+      parts.push("</new_messages>");
+      return parts.join("\n\n");
+   }
+
+   // Legacy call: (existingState, inputSource, options)
+   const existingState = existingStateOrInputs;
    const existingStateBlock = options?.stateFilePath
       ? `Read the existing session state from this file before proceeding:\n${options.stateFilePath}\n\nThe file contains the full XML existing state (compartments, facts, memories). Read it first, then process the new messages below.`
       : existingState;

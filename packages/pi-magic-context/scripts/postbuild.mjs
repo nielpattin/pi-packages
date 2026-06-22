@@ -53,7 +53,8 @@ function* walk(dir) {
 
 // Regex: match extensionless relative import/re-export specifiers.
 // Groups: entire match, the prefix + "", the specifier, the closing "
-const RE = /(from\s+")(\.[^"]+)(")|(export\s+\*\s+from\s+")(\.[^"]+)(")|(export\s+\{[^}]*\}\s*from\s+")(\.[^"]+)(")/g;
+const RE =
+   /(from\s+")(\.[^"]+)(")|(export\s+\*\s+from\s+")(\.[^"]+)(")|(export\s+\{[^}]*\}\s*from\s+")(\.[^"]+)(")|(import\s*\(\s*")(\.[^"]+)("\s*\))/g;
 
 let patched = 0;
 let fileCount = 0;
@@ -82,6 +83,11 @@ for (const fp of walk(DIST)) {
          prefix = groups[6];
          specifier = groups[7];
          suffix = groups[8];
+      } else if (groups[9] !== undefined) {
+         // import("...")
+         prefix = groups[9];
+         specifier = groups[10];
+         suffix = groups[11];
       } else {
          return match;
       }

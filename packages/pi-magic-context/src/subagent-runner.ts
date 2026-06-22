@@ -195,6 +195,7 @@ export class PiSubagentRunner implements SubagentRunner {
     */
    private readonly piBinary: string;
    private readonly spawnImpl: typeof childProcess.spawn;
+   private readonly _piCliArgs?: string[];
 
    constructor(
       options: {
@@ -214,6 +215,33 @@ export class PiSubagentRunner implements SubagentRunner {
             // `#!/usr/bin/env node` plus its exec bit, so spawning the
             // path directly runs it under Node without any extra runtime.
             this.piBinary = bundled;
+         } else if (process.platform === "win32") {
+            // Windows: resolve pi.cmd to node.exe + cli.js directly
+            try {
+               const piCmdPath = childProcess
+                  .execSync("where pi.cmd", { encoding: "utf8", timeout: 5000 })
+                  .trim()
+                  .split(/\r?\n/)[0]
+                  .trim();
+               const require_ = createRequire(import.meta.url);
+               const { readFileSync } = require_("node:fs") as typeof import("node:fs");
+               const cmdContent = readFileSync(piCmdPath, "utf8");
+               const match = cmdContent.match(/node\s+"([^"]+)"/);
+               if (match) {
+                  let cliPath = match[1].replace(/%~dp0/g, dirname(piCmdPath) + "\\");
+                  cliPath = resolvePath(cliPath);
+                  if (existsSync(cliPath)) {
+                     this.piBinary = process.execPath;
+                     this._piCliArgs = [cliPath];
+                  } else {
+                     this.piBinary = "pi.cmd";
+                  }
+               } else {
+                  this.piBinary = "pi.cmd";
+               }
+            } catch {
+               this.piBinary = "pi.cmd";
+            }
          } else {
             // Last-ditch fallback: assume `pi` is on PATH. This is the
             // happy path for interactive Pi CLI users.
@@ -311,17 +339,49 @@ export class PiSubagentRunner implements SubagentRunner {
          };
 
          let child: ReturnType<typeof childProcess.spawn>;
+         const useWrapper = process.platform === "win32" && options.systemPrompt && options.systemPrompt.length > 4000;
          try {
-            const isJsCli = typeof this.piBinary === "string" && this.piBinary.endsWith(".js");
-            child = this.spawnImpl(
-               isJsCli ? process.execPath : this.piBinary,
-               isJsCli ? [this.piBinary, ...args] : args,
-               {
+            if (useWrapper) {
+               // On Windows, import pi's CLI in-process to bypass CreateProcess 32767-char limit
+               const { writeFileSync, mkdtempSync } = createRequire(import.meta.url)(
+                  "node:fs",
+               ) as typeof import("node:fs");
+               const { join: joinTmp } = createRequire(import.meta.url)("node:path") as typeof import("node:path");
+               const { tmpdir } = createRequire(import.meta.url)("node:os") as typeof import("node:os");
+               const tmpDir = mkdtempSync(joinTmp(tmpdir(), "pi-"));
+               const wrapperScript = joinTmp(tmpDir, "wrapper.mjs");
+               const cliPath = this._piCliArgs?.[0] || this.piBinary;
+               // Replace placeholder with actual system prompt in args
+               const finalArgs = args.map((a) => (a === "__VIA_WRAPPER__" ? options.systemPrompt! : a));
+               writeFileSync(
+                  wrapperScript,
+                  `
+import { pathToFileURL } from 'node:url';
+process.chdir(${JSON.stringify(options.cwd || process.cwd())});
+process.argv = [process.execPath, ${JSON.stringify(cliPath)}, ...${JSON.stringify(finalArgs)}];
+const cliUrl = pathToFileURL(${JSON.stringify(cliPath)}).href;
+await import(cliUrl);
+`,
+                  "utf8",
+               );
+               child = childProcess.spawn(process.execPath, [wrapperScript], {
                   cwd: options.cwd,
                   env: process.env,
                   stdio: ["pipe", "pipe", "pipe"],
-               },
-            );
+               });
+            } else {
+               const isJsCli = typeof this.piBinary === "string" && this.piBinary.endsWith(".js");
+               const spawnArgs = this._piCliArgs ? [...this._piCliArgs, ...args] : args;
+               child = this.spawnImpl(
+                  isJsCli ? process.execPath : this.piBinary,
+                  isJsCli ? [this.piBinary, ...args] : spawnArgs,
+                  {
+                     cwd: options.cwd,
+                     env: process.env,
+                     stdio: ["pipe", "pipe", "pipe"],
+                  },
+               );
+            }
             if (options.userMessage && child.stdin) {
                child.stdin.write(options.userMessage);
                child.stdin.end();
@@ -822,7 +882,13 @@ export function buildArgs(options: SubagentRunOptions): string[] {
       // and have their own focused system prompt. Mixing in Pi's
       // default coding-assistant prompt would dilute the historian
       // / dreamer / sidekick role guidance.
-      args.push("--system-prompt", options.systemPrompt);
+      if (process.platform === "win32" && options.systemPrompt.length > 4000) {
+         // On Windows, use placeholder — the wrapper script replaces it with
+         // the actual system prompt to avoid CreateProcess 32767-char limit.
+         args.push("--system-prompt", "__VIA_WRAPPER__");
+      } else {
+         args.push("--system-prompt", options.systemPrompt);
+      }
    }
 
    if (typeof options.model === "string" && options.model.length > 0) {

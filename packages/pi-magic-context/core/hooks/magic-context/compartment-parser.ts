@@ -18,7 +18,7 @@ export interface ParsedCompartmentOutput {
 }
 
 const COMPARTMENT_REGEX =
-   /<compartment\s+(?:id="[^"]*"\s+)?start="(\d+)"\s+end="(\d+)"\s+title="([^"]+)"\s*>(.*?)<\/compartment>/gs;
+   /<compartment\s+(?:id="[^"]*"\s+)?start="(\d+)"\s+end="(\d+)"\s+title="([^"]+)"(?:\s+[^>]*)?>(.*?)<\/compartment>/gs;
 const CATEGORY_BLOCK_REGEX =
    /<(WORKFLOW_RULES|ARCHITECTURE_DECISIONS|CONSTRAINTS|CONFIG_DEFAULTS|KNOWN_ISSUES|ENVIRONMENT|NAMING|USER_PREFERENCES|USER_DIRECTIVES)>(.*?)<\/\1>/gs;
 const FACT_ITEM_REGEX = /^\s*\*\s*(.+)$/gm;

@@ -176,11 +176,12 @@ export async function executeContextRecompInternal(deps: CompartmentRunnerDeps):
          cleanupHistorianStateFile(currentStateFilePath);
          currentStateFilePath = maybeWriteHistorianStateFile(sessionId, existingState, sessionDirectory);
 
-         const prompt = buildCompartmentAgentPrompt(
-            existingState,
-            `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-            { stateFilePath: currentStateFilePath },
-         );
+         const prompt = buildCompartmentAgentPrompt({
+            seedExamples: "",
+            sessionReferences: existingState,
+            projectMemory: "",
+            inputSource: `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
+         });
 
          await sendIgnoredMessage(
             client,

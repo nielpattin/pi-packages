@@ -342,10 +342,12 @@ export async function executePartialRecompInternal(
          // and to dedup fact candidates against existing facts/memories.
          const existingState = buildExistingStateXml(candidateCompartments, currentFacts, undefined);
 
-         const prompt = buildCompartmentAgentPrompt(
-            existingState,
-            `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-         );
+         const prompt = buildCompartmentAgentPrompt({
+            seedExamples: "",
+            sessionReferences: existingState,
+            projectMemory: "",
+            inputSource: `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
+         });
 
          await sendIgnoredMessage(
             client,

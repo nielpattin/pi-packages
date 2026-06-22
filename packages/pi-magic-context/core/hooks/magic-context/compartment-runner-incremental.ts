@@ -180,11 +180,12 @@ export async function runCompartmentAgent(deps: CompartmentRunnerDeps): Promise<
          );
       }
 
-      const prompt = buildCompartmentAgentPrompt(
-         existingState,
-         `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
-         { stateFilePath },
-      );
+      const prompt = buildCompartmentAgentPrompt({
+         seedExamples: "",
+         sessionReferences: existingState,
+         projectMemory: "",
+         inputSource: `Messages ${chunk.startIndex}-${chunk.endIndex}:\n\n${chunk.text}`,
+      });
 
       // Intentional: session.get failure is non-fatal — we fall back to deps.directory
       const parentSessionResponse = await client.session.get({ path: { id: sessionId } }).catch(() => null);
