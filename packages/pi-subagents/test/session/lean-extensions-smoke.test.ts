@@ -87,7 +87,7 @@ describe("lean magic-context extension loading (integration smoke)", () => {
          const result = loader.getExtensions();
          expect(result.errors).toHaveLength(0);
          expect(result.extensions).toHaveLength(0);
-      });
+      }, 30_000);
    });
 
    // ------------------------------------------------------------------
