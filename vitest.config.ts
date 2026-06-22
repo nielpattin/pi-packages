@@ -17,5 +17,6 @@ export default defineConfig({
       environment: "node",
       globals: true,
       include: ["packages/pi-*/**/*.test.ts"],
+      exclude: ["**/node_modules/**", "packages/pi-multi-auth/**"],
    },
 });
