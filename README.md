@@ -14,6 +14,8 @@ Packages publish raw TypeScript source. Pi loads `.ts` extension entrypoints thr
 | [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.        | `pnpm add @nielpattin/pi-simplify`          | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify)          | 0.2.7   |
 | [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`           | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)           | 0.6.6   |
 | [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.       | `pnpm add @nielpattin/pi-subagents`         | [npm](https://www.npmjs.com/package/@nielpattin/pi-subagents)         | 0.1.0   |
+| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.          | `<NONE>`                                    |                                                                       | 0.10.0  |
+| [pi-magic-context](./packages/pi-magic-context)         | Magic Context extension (ctx tools, historian, dreamer) for the Pi workspace.     | `<NONE>`                                    |                                                                       | 0.1.0   |
 
 ## Prerequisites
 
@@ -39,7 +41,7 @@ pnpm check     # lint, format check, and TypeScript typecheck
 
 Git hooks are the validation source for this repo:
 
-- pre-commit: `pnpm check`
+- pre-commit: `pnpm lint-staged` (oxlint + oxfmt --check on staged files)
 - pre-push: `pnpm test` and `node scripts/require-changeset.mjs origin/main`
 
 GitHub has no CI workflow for routine pushes. Run the local hooks before pushing.
@@ -53,6 +55,8 @@ pnpm --dir packages/pi-simplify pack --dry-run
 pnpm --dir packages/pi-permission-system pack --dry-run
 pnpm --dir packages/pi-subagents pack --dry-run
 pnpm --dir packages/pi-station pack --dry-run
+pnpm --dir packages/pi-multi-auth pack --dry-run
+pnpm --dir packages/pi-magic-context pack --dry-run
 ```
 
 The dry-run output should include TypeScript source files and package docs, and should not include `dist/`.
@@ -110,11 +114,13 @@ pi-packages/
 ├── .github/workflows/
 │   └── publish.yml               # exact manual npm publish
 ├── .husky/
-│   ├── pre-commit                # pnpm check
+│   ├── pre-commit                # pnpm lint-staged
 │   └── pre-push                  # pnpm test + changeset gate
 ├── .nvmrc                        # Node 24
 ├── openspec/                     # change proposals and specs
 ├── packages/
+│   ├── pi-magic-context          # magic-context extension (pi-subagents dep)
+│   ├── pi-multi-auth             # independent npm package
 │   ├── pi-permission-system      # independent npm package
 │   ├── pi-simplify               # independent npm package
 │   ├── pi-station                # independent npm package

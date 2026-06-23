@@ -21,7 +21,7 @@ import {
    signalPiHistoryRefresh,
    signalPiPendingMaterialization,
 } from "../context-handler";
-import { clearPiCompressorState } from "../pi-compressor-runner";
+
 import { buildPiCompactionSummary, findFirstKeptEntryId } from "../pi-historian-runner";
 import { readPiSessionMessages } from "../read-session-pi";
 import { setMagicContextRecompActive, updateStatusLine } from "../status-line";
@@ -177,7 +177,6 @@ export function registerCtxRecompCommand(
             // inside its 10-min window. Clearing the timer lets
             // the compressor re-evaluate as if it had never run
             // for this session.
-            clearPiCompressorState(sessionId);
          } catch (error) {
             sendCtxStatusMessage(pi, {
                title: "/ctx-recomp",

@@ -50,9 +50,8 @@ export function getHostStorageDir(): string {
    return path.join(getDataDir(), "host", "storage");
 }
 
-/** Resolve the local Pi Magic Context storage directory. */
 export function getMagicContextStorageDir(): string {
-   return path.join(os.homedir(), ".pi", "agent", "pi-magic-context");
+   return path.join(getDataDir(), "cortexkit", "magic-context");
 }
 
 /** Legacy helper retained for old migration code paths. */

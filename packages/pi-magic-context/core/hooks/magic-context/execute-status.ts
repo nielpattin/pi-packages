@@ -87,10 +87,7 @@ export function executeStatus(
 
       const currentBand = getRollingNudgeBand(meta.lastContextPercentage, executeThresholdPercentage);
       const nudgeInterval = getRollingNudgeIntervalTokens(nudgeIntervalTokens, currentBand);
-      const proactiveCompartmentTrigger = getProactiveCompartmentTriggerPercentage(
-         executeThresholdPercentage,
-         contextLimit,
-      );
+      const proactiveCompartmentTrigger = getProactiveCompartmentTriggerPercentage(executeThresholdPercentage);
 
       const displayContextLimit =
          contextLimit && contextLimit > 0

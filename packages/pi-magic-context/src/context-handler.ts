@@ -42,7 +42,6 @@ import {
    releaseCompartmentLease,
    renewCompartmentLease,
 } from "#core/features/magic-context/compartment-lease";
-import { getLastCompartmentEndMessage } from "#core/features/magic-context/compartment-storage";
 import { resolveProjectIdentity } from "#core/features/magic-context/memory/project-identity";
 import {
    clearSessionTracking,
@@ -91,12 +90,7 @@ import { resolveContextLimit, resolveExecuteThreshold } from "#core/hooks/magic-
 import { getVisibleMemoryIds } from "#core/hooks/magic-context/inject-compartments";
 import { markNoteNudgeDelivered, onNoteTrigger, peekNoteNudgeText } from "#core/hooks/magic-context/note-nudger";
 import { createNudger } from "#core/hooks/magic-context/nudger";
-import {
-   getProtectedTailStartOrdinal,
-   getRawSessionMessageCount,
-   readRawSessionMessages,
-   setRawMessageProvider,
-} from "#core/hooks/magic-context/read-session-chunk";
+import { readRawSessionMessages, setRawMessageProvider } from "#core/hooks/magic-context/read-session-chunk";
 import { log, sessionLog } from "#core/shared/logger";
 import type { SubagentRunner } from "#core/shared/subagent-runner";
 import { tagTranscript } from "#core/shared/tag-transcript";
@@ -111,12 +105,6 @@ import { applyPiHeuristicCleanup, type PiHeuristicCleanupResult } from "./heuris
 import { injectSessionHistoryIntoPi, type PiInjectionResult } from "./inject-compartments-pi";
 import { hasVisibleNoteReadCallPi } from "./note-visibility-pi";
 import { injectPiNudge } from "./nudge-injector";
-import {
-   clearPiCompressorState,
-   isPiCompressorOnCooldown,
-   markPiCompressorRun,
-   runPiCompressionPassIfNeeded,
-} from "./pi-compressor-runner";
 import { type PiHistorianDeps, runPiHistorian } from "./pi-historian-runner";
 import { injectSyntheticTodowriteForPi } from "./pi-todo-inject";
 import { convertEntriesToRawMessages, isMidTurnPi, readPiSessionMessages } from "./read-session-pi";
@@ -1531,17 +1519,6 @@ export function registerPiContextHandler(pi: ExtensionAPI, options: PiContextHan
                rawMessageProvider,
                schedulerDecision,
             });
-            maybeFireCompressor({
-               ctx,
-               sessionId,
-               db: options.db,
-               historian: options.historian,
-               isCacheBusting,
-               usagePercentage,
-               usageInputTokens,
-               usageContextLimit,
-               schedulerDecision,
-            });
          }
 
          // Step 4b.4: nudge + note-nudge + auto-search hint. All three
@@ -1715,7 +1692,6 @@ export function registerPiContextHandler(pi: ExtensionAPI, options: PiContextHan
  * subprocess mid-run.
  */
 const inFlightHistorian = new Map<string, Promise<unknown>>();
-const inFlightCompressor = new Map<string, Promise<unknown>>();
 
 /**
  * Wait for all in-flight historian runs to complete. Called from the
@@ -1728,8 +1704,8 @@ export function isHistorianInFlight(sessionId: string): boolean {
 }
 
 export async function awaitInFlightHistorians(): Promise<void> {
-   if (inFlightHistorian.size === 0 && inFlightCompressor.size === 0) return;
-   const promises = [...Array.from(inFlightHistorian.values()), ...Array.from(inFlightCompressor.values())];
+   if (inFlightHistorian.size === 0) return;
+   const promises = Array.from(inFlightHistorian.values());
    await Promise.allSettled(promises);
 }
 
@@ -1802,40 +1778,6 @@ export function resolvePiHistorianTriggerInputs(args: {
    };
 }
 
-function resolveHistoryBudgetTokensForPi(args: {
-   historyBudgetPercentage: number | undefined;
-   usagePercentage: number;
-   usageInputTokens: number;
-   usageContextLimit: number | undefined;
-   executeThresholdPercentage: PiHistorianOptions["executeThresholdPercentage"];
-   modelKey: string | undefined;
-}): number | undefined {
-   const {
-      historyBudgetPercentage,
-      usagePercentage,
-      usageInputTokens,
-      usageContextLimit,
-      executeThresholdPercentage,
-      modelKey,
-   } = args;
-   if (!historyBudgetPercentage || usagePercentage <= 0) return undefined;
-   const derivedLimit =
-      usageContextLimit && usageContextLimit > 0
-         ? usageContextLimit
-         : usageInputTokens > 0
-           ? usageInputTokens / (usagePercentage / 100)
-           : 0;
-   if (!Number.isFinite(derivedLimit) || derivedLimit <= 0) return undefined;
-   return Math.floor(
-      derivedLimit *
-         (resolveExecuteThreshold(executeThresholdPercentage ?? 65, modelKey, 65, {
-            contextLimit: derivedLimit,
-         }) /
-            100) *
-         historyBudgetPercentage,
-   );
-}
-
 function startPiCompartmentLeaseRenewal(
    db: ContextDatabase,
    sessionId: string,
@@ -1846,129 +1788,6 @@ function startPiCompartmentLeaseRenewal(
          sessionLog(sessionId, "compartment lease renewal failed; publish will be skipped if holder is stale");
       }
    }, COMPARTMENT_LEASE_RENEWAL_MS);
-}
-
-function maybeFireCompressor(args: {
-   ctx: ExtensionContext;
-   sessionId: string;
-   db: ContextDatabase;
-   historian: PiHistorianOptions;
-   isCacheBusting: boolean;
-   usagePercentage: number;
-   usageInputTokens: number;
-   usageContextLimit: number | undefined;
-   schedulerDecision: "execute" | "defer";
-}): void {
-   const { ctx, sessionId, db, historian } = args;
-   const compressor = historian.compressor;
-   if (!compressor?.enabled) return;
-   if (!args.isCacheBusting && args.schedulerDecision !== "execute") return;
-   if (inFlightHistorian.has(sessionId) || inFlightCompressor.has(sessionId)) {
-      sessionLog(sessionId, "compressor trigger eval: in-flight historian/compressor, skipping");
-      return;
-   }
-   if (isPiCompressorOnCooldown(sessionId, compressor.cooldownMs)) {
-      sessionLog(sessionId, "compressor trigger eval: cooldown active, skipping");
-      return;
-   }
-
-   const historyBudgetTokens = resolveHistoryBudgetTokensForPi({
-      historyBudgetPercentage: historian.historyBudgetPercentage,
-      usagePercentage: args.usagePercentage,
-      usageInputTokens: args.usageInputTokens,
-      usageContextLimit: args.usageContextLimit,
-      executeThresholdPercentage: historian.executeThresholdPercentage,
-      modelKey: liveModelBySession.get(sessionId),
-   });
-   if (!historyBudgetTokens || historyBudgetTokens <= 0) return;
-
-   const holderId = crypto.randomUUID();
-   const runPromise = (async () => {
-      const lease = acquireCompartmentLease(db, sessionId, holderId);
-      if (!lease) {
-         sessionLog(sessionId, "compressor skipped: compartment lease held by another process");
-         return false;
-      }
-      const renewal = startPiCompartmentLeaseRenewal(db, sessionId, holderId);
-      try {
-         return await runPiCompressionPassIfNeeded({
-            db,
-            sessionId,
-            directory: ctx.cwd,
-            runner: historian.runner,
-            historianModel: historian.model,
-            fallbackModels: historian.fallbackModels,
-            historyBudgetTokens,
-            historianTimeoutMs: historian.timeoutMs,
-            thinkingLevel: historian.thinkingLevel,
-            minCompartmentRatio: compressor.minCompartmentRatio,
-            maxMergeDepth: compressor.maxMergeDepth,
-            maxCompartmentsPerPass: compressor.maxCompartmentsPerPass,
-            graceCompartments: compressor.graceCompartments,
-            compartmentLeaseHolderId: holderId,
-            onPublished: () => {
-               const sessionStillActive = isContextHandlerSessionActive(sessionId);
-               // Compressor publication invalidates the injection cache AND
-               // queues drops for the merged compartments. Mirrors Host's
-               // onInjectionCacheCleared callback in transform.ts:502-505:
-               //   - signalPiHistoryRefresh: triggers ONE rebuild on the next
-               //     transform pass (drained immediately after rebuild).
-               //   - signalPiPendingMaterialization: queues the drops the
-               //     compressor published; persists until the next pipeline
-               //     pass actually materializes them. Without this signal,
-               //     drops sit in pending_ops and context climbs until the
-               //     85% force-materialization threshold — exactly the
-               //     "context kept going up after historian/compressor ran"
-               //     symptom users observed in Pi.
-               //
-               // We deliberately do NOT signal systemPromptRefresh — historian
-               // /compressor don't change disk-backed adjuncts (docs/profile/
-               // key-files), so re-reading them would burn IO for nothing.
-               signalPiDeferredHistoryRefresh(sessionId);
-               signalPiDeferredMaterialization(sessionId);
-               if (sessionStillActive) {
-                  historian.onStatusChange?.(ctx, sessionId);
-               } else {
-                  sessionLog(sessionId, "compressor publication recorded after session clear; status callback skipped");
-               }
-            },
-         });
-      } finally {
-         clearInterval(renewal);
-         releaseCompartmentLease(db, sessionId, holderId);
-      }
-   })()
-      .then((didPublish) => {
-         if (didPublish === true) {
-            markPiCompressorRun(sessionId);
-         }
-      })
-      .catch((err) => {
-         sessionLog(sessionId, `compressor failed in background: ${err instanceof Error ? err.message : String(err)}`);
-      })
-      .finally(() => {
-         inFlightCompressor.delete(sessionId);
-         if (isContextHandlerSessionActive(sessionId)) {
-            historian.onStatusChange?.(ctx, sessionId);
-         }
-      });
-   inFlightCompressor.set(sessionId, runPromise);
-}
-
-function hasEligiblePiCompartmentHistory(db: ContextDatabase, sessionId: string): boolean {
-   try {
-      const lastCompartmentEnd = getLastCompartmentEndMessage(db, sessionId);
-      const nextStartOrdinal = Math.max(1, lastCompartmentEnd + 1);
-      const rawMessageCount = getRawSessionMessageCount(sessionId);
-      const protectedTailStart = getProtectedTailStartOrdinal(sessionId);
-      return rawMessageCount >= nextStartOrdinal && nextStartOrdinal < protectedTailStart;
-   } catch (err) {
-      sessionLog(
-         sessionId,
-         `historian recovery eligibility failed: ${err instanceof Error ? err.message : String(err)}`,
-      );
-      return false;
-   }
 }
 
 function sendPiIgnoredNotification(ctx: ExtensionContext, message: string): void {
@@ -2203,8 +2022,7 @@ function maybeFireHistorian(args: {
          }
 
          const failureState = getHistorianFailureState(db, sessionId);
-         const shouldRecoverOnFirstPass =
-            failureState.failureCount > 0 && hasEligiblePiCompartmentHistory(db, sessionId);
+         const shouldRecoverOnFirstPass = failureState.failureCount > 0;
          if (shouldRecoverOnFirstPass) {
             triggered = true;
             sessionLog(
@@ -3299,5 +3117,4 @@ export function clearContextHandlerSession(sessionId: string): void {
       rawMessageProviderUnregistersBySession.delete(sessionId);
    }
    clearSessionTracking(sessionId);
-   clearPiCompressorState(sessionId);
 }

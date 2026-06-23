@@ -146,7 +146,7 @@ async function injectWasmOrtForElectron(): Promise<boolean> {
       // to keep Bun's static analyzer from eagerly probing the package at plugin
       // load time. We need lazy resolution because non-Electron runtimes never
       // need onnxruntime-web at all. See issue #4.
-      const ortWebSpec = `onnxruntime-${"web"}`;
+      const ortWebSpec = `onnxruntime-web`;
       const ortWeb = (await import(ortWebSpec)) as {
          env?: { wasm?: { wasmPaths?: string | Record<string, string> } };
          default?: unknown;
@@ -354,7 +354,7 @@ export class LocalEmbeddingProvider implements EmbeddingProvider {
             // hit ENOENT on JSDoc-referenced files inside transformers' webpack dist
             // when the literal string triggers Bun's static module analysis.
             // See: upstream issue #4
-            const transformersSpec = `@huggingface/${"transformers"}`;
+            const transformersSpec = `@huggingface/transformers`;
             const transformersModule = (await import(transformersSpec)) as Record<string, unknown>;
             const env = transformersModule.env as {
                logLevel?: unknown;

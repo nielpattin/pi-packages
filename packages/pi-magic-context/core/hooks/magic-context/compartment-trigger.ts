@@ -32,17 +32,7 @@ export interface CompartmentTriggerResult {
    reason?: "projected_headroom" | "force_80" | "commit_clusters" | "tail_size";
 }
 
-const LARGE_CONTEXT_CAP_TOKENS = 272_000;
-
-export function getProactiveCompartmentTriggerPercentage(
-   executeThresholdPercentage: number,
-   contextLimit?: number,
-): number {
-   if (typeof contextLimit === "number" && contextLimit > LARGE_CONTEXT_CAP_TOKENS) {
-      return (
-         (LARGE_CONTEXT_CAP_TOKENS / contextLimit) * (executeThresholdPercentage - PROACTIVE_TRIGGER_OFFSET_PERCENTAGE)
-      );
-   }
+export function getProactiveCompartmentTriggerPercentage(executeThresholdPercentage: number): number {
    return Math.max(0, executeThresholdPercentage - PROACTIVE_TRIGGER_OFFSET_PERCENTAGE);
 }
 
@@ -190,7 +180,7 @@ export function checkCompartmentTrigger(
    dropToolStructure = true,
    commitClusterTrigger?: { enabled: boolean; min_clusters: number },
    preloadedActiveTags?: readonly TagEntry[],
-   contextLimit?: number,
+   _contextLimit?: number,
    dropsDeferred?: boolean,
 ): CompartmentTriggerResult {
    if (sessionMeta.compartmentInProgress) {
@@ -282,10 +272,7 @@ export function checkCompartmentTrigger(
    }
 
    // Pressure-driven trigger: context is near threshold and drops aren't enough
-   const proactiveTriggerPercentage = getProactiveCompartmentTriggerPercentage(
-      executeThresholdPercentage,
-      contextLimit,
-   );
+   const proactiveTriggerPercentage = getProactiveCompartmentTriggerPercentage(executeThresholdPercentage);
    if (usage.percentage < proactiveTriggerPercentage) {
       sessionLog(
          sessionId,
