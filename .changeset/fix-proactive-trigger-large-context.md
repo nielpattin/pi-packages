@@ -1,5 +1,5 @@
 ---
-"pi-magic-context": patch
+"@nielpattin/pi-magic-context": patch
 ---
 
 fix: bypass no-raw-history gate at force-80 and skip projected-post-drop gate when drops are deferred

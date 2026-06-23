@@ -1,5 +1,5 @@
 ---
-"pi-magic-context": minor
+"@nielpattin/pi-magic-context": minor
 ---
 
 feat: add /ctx-historian command and status demo mode
