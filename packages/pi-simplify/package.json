@@ -1,6 +1,6 @@
 {
    "name": "@nielpattin/pi-simplify",
-   "version": "0.2.7",
+   "version": "0.2.8",
    "description": "A Pi extension that reviews recently changed code for clarity, consistency, and maintainability.",
    "keywords": [
       "ai",

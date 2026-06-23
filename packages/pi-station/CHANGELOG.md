@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- d77095c: Add cache_hit (CH%) segment, fix cost segment to show actual cost, move (auto) indicator to context_pct segment
+
+### Patch Changes
+
+- 3324736: Fix terminal split selection so ST-terminated OSC 8 hyperlinks keep their visible file paths highlighted and copied.
+- 2dfb0b1: Update Pi host peer dependency ranges to `^0.78.0`.
+- 1da0dd9: Remove pi-station's custom read tool renderer so read output uses the default tool shell.
+
 All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
