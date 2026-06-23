@@ -160,7 +160,7 @@ export function heuristicKeyFileSelection(
          score: c.fullReadCount * 2 - c.editCount * 3,
       }))
       .filter((c) => c.score > 0)
-      .sort((a, b) => b.score - a.score);
+      .toSorted((a, b) => b.score - a.score);
 
    const selected = greedyFitFiles(scored, tokenBudget);
    setKeyFiles(db, sessionId, selected);

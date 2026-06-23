@@ -86,7 +86,7 @@ function getAnthropicPlanType(auth: UsageAuth): string | null {
 /**
  * Fetches Anthropic subscription usage from the OAuth usage endpoint.
  */
-export const anthropicUsageProvider: UsageProvider<UsageAuth> = {
+export const anthropicUsageProvider: UsageProvider = {
    id: "anthropic",
    displayName: "Anthropic",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

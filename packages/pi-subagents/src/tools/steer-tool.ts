@@ -68,7 +68,7 @@ export class SteerTool {
                `Current state: ${stateParts.join(" · ")}`,
          );
       } catch (err) {
-         throw new Error(`Failed to steer agent: ${err instanceof Error ? err.message : String(err)}`);
+         throw new Error(`Failed to steer agent: ${err instanceof Error ? err.message : String(err)}`, { cause: err });
       }
    }
 

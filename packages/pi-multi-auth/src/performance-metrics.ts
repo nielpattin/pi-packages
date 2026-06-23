@@ -51,7 +51,7 @@ export class RollingMetricSeries {
          };
       }
 
-      const sorted = [...this.samples].sort((left, right) => left - right);
+      const sorted = [...this.samples].toSorted((left, right) => left - right);
       return {
          count: this.count,
          min: this.min,

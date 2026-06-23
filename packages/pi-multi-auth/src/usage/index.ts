@@ -138,7 +138,7 @@ function createPersistentCacheStore(options: UsageServiceOptions): UsageSnapshot
  * Orchestrates provider-specific usage fetching with single-flight in-memory cache.
  */
 export class UsageService {
-   private readonly providers = new Map<string, UsageProvider<UsageAuth>>();
+   private readonly providers = new Map<string, UsageProvider>();
    private readonly cache = new Map<string, UsageCacheEntry>();
    private readonly cacheKeysByCredential = new Map<string, Set<string>>();
    private readonly displayCache = new Map<string, UsageDisplayCacheEntry>();
@@ -163,7 +163,7 @@ export class UsageService {
    /**
     * Registers a usage provider implementation.
     */
-   register(provider: UsageProvider<UsageAuth>): void {
+   register(provider: UsageProvider): void {
       this.providers.set(provider.id, provider);
    }
 

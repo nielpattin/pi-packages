@@ -744,7 +744,7 @@ export class UsageSnapshotCacheStore {
             latestByCredential.set(key, entry);
          }
       }
-      return [...latestByCredential.values()].sort(compareEntriesForRetention).slice(0, this.maxEntries);
+      return [...latestByCredential.values()].toSorted(compareEntriesForRetention).slice(0, this.maxEntries);
    }
 
    private pruneDisplayEntries(
@@ -765,7 +765,7 @@ export class UsageSnapshotCacheStore {
             latestByCredential.set(key, entry);
          }
       }
-      return [...latestByCredential.values()].sort(compareEntriesForRetention).slice(0, this.displayMaxEntries);
+      return [...latestByCredential.values()].toSorted(compareEntriesForRetention).slice(0, this.displayMaxEntries);
    }
 
    private haveEntriesChanged(
@@ -783,7 +783,7 @@ export class UsageSnapshotCacheStore {
       displayEntries: readonly PersistedUsageDisplayCacheEntry[],
       generatedAt: number,
    ): string {
-      const sortedEntries = [...entries].sort(compareEntriesForRetention);
+      const sortedEntries = [...entries].toSorted(compareEntriesForRetention);
       const entrySnapshots = new Map<string, string>();
       for (const entry of sortedEntries) {
          entrySnapshots.set(
@@ -792,7 +792,7 @@ export class UsageSnapshotCacheStore {
          );
       }
       const serializedDisplayEntries: SerializedUsageDisplayCacheEntry[] = [...displayEntries]
-         .sort(compareEntriesForRetention)
+         .toSorted(compareEntriesForRetention)
          .map((entry) => {
             const baseEntry = {
                provider: entry.provider,

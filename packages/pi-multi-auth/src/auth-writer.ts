@@ -59,7 +59,7 @@ function parseAuthData(content: string | undefined): RawAuthFileData {
    try {
       parsed = JSON.parse(content);
    } catch (error) {
-      throw new Error(`Invalid JSON in auth.json: ${getErrorMessage(error)}`);
+      throw new Error(`Invalid JSON in auth.json: ${getErrorMessage(error)}`, { cause: error });
    }
 
    if (!isRecord(parsed)) {
@@ -846,7 +846,7 @@ export class AuthWriter {
             return { credentialId, suffix };
          })
          .filter((entry): entry is { credentialId: string; suffix: number } => entry !== undefined)
-         .sort((left, right) => left.suffix - right.suffix);
+         .toSorted((left, right) => left.suffix - right.suffix);
 
       for (const entry of suffixEntries) {
          credentialIds.push(entry.credentialId);

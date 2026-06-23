@@ -84,7 +84,7 @@ export async function runWithTimeoutSignal<T>(
          throw createAbortError(abortMessage);
       }
       if (timedOut && timeoutMessage) {
-         throw new Error(timeoutMessage);
+         throw new Error(timeoutMessage, { cause: error });
       }
       throw error;
    } finally {

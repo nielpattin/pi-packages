@@ -58,7 +58,7 @@ export function extractLatestAssistantText(messages: unknown): string | null {
       .map(asSessionMessage)
       .filter((message): message is SessionMessage => message !== null)
       .filter((message) => message.info?.role === "assistant")
-      .sort((a, b) => getCreatedTime(b) - getCreatedTime(a));
+      .toSorted((a, b) => getCreatedTime(b) - getCreatedTime(a));
 
    const latest = assistantMessages[0];
    if (!latest) return null;

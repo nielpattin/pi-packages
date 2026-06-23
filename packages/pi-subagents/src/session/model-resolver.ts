@@ -115,7 +115,7 @@ export function resolveModel(input: string, registry: ModelRegistry): any | stri
    // 3. No match — list available models
    const modelList = all
       .map((m) => `  ${m.provider}/${m.id}`)
-      .sort()
+      .toSorted()
       .join("\n");
    return `Model not found: "${input}".\n\nAvailable models:\n${modelList}`;
 }

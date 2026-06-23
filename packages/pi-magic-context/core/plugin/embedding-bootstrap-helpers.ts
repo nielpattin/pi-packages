@@ -104,8 +104,8 @@ export function logConfigFailureOnce(
          outcomes: detailed.sources,
          substitutions: detailed.substitutionFailures
             .map((failure) => `${failure.source}:${failure.keyPath}:${failure.message}`)
-            .sort(),
-         recoveredTopLevelKeys: [...detailed.recoveredTopLevelKeys].sort(),
+            .toSorted(),
+         recoveredTopLevelKeys: [...detailed.recoveredTopLevelKeys].toSorted(),
       }),
    );
    const existing = loggedFailureSignatures.get(projectIdentity) ?? new Set<string>();

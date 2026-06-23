@@ -87,7 +87,7 @@ async function readCloudflareJsonResponse(response: Response): Promise<Cloudflar
    try {
       parsed = await response.json();
    } catch (error: unknown) {
-      throw new Error(`Cloudflare accounts response was not valid JSON: ${getErrorMessage(error)}`);
+      throw new Error(`Cloudflare accounts response was not valid JSON: ${getErrorMessage(error)}`, { cause: error });
    }
    return parseCloudflareAccountsResponse(parsed);
 }

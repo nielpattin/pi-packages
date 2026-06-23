@@ -1097,6 +1097,7 @@ export function createRotatingStreamWrapper(
                      : ` Credential acquisition error: ${getErrorMessage(error, STRUCTURED_ERROR_MESSAGE_OPTIONS)}`;
                   throw new Error(
                      `All ${excludedCredentialIds.size} rotated credential(s) for ${activeProviderId} failed.${lastDetail}`,
+                     { cause: error },
                   );
                }
                throw error;

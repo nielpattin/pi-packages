@@ -116,7 +116,7 @@ export function applyCavemanCleanup(
       )
       // Sort by tag_number ascending — oldest first. This matches the
       // insertion order the tagger uses and is the stable age ordering.
-      .sort((a, b) => a.tagNumber - b.tagNumber);
+      .toSorted((a, b) => a.tagNumber - b.tagNumber);
 
    if (eligible.length === 0) return result;
 

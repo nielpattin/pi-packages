@@ -30,7 +30,7 @@ function formatLargestTags(tags: ReturnType<typeof getTopNBySize>): string {
 }
 
 function formatOldToolTags(activeTags: TagEntry[], protectedCount: number, count: number): string {
-   const sortedByNumber = [...activeTags].sort((a, b) => a.tagNumber - b.tagNumber);
+   const sortedByNumber = [...activeTags].toSorted((a, b) => a.tagNumber - b.tagNumber);
    const protectedThreshold =
       protectedCount > 0 && sortedByNumber.length > protectedCount
          ? sortedByNumber[sortedByNumber.length - protectedCount].tagNumber
@@ -40,9 +40,9 @@ function formatOldToolTags(activeTags: TagEntry[], protectedCount: number, count
    const earlyToolTags = earlyHalf.filter((t) => t.type === "tool" && t.tagNumber < protectedThreshold);
    if (earlyToolTags.length === 0) return "";
 
-   const selected = earlyToolTags.sort((a, b) => b.byteSize - a.byteSize).slice(0, count);
+   const selected = earlyToolTags.toSorted((a, b) => b.byteSize - a.byteSize).slice(0, count);
    const formatted = selected
-      .sort((a, b) => a.tagNumber - b.tagNumber)
+      .toSorted((a, b) => a.tagNumber - b.tagNumber)
       .map((t) => `§${t.tagNumber}§(${formatBytes(t.byteSize)})`)
       .join(", ");
    return ` Old tool outputs worth dropping: ${formatted}`;
@@ -115,7 +115,7 @@ export function createNudger(config: {
          : getActiveTagsBySession(db, sessionId);
       const highestProtected = activeTags
          .map((t) => t.tagNumber)
-         .sort((a, b) => b - a)
+         .toSorted((a, b) => b - a)
          .slice(0, protectedCount)[0];
       const protectedHint = highestProtected
          ? ` Tags §${highestProtected}§ and above are protected (last ${protectedCount}) — You MUST NOT try to reduce those.`

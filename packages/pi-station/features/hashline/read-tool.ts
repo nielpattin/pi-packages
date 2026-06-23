@@ -147,12 +147,12 @@ export function registerReadTool(pi: ExtensionAPI): void {
          } catch (error: unknown) {
             const code = error instanceof Error ? (error as NodeJS.ErrnoException).code : undefined;
             if (code === "ENOENT") {
-               throw new Error(`File not found: ${rawPath}`);
+               throw new Error(`File not found: ${rawPath}`, { cause: error });
             }
             if (code === "EACCES" || code === "EPERM") {
-               throw new Error(`File is not readable: ${rawPath}`);
+               throw new Error(`File is not readable: ${rawPath}`, { cause: error });
             }
-            throw new Error(`Cannot access file: ${rawPath}`);
+            throw new Error(`Cannot access file: ${rawPath}`, { cause: error });
          }
 
          throwIfAborted(signal);

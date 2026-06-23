@@ -31,7 +31,7 @@ export function stableStringify(value: unknown, seen = new WeakSet<object>()): s
       return `[${value.map((item) => stableStringify(item, seen)).join(",")}]`;
    }
    // Code-point sort (NOT localeCompare). Stable across runtimes/locales.
-   const entries = Object.entries(value as Record<string, unknown>).sort(([a], [b]) => {
+   const entries = Object.entries(value as Record<string, unknown>).toSorted(([a], [b]) => {
       if (a < b) return -1;
       if (a > b) return 1;
       return 0;

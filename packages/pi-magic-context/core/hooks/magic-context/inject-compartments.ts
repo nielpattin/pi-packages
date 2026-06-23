@@ -154,7 +154,7 @@ function utilityTier(m: Memory): number {
  * over-injection of memories, depending on memory content shape.
  */
 export function trimMemoriesToBudget(sessionId: string, memories: Memory[], budgetTokens: number): Memory[] {
-   const sorted = [...memories].sort((a, b) => {
+   const sorted = [...memories].toSorted((a, b) => {
       // Permanent memories first
       if (a.status === "permanent" && b.status !== "permanent") return -1;
       if (b.status === "permanent" && a.status !== "permanent") return 1;

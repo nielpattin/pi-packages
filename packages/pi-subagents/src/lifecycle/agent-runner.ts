@@ -14,7 +14,7 @@ import { type AssemblerIO, assembleSessionConfig } from "#src/session/session-co
 import type { ParentSessionInfo, ShellExec, SubagentType, ThinkingLevel } from "#src/types";
 
 /** Names of tools registered by this extension that subagents must NOT inherit. */
-const EXCLUDED_TOOL_NAMES = ["subagent", "get_subagent_result", "steer_subagent"];
+const EXCLUDED_TOOL_NAMES = new Set(["subagent", "get_subagent_result", "steer_subagent"]);
 
 /**
  * Filter the session's active tool names: remove recursion-guard tools.
@@ -25,7 +25,7 @@ const EXCLUDED_TOOL_NAMES = ["subagent", "get_subagent_result", "steer_subagent"
  * @param activeTools  Names currently active on the session.
  */
 function filterActiveTools(activeTools: string[]): string[] {
-   return activeTools.filter((t) => !EXCLUDED_TOOL_NAMES.includes(t));
+   return activeTools.filter((t) => !EXCLUDED_TOOL_NAMES.has(t));
 }
 
 /** Normalize max turns. undefined or 0 = unlimited, otherwise minimum 1. */

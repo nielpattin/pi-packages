@@ -471,7 +471,7 @@ async function readZipTextEntries(zipPath: string): Promise<ZipTextEntry[]> {
    try {
       stats = await stat(resolvedPath);
    } catch (error: unknown) {
-      throw new Error(`Could not read ZIP import path '${zipPath}': ${getErrorMessage(error)}`);
+      throw new Error(`Could not read ZIP import path '${zipPath}': ${getErrorMessage(error)}`, { cause: error });
    }
    if (!stats.isFile()) {
       throw new Error(`ZIP import path '${zipPath}' is not a file.`);

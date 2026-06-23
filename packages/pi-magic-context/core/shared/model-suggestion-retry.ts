@@ -141,10 +141,10 @@ async function promptWithTimeout(
       } as Parameters<typeof client.session.prompt>[0]);
    } catch (error) {
       if (signal?.aborted) {
-         throw new Error("prompt aborted by external signal");
+         throw new Error("prompt aborted by external signal", { cause: error });
       }
       if (controller.signal.aborted) {
-         throw new Error(`prompt timed out after ${timeoutMs}ms`);
+         throw new Error(`prompt timed out after ${timeoutMs}ms`, { cause: error });
       }
       throw error;
    } finally {

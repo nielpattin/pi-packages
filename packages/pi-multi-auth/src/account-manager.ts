@@ -1175,7 +1175,7 @@ function normalizeProviderState(state: ProviderRotationState, provider?: Support
             config: pool.config ? { ...pool.config } : undefined,
          }))
          .filter((pool) => pool.poolId.trim().length > 0 && pool.credentialIds.length > 0)
-         .sort((left, right) => {
+         .toSorted((left, right) => {
             if (left.priority !== right.priority) {
                return left.priority - right.priority;
             }
@@ -5271,7 +5271,7 @@ export class AccountManager {
          })
          .filter((candidate): candidate is OperationalUsageWarmupCandidate => candidate !== null)
          .filter((candidate) => candidate.needsRefresh || !candidate.hasUsageSnapshot)
-         .sort((left, right) => this.compareOperationalUsageWarmupCandidates(left, right));
+         .toSorted((left, right) => this.compareOperationalUsageWarmupCandidates(left, right));
 
       if (candidates.length === 0) {
          this.operationalUsageWarmupCursors.delete(provider);

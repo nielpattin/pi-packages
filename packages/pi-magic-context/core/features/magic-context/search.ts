@@ -282,7 +282,7 @@ function mergeMemoryResults(args: {
    }
 
    return results
-      .sort((left, right) => {
+      .toSorted((left, right) => {
          if (right.score !== left.score) {
             return right.score - left.score;
          }
@@ -608,7 +608,7 @@ export async function unifiedSearch(
    ]);
 
    const results = [...memoryResults, ...messageResults, ...gitCommitResults]
-      .sort(compareUnifiedResults)
+      .toSorted(compareUnifiedResults)
       .slice(0, limit);
 
    // Only count retrievals for explicit agent-driven searches. Plugin-internal

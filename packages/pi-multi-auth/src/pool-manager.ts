@@ -69,7 +69,7 @@ export class PoolManager {
       const availablePools = this.config.pools
          .map((pool) => this.buildAvailablePoolEntry(pool, availableSet, options.scores))
          .filter((entry): entry is AvailablePoolEntry => entry !== null)
-         .sort((left, right) => sortPoolsByPriority(left.pool, right.pool));
+         .toSorted((left, right) => sortPoolsByPriority(left.pool, right.pool));
 
       if (availablePools.length === 0) {
          return null;
@@ -98,7 +98,7 @@ export class PoolManager {
 
       const sortedCredentials = pool.credentialIds
          .filter((credentialId) => availableSet.has(credentialId))
-         .sort((left, right) => {
+         .toSorted((left, right) => {
             if (this.config.preferHealthyWithinPool) {
                const scoreDelta = resolveScore(right, scores) - resolveScore(left, scores);
                if (scoreDelta !== 0) {

@@ -879,12 +879,12 @@ const editToolDefinition: EditToolDefinition = {
          } catch (error: unknown) {
             const code = (error as NodeJS.ErrnoException).code;
             if (code === "ENOENT") {
-               throw new Error(`File not found: ${path}`);
+               throw new Error(`File not found: ${path}`, { cause: error });
             }
             if (code === "EACCES" || code === "EPERM") {
-               throw new Error(`File is not writable: ${path}`);
+               throw new Error(`File is not writable: ${path}`, { cause: error });
             }
-            throw new Error(`Cannot access file: ${path}`);
+            throw new Error(`Cannot access file: ${path}`, { cause: error });
          }
 
          throwIfAborted(signal);

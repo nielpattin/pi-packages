@@ -314,6 +314,7 @@ export async function acquireFileLock(
             observer.onTimeout?.({ ...details, error: lockError.message });
             throw new Error(
                `Timed out acquiring lock for '${filePath}' after ${maxAttempts} attempt(s): ${lockError.message}`,
+               { cause: error },
             );
          }
 

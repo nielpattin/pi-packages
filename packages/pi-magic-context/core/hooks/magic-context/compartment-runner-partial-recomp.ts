@@ -68,7 +68,7 @@ export function snapRangeToCompartments(
 
    // Compartments come from getCompartments sorted by sequence ASC which is
    // the same as sorted by start_message ASC for any valid (contiguous) state.
-   const sorted = compartments.slice().sort((a, b) => a.sequence - b.sequence);
+   const sorted = compartments.slice().toSorted((a, b) => a.sequence - b.sequence);
 
    const { start, end } = range;
    if (start < 1) return { error: `Start must be >= 1 (got ${start}).` };

@@ -789,6 +789,7 @@ export function runMigrations(db: Database): void {
                );
                throw new Error(
                   `Migration v${migration.version} failed: sibling conflict reported but version did not advance. Database may need manual repair.`,
+                  { cause: error },
                );
             }
             currentVersion = reReadVersion;
@@ -801,6 +802,7 @@ export function runMigrations(db: Database): void {
          );
          throw new Error(
             `Migration v${migration.version} failed: ${error instanceof Error ? error.message : String(error)}. Database may need manual repair.`,
+            { cause: error },
          );
       }
    }

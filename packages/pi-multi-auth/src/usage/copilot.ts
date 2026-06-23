@@ -305,7 +305,7 @@ async function fetchInternalUser(authorization: string): Promise<Response> {
 /**
  * Fetches GitHub Copilot quota details from the internal /copilot_internal/user endpoint.
  */
-export const copilotUsageProvider: UsageProvider<UsageAuth> = {
+export const copilotUsageProvider: UsageProvider = {
    id: "github-copilot",
    displayName: "GitHub Copilot",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

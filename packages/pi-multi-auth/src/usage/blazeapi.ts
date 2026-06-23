@@ -211,7 +211,7 @@ function parseUsageResponse(value: unknown): BlazeApiUsageResponse | null {
  * Note: the cookie-gated `/api/account` endpoint visible in the browser HAR
  * cannot be used here — it returns `{"signed_in": false}` for Bearer auth.
  */
-export const blazeapiUsageProvider: UsageProvider<UsageAuth> = {
+export const blazeapiUsageProvider: UsageProvider = {
    id: BLAZEAPI_PROVIDER_ID,
    displayName: "BlazeAPI",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

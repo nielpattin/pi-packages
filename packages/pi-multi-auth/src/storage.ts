@@ -634,7 +634,7 @@ function parseState(content: string | undefined): MultiAuthState {
    try {
       parsed = JSON.parse(content);
    } catch (error) {
-      throw new Error(`Invalid JSON in multi-auth.json: ${getErrorMessage(error)}`);
+      throw new Error(`Invalid JSON in multi-auth.json: ${getErrorMessage(error)}`, { cause: error });
    }
 
    if (!isRecord(parsed)) {

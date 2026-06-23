@@ -223,7 +223,7 @@ export function buildSmartApiKeyProviderOptions(
       pushCandidate(status.provider, status.provider);
    }
 
-   const options = candidates.sort(compareProviderChoiceCandidates).map<SmartApiKeyProviderOption>((candidate) => ({
+   const options = candidates.toSorted(compareProviderChoiceCandidates).map<SmartApiKeyProviderOption>((candidate) => ({
       provider: candidate.provider,
       name: candidate.displayName,
       isConfigured: candidate.isConfigured,
@@ -268,7 +268,7 @@ export function buildSmartOAuthProviderOptions(
       });
    }
 
-   return candidates.sort(compareProviderChoiceCandidates).map<SmartOAuthProviderOption>((candidate) => ({
+   return candidates.toSorted(compareProviderChoiceCandidates).map<SmartOAuthProviderOption>((candidate) => ({
       provider: candidate.provider,
       name: names.get(candidate.provider) ?? candidate.provider,
       isConfigured: candidate.isConfigured,

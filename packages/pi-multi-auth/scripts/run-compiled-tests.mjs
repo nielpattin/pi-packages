@@ -13,7 +13,7 @@ function collectCompiledTestFiles(directory) {
          }
          return entry.isFile() && entry.name.endsWith(".test.js") ? [entryPath] : [];
       })
-      .sort((a, b) => a.localeCompare(b));
+      .toSorted((a, b) => a.localeCompare(b));
 }
 
 const testFiles = collectCompiledTestFiles(TEST_ROOT);

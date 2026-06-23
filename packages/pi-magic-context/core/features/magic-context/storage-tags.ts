@@ -329,7 +329,7 @@ export function deleteTagsByMessageId(db: Database, sessionId: string, messageId
 
       // De-duplicate — a tag could in theory match both predicates.
       const merged = new Set<number>([...messageScopedTags, ...ownerScopedTagNumbers]);
-      return Array.from(merged).sort((a, b) => a - b);
+      return Array.from(merged).toSorted((a, b) => a - b);
    })();
 }
 

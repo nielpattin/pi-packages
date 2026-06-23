@@ -233,7 +233,7 @@ async function fetchCommandCodeUsageData(auth: UsageAuth): Promise<CommandCodeUs
 /**
  * Fetches CommandCode credit and billing-cycle usage from the CLI's alpha endpoints.
  */
-export const commandCodeUsageProvider: UsageProvider<UsageAuth> = {
+export const commandCodeUsageProvider: UsageProvider = {
    id: COMMAND_CODE_PROVIDER_ID,
    displayName: "CommandCode",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

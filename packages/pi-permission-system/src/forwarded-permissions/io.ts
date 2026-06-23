@@ -265,7 +265,7 @@ export function listRequestFiles(logger: ForwardedPermissionLogger | null, reque
    try {
       return readdirSync(requestsDir)
          .filter((name) => name.endsWith(".json"))
-         .sort();
+         .toSorted();
    } catch (error) {
       logPermissionForwardingWarning(
          logger,

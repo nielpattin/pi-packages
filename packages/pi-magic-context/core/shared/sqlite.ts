@@ -14,4 +14,4 @@ export const Database: typeof BetterSqlite3 = DatabaseImpl;
 export type Database = BetterSqlite3.Database;
 
 /** Statement instance type used for WeakMap caches throughout the codebase. */
-export type Statement = BetterSqlite3.Statement<unknown[], unknown>;
+export type Statement = BetterSqlite3.Statement<unknown[]>;

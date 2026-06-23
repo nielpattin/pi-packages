@@ -208,7 +208,7 @@ async function fetchKiroUsageLimits(accessToken: string): Promise<KiroUsageLimit
    return parsed;
 }
 
-export const kiroUsageProvider: UsageProvider<UsageAuth> = {
+export const kiroUsageProvider: UsageProvider = {
    id: KIRO_PROVIDER_ID,
    displayName: "Kiro",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

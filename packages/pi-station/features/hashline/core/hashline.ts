@@ -198,7 +198,7 @@ function formatMismatchError(
       displayLines.add(line);
    }
 
-   const sorted = [...displayLines].sort((a, b) => a - b);
+   const sorted = [...displayLines].toSorted((a, b) => a - b);
    const maxDisplayLine = sorted[sorted.length - 1] ?? 1;
    const lineNumberWidth = String(maxDisplayLine).length;
    const out: string[] = [
@@ -860,7 +860,7 @@ export function applyHashlineEdits(
 
    assertNoConflictingSpans(resolvedSpans);
 
-   const orderedSpans = [...resolvedSpans].sort((left, right) => {
+   const orderedSpans = [...resolvedSpans].toSorted((left, right) => {
       if (right.end !== left.end) {
          return right.end - left.end;
       }

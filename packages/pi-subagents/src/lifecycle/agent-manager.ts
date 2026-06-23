@@ -225,7 +225,7 @@ export class AgentManager {
    }
 
    listAgents(): Agent[] {
-      return [...this.agents.values()].sort((a, b) => b.startedAt - a.startedAt);
+      return [...this.agents.values()].toSorted((a, b) => b.startedAt - a.startedAt);
    }
 
    abort(id: string): boolean {

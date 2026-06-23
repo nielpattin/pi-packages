@@ -313,7 +313,7 @@ async function fetchCodexUsageResponseWithRetry(
 /**
  * Fetches OpenAI Codex usage/quota from /backend-api/wham/usage.
  */
-export const codexUsageProvider: UsageProvider<UsageAuth> = {
+export const codexUsageProvider: UsageProvider = {
    id: "openai-codex",
    displayName: "OpenAI Codex",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {
@@ -350,6 +350,7 @@ export const codexUsageProvider: UsageProvider<UsageAuth> = {
       } catch (error: unknown) {
          throw new Error(
             `OpenAI usage response was not valid JSON${response.viaIpv4Fallback ? " after IPv4 fallback" : ""}: ${getErrorMessage(error)}`,
+            { cause: error },
          );
       }
       const parsed = parseUsageResponse(data);

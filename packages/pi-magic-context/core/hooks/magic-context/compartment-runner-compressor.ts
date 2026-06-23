@@ -144,7 +144,7 @@ export async function runCompressionPassIfNeeded(deps: CompressorDeps): Promise<
       depthHistogram.set(bucket, (depthHistogram.get(bucket) ?? 0) + 1);
    }
    const histText = [...depthHistogram.entries()]
-      .sort((a, b) => a[0] - b[0])
+      .toSorted((a, b) => a[0] - b[0])
       .map(([d, n]) => `d${d}=${n}`)
       .join(" ");
    // Suppress repeat logs on unchanged histograms — most scheduler passes
@@ -361,7 +361,7 @@ export function selectCompressionBand(
       tiers.add(Math.round(entry.averageDepth));
    }
    if (tiers.size === 0) return [];
-   const orderedTiers = [...tiers].sort((a, b) => a - b);
+   const orderedTiers = [...tiers].toSorted((a, b) => a - b);
 
    for (const targetDepth of orderedTiers) {
       // Scan oldest→newest at this tier. Return the first contiguous run of
@@ -441,7 +441,7 @@ function snapLLMOutputToInputBoundaries(
 } | null {
    // Input compartments are already sorted by startMessage (DB order). Binary search to find
    // the compartment whose range [start, end] contains a given ordinal.
-   const sorted = [...inputCompartments].sort((a, b) => a.startMessage - b.startMessage);
+   const sorted = [...inputCompartments].toSorted((a, b) => a.startMessage - b.startMessage);
    const containing = (ord: number): Compartment | null => {
       let lo = 0;
       let hi = sorted.length - 1;

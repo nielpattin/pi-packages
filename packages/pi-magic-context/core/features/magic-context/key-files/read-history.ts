@@ -50,7 +50,7 @@ function toPositiveInt(value: unknown): number | null {
 
 export function coalesceRanges(ranges: ReadRange[]): ReadRange[] {
    if (ranges.length === 0) return [];
-   const sorted = [...ranges].sort((a, b) => a.start - b.start || a.end - b.end);
+   const sorted = [...ranges].toSorted((a, b) => a.start - b.start || a.end - b.end);
    const merged: ReadRange[] = [];
    for (const range of sorted) {
       const last = merged.at(-1);
@@ -62,7 +62,7 @@ export function coalesceRanges(ranges: ReadRange[]): ReadRange[] {
          merged.push({ ...range });
       }
    }
-   return merged.sort((a, b) => b.lastReadAt - a.lastReadAt || b.count - a.count).slice(0, 3);
+   return merged.toSorted((a, b) => b.lastReadAt - a.lastReadAt || b.count - a.count).slice(0, 3);
 }
 
 function normalizeProjectRelativePath(projectPath: string, filePath: string): string | null {
@@ -246,6 +246,6 @@ export function collectKeyFileCandidates(args: {
          ...candidate,
          ranges: coalesceRanges([...rangeMap.values()]),
       }))
-      .sort((a, b) => b.totalReads - a.totalReads || b.lastReadAt - a.lastReadAt)
+      .toSorted((a, b) => b.totalReads - a.totalReads || b.lastReadAt - a.lastReadAt)
       .slice(0, 200);
 }

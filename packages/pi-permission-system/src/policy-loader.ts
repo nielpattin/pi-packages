@@ -47,7 +47,7 @@ function getConfiguredMcpServerNamesFromPaths(paths: readonly string[]): string[
       }
    }
 
-   return [...seen].sort((left, right) => right.length - left.length || left.localeCompare(right));
+   return [...seen].toSorted((left, right) => right.length - left.length || left.localeCompare(right));
 }
 
 // ---------------------------------------------------------------------------

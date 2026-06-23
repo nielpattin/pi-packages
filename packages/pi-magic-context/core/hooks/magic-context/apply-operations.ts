@@ -81,7 +81,7 @@ export function applyPendingOperations(
                  tags
                     .filter((tag) => tag.status === "active")
                     .map((tag) => tag.tagNumber)
-                    .sort((left, right) => right - left)
+                    .toSorted((left, right) => right - left)
                     .slice(0, protectedTags),
               )
             : new Set<number>();

@@ -132,6 +132,6 @@ export function checkRequestedToolRegistration(
       status: "unregistered",
       requestedToolName: requested,
       normalizedToolName,
-      availableToolNames: [...availableToolNames].sort((a, b) => a.localeCompare(b)),
+      availableToolNames: [...availableToolNames].toSorted((a, b) => a.localeCompare(b)),
    };
 }

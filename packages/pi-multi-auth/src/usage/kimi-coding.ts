@@ -167,7 +167,7 @@ function selectUsageWindows(rows: readonly KimiUsageRow[]): {
 } {
    const timedRows = rows
       .filter((row) => row.windowSortMinutes !== null)
-      .sort(
+      .toSorted(
          (left, right) =>
             (left.windowSortMinutes ?? Number.MAX_SAFE_INTEGER) - (right.windowSortMinutes ?? Number.MAX_SAFE_INTEGER),
       );
@@ -192,7 +192,7 @@ function getEstimatedResetAt(primary: RateLimitWindow | null, secondary: RateLim
 /**
  * Fetches Kimi Coding quota windows from the documented /usages endpoint.
  */
-export const kimiCodingUsageProvider: UsageProvider<UsageAuth> = {
+export const kimiCodingUsageProvider: UsageProvider = {
    id: KIMI_CODING_PROVIDER_ID,
    displayName: "Kimi For Coding",
    fetchUsage: async (auth: UsageAuth): Promise<UsageSnapshot | null> => {

@@ -741,6 +741,7 @@ export function openDatabase(): Database {
       // catch and disable Magic Context for this run.
       throw new Error(
          `[magic-context] storage unavailable: ${detail}. Magic Context is disabled for this run; check log for details.`,
+         { cause: error },
       );
    }
 }

@@ -232,7 +232,7 @@ function dropArticles(text: string): string {
  *  standalone past-tense main verb in sentences like "X was complex".  */
 function dropAuxiliaries(text: string): string {
    // Sort longest-first so "has been" matches before "has".
-   const sorted = [...AUXILIARIES].sort((a, b) => b.length - a.length);
+   const sorted = [...AUXILIARIES].toSorted((a, b) => b.length - a.length);
    const escaped = sorted.map((a) => a.replace(/\s+/g, "\\s+"));
    const pattern = new RegExp(
       // Space + aux + space + (gerund or past participle or verb-like word)

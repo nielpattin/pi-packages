@@ -52,7 +52,7 @@ export function parseRangeString(input: string): number[] {
       throw new Error(`Total range size exceeds maximum of ${maxRangeElements} elements (got ${numbers.size})`);
    }
 
-   return Array.from(numbers).sort((a, b) => a - b);
+   return Array.from(numbers).toSorted((a, b) => a - b);
 }
 
 function parseInteger(str: string): number {

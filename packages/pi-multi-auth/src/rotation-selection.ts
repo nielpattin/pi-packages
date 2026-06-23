@@ -92,7 +92,7 @@ export function getUsageBasedCandidateIndex(
          lastUsedAt: state.lastUsedAt[credentialId] ?? 0,
       }))
       .filter((item) => available.has(item.credentialId))
-      .sort((left, right) => {
+      .toSorted((left, right) => {
          if (left.quotaErrorCount !== right.quotaErrorCount) {
             return left.quotaErrorCount - right.quotaErrorCount;
          }

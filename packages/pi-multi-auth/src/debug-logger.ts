@@ -21,7 +21,7 @@ export interface MultiAuthDebugLoggerOptions {
 const SENSITIVE_KEY_PATTERN = /(?:token|secret|password|authorization|key$|^(?:access|refresh)$)/i;
 
 function safeJsonStringify(value: unknown): string {
-   const seen = new WeakSet<object>();
+   const seen = new WeakSet();
    return JSON.stringify(value, (key, currentValue) => {
       if (key !== "" && SENSITIVE_KEY_PATTERN.test(key)) {
          return "[REDACTED]";
