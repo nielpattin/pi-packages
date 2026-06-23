@@ -46,6 +46,7 @@ export type BuiltinStatusLineSegmentId =
    | "hostname"
    | "cache_read"
    | "cache_write"
+   | "cache_hit"
    | "thinking"
    | "extension_statuses"
    | "skills"

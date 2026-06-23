@@ -8,7 +8,7 @@ export const DEFAULT_LAYOUT: PresetDef = {
    leftSegments: ["path", "git"],
    rightSegments: ["mcp", "skills"],
    secondaryRightSegments: ["model", "thinking"],
-   secondarySegments: ["shell_mode", "context_pct", "cache_read", "cost"],
+   secondarySegments: ["shell_mode", "context_pct", "cache_read", "cache_hit", "cost"],
    segmentOptions: {
       git: { showBranch: true, showStaged: true, showUnstaged: true, showUntracked: true },
       model: { showThinkingLevel: false },

@@ -44,10 +44,6 @@ function formatTokens(n: number): string {
    return `${Math.round(n / 1_000_000)}M`;
 }
 
-function formatCost(dollars: number): string {
-   return `$${dollars.toFixed(3)}`;
-}
-
 function formatDuration(ms: number): string {
    const seconds = Math.floor(ms / 1000);
    const minutes = Math.floor(seconds / 60);
@@ -305,10 +301,14 @@ const tokenTotalSegment: StatusLineSegment = {
 const costSegment: StatusLineSegment = {
    id: "cost",
    render(ctx) {
-      if (!ctx.autoCompactEnabled) {
+      const { cost } = ctx.usageStats;
+      const usingSubscription = ctx.usingSubscription;
+      if (!cost && !usingSubscription) {
          return { content: "", visible: false };
       }
-      return { content: color(ctx, "context", "(auto)"), visible: true };
+
+      const costStr = `$${cost.toFixed(3)}${usingSubscription ? " (sub)" : ""}`;
+      return { content: color(ctx, "context", costStr), visible: true };
    },
 };
 
@@ -323,8 +323,9 @@ const contextPctSegment: StatusLineSegment = {
       const pct = ctx.contextPercent;
       const tokens = ctx.contextTokens;
       const window = ctx.contextWindow;
+      const autoIndicator = ctx.autoCompactEnabled ? " (auto)" : "";
 
-      const text = `${formatTokens(tokens)}/${formatTokens(window)}`;
+      const text = `${formatTokens(tokens)}/${formatTokens(window)}${autoIndicator}`;
 
       // Icon outside color, text inside - use semantic colors for thresholds
       let content: string;
@@ -421,13 +422,27 @@ const hostnameSegment: StatusLineSegment = {
 const cacheReadSegment: StatusLineSegment = {
    id: "cache_read",
    render(ctx) {
-      const { cacheRead, cost } = ctx.usageStats;
+      const { cacheRead } = ctx.usageStats;
       if (!cacheRead) {
          return { content: "", visible: false };
       }
 
-      const costStr = cost ? ` | ${formatCost(cost)}` : "";
-      const content = `C:${formatTokens(cacheRead)}${costStr}`;
+      const content = `C:${formatTokens(cacheRead)}`;
+      return { content: color(ctx, "context", content), visible: true };
+   },
+};
+
+const cacheHitSegment: StatusLineSegment = {
+   id: "cache_hit",
+   render(ctx) {
+      const { input, cacheRead, cacheWrite } = ctx.usageStats;
+      const promptTokens = input + cacheRead + cacheWrite;
+      if (promptTokens <= 0 || cacheRead <= 0) {
+         return { content: "", visible: false };
+      }
+
+      const hitRate = (cacheRead / promptTokens) * 100;
+      const content = `CH${hitRate.toFixed(1)}%`;
       return { content: color(ctx, "context", content), visible: true };
    },
 };
@@ -519,6 +534,7 @@ const mcpSegment: StatusLineSegment = {
 // ═══════════════════════════════════════════════════════════════════════════
 
 export const SEGMENTS: Record<BuiltinStatusLineSegmentId, StatusLineSegment> = {
+   cache_hit: cacheHitSegment,
    cache_read: cacheReadSegment,
    cache_write: cacheWriteSegment,
    context_pct: contextPctSegment,

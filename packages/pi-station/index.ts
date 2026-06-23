@@ -396,6 +396,15 @@ function readSettings(cwd: string = process.cwd()): Record<string, unknown> {
    return mergeSettings(readSettingsFile(getSettingsPath()), readSettingsFile(getProjectSettingsPath(cwd)));
 }
 
+function readCompactionEnabled(): boolean {
+   const settings = readSettings();
+   const compaction = settings.compaction;
+   if (isRecord(compaction) && typeof compaction.enabled === "boolean") {
+      return compaction.enabled;
+   }
+   return true; // default
+}
+
 function writeStationSetting(cwd: string, update: (existingStationSetting: unknown) => unknown): boolean {
    const globalSettingsPath = getSettingsPath();
    const projectSettingsPath = getProjectSettingsPath(cwd);
@@ -1329,7 +1338,7 @@ export default function stationBar(pi: ExtensionAPI) {
       const { loaded: skillsLoaded, installed: skillsInstalled } = countSkills();
 
       return {
-         autoCompactEnabled: ctx.settingsManager?.getCompactionSettings?.()?.enabled ?? true,
+         autoCompactEnabled: readCompactionEnabled(),
          colors,
          contextPercent,
          contextTokens,
@@ -1357,6 +1366,9 @@ export default function stationBar(pi: ExtensionAPI) {
       };
    }
 
+   // Track previous autoCompactEnabled to detect changes
+   let lastAutoCompactEnabled: boolean | null = null;
+
    /**
     * Get cached responsive layout or compute fresh one.
     * The segment context scans session state, so keep it stable across render bursts.
@@ -1364,6 +1376,13 @@ export default function stationBar(pi: ExtensionAPI) {
    function getResponsiveLayout(width: number, theme: Theme) {
       const now = Date.now();
       const cacheTtl = state.isStreaming ? STREAMING_LAYOUT_CACHE_TTL_MS : LAYOUT_CACHE_TTL_MS;
+
+      // Detect autoCompactEnabled changes and force re-render
+      const currentAutoCompact = currentCtx?.settingsManager?.getCompactionSettings?.()?.enabled ?? true;
+      if (lastAutoCompactEnabled !== null && lastAutoCompactEnabled !== currentAutoCompact) {
+         state.forceNextLayoutRecompute = true;
+      }
+      lastAutoCompactEnabled = currentAutoCompact;
 
       if (state.lastLayoutResult && state.lastLayoutWidth === width) {
          const msSinceInput = now - state.lastEditorInputAt;

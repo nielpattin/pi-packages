@@ -16,6 +16,7 @@ function createMockCtx(overrides: Record<string, any> = {}) {
       customCompactionEnabled: false,
       theme: mockTheme,
       usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0, input: 0, output: 0 },
+      usingSubscription: false,
       ...overrides,
    };
 }
@@ -24,18 +25,9 @@ function createMockCtx(overrides: Record<string, any> = {}) {
 import { SEGMENTS } from "../segments.ts";
 
 describe("cache_read segment", () => {
-   it("shows cost next to cache tokens when cost exists", () => {
+   it("shows only cache tokens without cost", () => {
       const ctx = createMockCtx({
          usageStats: { cacheRead: 405_000, cacheWrite: 0, cost: 0.105, input: 10_000, output: 5000 },
-      });
-      const result = SEGMENTS.cache_read.render(ctx as any);
-      expect(result.visible).toBe(true);
-      expect(result.content).toContain("C:405k | $0.105");
-   });
-
-   it("shows only cache tokens when cost is 0", () => {
-      const ctx = createMockCtx({
-         usageStats: { cacheRead: 405_000, cacheWrite: 0, cost: 0, input: 10_000, output: 5000 },
       });
       const result = SEGMENTS.cache_read.render(ctx as any);
       expect(result.visible).toBe(true);
@@ -52,22 +44,57 @@ describe("cache_read segment", () => {
    });
 });
 
-describe("cost segment (auto)", () => {
-   it("shows only (auto) without cost", () => {
+describe("cache_hit segment", () => {
+   it("shows cache hit percentage when cache read exists", () => {
       const ctx = createMockCtx({
-         autoCompactEnabled: true,
+         usageStats: { cacheRead: 400_000, cacheWrite: 0, cost: 0.105, input: 100_000, output: 5000 },
+      });
+      const result = SEGMENTS.cache_hit.render(ctx as any);
+      expect(result.visible).toBe(true);
+      expect(result.content).toContain("CH80.0%");
+   });
+
+   it("hides when no cache read tokens", () => {
+      const ctx = createMockCtx({
+         usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0.105, input: 100_000, output: 5000 },
+      });
+      const result = SEGMENTS.cache_hit.render(ctx as any);
+      expect(result.visible).toBe(false);
+   });
+
+   it("shows 100% when no input but cache read exists", () => {
+      const ctx = createMockCtx({
+         usageStats: { cacheRead: 400_000, cacheWrite: 0, cost: 0.105, input: 0, output: 5000 },
+      });
+      const result = SEGMENTS.cache_hit.render(ctx as any);
+      expect(result.visible).toBe(true);
+      expect(result.content).toContain("CH100.0%");
+   });
+});
+
+describe("cost segment", () => {
+   it("shows cost when cost exists", () => {
+      const ctx = createMockCtx({
          usageStats: { cacheRead: 405_000, cacheWrite: 0, cost: 0.105, input: 10_000, output: 5000 },
       });
       const result = SEGMENTS.cost.render(ctx as any);
       expect(result.visible).toBe(true);
-      expect(result.content).toContain("(auto)");
-      expect(result.content).not.toContain("$");
+      expect(result.content).toContain("$0.105");
    });
 
-   it("hides when auto compact disabled", () => {
+   it("shows (sub) indicator when using subscription", () => {
       const ctx = createMockCtx({
-         autoCompactEnabled: false,
          usageStats: { cacheRead: 405_000, cacheWrite: 0, cost: 0.105, input: 10_000, output: 5000 },
+         usingSubscription: true,
+      });
+      const result = SEGMENTS.cost.render(ctx as any);
+      expect(result.visible).toBe(true);
+      expect(result.content).toContain("$0.105 (sub)");
+   });
+
+   it("hides when no cost and not using subscription", () => {
+      const ctx = createMockCtx({
+         usageStats: { cacheRead: 405_000, cacheWrite: 0, cost: 0, input: 10_000, output: 5000 },
       });
       const result = SEGMENTS.cost.render(ctx as any);
       expect(result.visible).toBe(false);
