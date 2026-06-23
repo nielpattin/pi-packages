@@ -23,5 +23,11 @@
          "#test/*": ["./packages/pi-subagents/test/*"]
       }
    },
-   "exclude": ["node_modules", "**/*.test.ts", "packages/pi-station/tests", "packages/pi-permission-system"]
+   "exclude": [
+      "node_modules",
+      "**/*.test.ts",
+      "packages/pi-station/tests",
+      "packages/pi-permission-system",
+      "packages/pi-multi-auth"
+   ]
 }
