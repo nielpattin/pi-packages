@@ -39,7 +39,7 @@ describe("lean magic-context extension loading (integration smoke)", () => {
    // resolveLeanMagicContextEntry
    // ------------------------------------------------------------------
    describe("resolveLeanMagicContextEntry", () => {
-      it("resolves a path when pi-magic-context is installed", () => {
+      it.skipIf(!leanEntryPath)("resolves a path when pi-magic-context is installed", () => {
          expect(leanEntryPath).toBeDefined();
          expect(typeof leanEntryPath).toBe("string");
       });

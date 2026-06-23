@@ -4,7 +4,7 @@
 
 Independent [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) extensions focused on developer workflow. This repo keeps small Pi packages in one workspace while preserving independent package versions, release notes, and npm publishing.
 
-Most packages publish raw TypeScript source that Pi loads through jiti, so they are not built to `dist/`. The exceptions are `pi-subagents` (esbuild-bundled entrypoint) and `pi-magic-context` (compiled entrypoint), which build to `dist/` via `pnpm --dir packages/<pkg> build`.
+Most packages publish raw TypeScript source that Pi loads through jiti, so they are not built to `dist/`. The exception is `pi-subagents` (esbuild-bundled entrypoint), which builds to `dist/` via `pnpm --dir packages/<pkg> build`.
 
 ## Packages
 
@@ -15,7 +15,6 @@ Most packages publish raw TypeScript source that Pi loads through jiti, so they 
 | [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.6.6   |
 | [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.       | `<NONE>`                           |                                                              | 0.1.0   |
 | [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.          | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.10.0  |
-| [pi-magic-context](./packages/pi-magic-context)         | Magic Context extension (ctx tools, historian, dreamer) for the Pi workspace.     | `<NONE>`                           |                                                              | 0.1.0   |
 
 ## Prerequisites
 
@@ -56,10 +55,9 @@ pnpm --dir packages/pi-permission-system pack --dry-run
 pnpm --dir packages/pi-subagents pack --dry-run
 pnpm --dir packages/pi-station pack --dry-run
 pnpm --dir packages/pi-multi-auth pack --dry-run
-pnpm --dir packages/pi-magic-context pack --dry-run
 ```
 
-For raw-TS packages, the dry-run output should include TypeScript source files and package docs, and should not include `dist/`. For `pi-subagents` and `pi-magic-context`, the dry-run should include the built `dist/`.
+For raw-TS packages, the dry-run output should include TypeScript source files and package docs, and should not include `dist/`. For `pi-subagents`, the dry-run should include the built `dist/`.
 
 ## Add a New Package
 
@@ -119,7 +117,6 @@ pi-packages/
 ├── .nvmrc                        # Node 24
 ├── openspec/                     # change proposals and specs
 ├── packages/
-│   ├── pi-magic-context          # magic-context extension (pi-subagents dep)
 │   ├── pi-multi-auth             # independent npm package
 │   ├── pi-permission-system      # independent npm package
 │   ├── pi-simplify               # independent npm package
