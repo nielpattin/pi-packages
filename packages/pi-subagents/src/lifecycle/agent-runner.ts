@@ -122,8 +122,6 @@ export interface RunnerDeps {
    registry: AgentConfigLookup;
    /** Publishes the child-execution lifecycle so consumers can observe it. */
    lifecycle: ChildLifecyclePublisher;
-   /** Paths to lean extension entries that replace full extension discovery. */
-   leanExtensionPaths?: string[];
 }
 
 // ── Public interfaces ─────────────────────────────────────────────────────────
@@ -294,13 +292,7 @@ export async function runAgent(
    // would defeat prompt_mode: replace and isolated: true. Parent context, if
    // wanted, reaches the subagent via prompt_mode: append (parentSystemPrompt
    // is embedded in systemPromptOverride) or inherit_context (conversation).
-   // When extensions are requested AND lean paths are available, skip full extension
-   // discovery and load only the lean paths. This avoids recursion risk (historian/
-   // dreamer spawning subagents), wasted startup (resource discovery, timer wiring),
-   // and unexpected prompt injection from the full magic-context extension in children.
-   // When no lean paths are available, fall back to the original behavior.
-   const hasLeanPaths = deps.leanExtensionPaths && deps.leanExtensionPaths.length > 0;
-   const noExtensions = hasLeanPaths ? true : !cfg.extensions;
+   const noExtensions = !cfg.extensions;
 
    const loader = deps.io.createResourceLoader({
       cwd: cfg.effectiveCwd,
@@ -312,7 +304,6 @@ export async function runAgent(
       noContextFiles: true,
       systemPromptOverride: () => cfg.systemPrompt,
       appendSystemPromptOverride: () => [],
-      ...(hasLeanPaths ? { additionalExtensionPaths: deps.leanExtensionPaths } : {}),
    });
    await loader.reload();
 

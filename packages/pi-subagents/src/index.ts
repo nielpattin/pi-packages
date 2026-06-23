@@ -129,7 +129,6 @@ export default function (pi: ExtensionAPI) {
          { ConcurrencyQueue },
          { AgentManager },
          { SessionLifecycleHandler },
-         { resolveLeanMagicContextEntry },
          { resolveModel },
          { SubagentsServiceAdapter },
          { publishSubagentsService, unpublishSubagentsService },
@@ -147,7 +146,6 @@ export default function (pi: ExtensionAPI) {
          import("#src/lifecycle/concurrency-queue"),
          import("#src/lifecycle/agent-manager"),
          import("#src/handlers/lifecycle"),
-         import("#src/session/lean-extensions"),
          import("#src/session/model-resolver"),
          import("#src/service/service-adapter"),
          import("#src/service/service"),
@@ -161,9 +159,6 @@ export default function (pi: ExtensionAPI) {
          import("#src/ui/agent-widget"),
          import("#src/ui/agent-menu"),
       ]);
-
-      // Resolve lean magic-context entry for subagent children.
-      const leanEntryPath = resolveLeanMagicContextEntry();
 
       // Settings
       _settings = new SettingsManager({
@@ -192,7 +187,6 @@ export default function (pi: ExtensionAPI) {
          exec: (cmd, args, opts) => pi.exec(cmd, args, opts),
          registry,
          lifecycle: createChildLifecyclePublisher((channel, data) => pi.events.emit(channel, data)),
-         ...(leanEntryPath ? { leanExtensionPaths: [leanEntryPath] } : {}),
       };
 
       // Concurrency queue
