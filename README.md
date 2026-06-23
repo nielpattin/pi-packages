@@ -4,18 +4,18 @@
 
 Independent [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) extensions focused on developer workflow. This repo keeps small Pi packages in one workspace while preserving independent package versions, release notes, and npm publishing.
 
-Packages publish raw TypeScript source. Pi loads `.ts` extension entrypoints through jiti, so this repo does not build packages to `dist/` before publishing.
+Most packages publish raw TypeScript source that Pi loads through jiti, so they are not built to `dist/`. The exceptions are `pi-subagents` (esbuild-bundled entrypoint) and `pi-magic-context` (compiled entrypoint), which build to `dist/` via `pnpm --dir packages/<pkg> build`.
 
 ## Packages
 
-| Package                                                 | Role                                                                              | Install                                     | npm                                                                   | Version |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------- | ------------------------------------------- | --------------------------------------------------------------------- | ------- |
-| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents. | `pnpm add @nielpattin/pi-permission-system` | [npm](https://www.npmjs.com/package/@nielpattin/pi-permission-system) | 0.1.0   |
-| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.        | `pnpm add @nielpattin/pi-simplify`          | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify)          | 0.2.7   |
-| [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`           | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)           | 0.6.6   |
-| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.       | `pnpm add @nielpattin/pi-subagents`         | [npm](https://www.npmjs.com/package/@nielpattin/pi-subagents)         | 0.1.0   |
-| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.          | `<NONE>`                                    |                                                                       | 0.10.0  |
-| [pi-magic-context](./packages/pi-magic-context)         | Magic Context extension (ctx tools, historian, dreamer) for the Pi workspace.     | `<NONE>`                                    |                                                                       | 0.1.0   |
+| Package                                                 | Role                                                                              | Install                            | npm                                                          | Version |
+| ------------------------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------- |
+| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents. | `<NONE>`                           |                                                              | 0.1.0   |
+| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.        | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.7   |
+| [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.6.6   |
+| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.       | `<NONE>`                           |                                                              | 0.1.0   |
+| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.          | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.10.0  |
+| [pi-magic-context](./packages/pi-magic-context)         | Magic Context extension (ctx tools, historian, dreamer) for the Pi workspace.     | `<NONE>`                           |                                                              | 0.1.0   |
 
 ## Prerequisites
 
@@ -59,7 +59,7 @@ pnpm --dir packages/pi-multi-auth pack --dry-run
 pnpm --dir packages/pi-magic-context pack --dry-run
 ```
 
-The dry-run output should include TypeScript source files and package docs, and should not include `dist/`.
+For raw-TS packages, the dry-run output should include TypeScript source files and package docs, and should not include `dist/`. For `pi-subagents` and `pi-magic-context`, the dry-run should include the built `dist/`.
 
 ## Add a New Package
 
