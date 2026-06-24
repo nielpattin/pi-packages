@@ -62,8 +62,8 @@
       "web-tree-sitter": "^0.26.8"
    },
    "peerDependencies": {
-      "@earendil-works/pi-coding-agent": "^0.78.0",
-      "@earendil-works/pi-tui": "^0.78.0"
+      "@earendil-works/pi-coding-agent": "*",
+      "@earendil-works/pi-tui": "*"
    },
    "engines": {
       "node": ">=24"

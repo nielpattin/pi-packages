@@ -62,9 +62,9 @@
       "coverage": "npm run test:clean && tsc -p tsconfig.test.json && c8 --reporter=text --reporter=lcov node scripts/run-compiled-tests.mjs && npm run test:clean"
    },
    "devDependencies": {
-      "@earendil-works/pi-ai": "^0.78.0",
-      "@earendil-works/pi-coding-agent": "^0.78.0",
-      "@earendil-works/pi-tui": "^0.78.0",
+      "@earendil-works/pi-ai": "*",
+      "@earendil-works/pi-coding-agent": "*",
+      "@earendil-works/pi-tui": "*",
       "@eslint/js": "^10.0.1",
       "@types/node": "^25.9.1",
       "c8": "^11.0.0",
@@ -74,9 +74,9 @@
       "typescript-eslint": "^8.60.0"
    },
    "peerDependencies": {
-      "@earendil-works/pi-ai": "^0.74.0 || ^0.75.0 || ^0.77.0 || ^0.78.0",
-      "@earendil-works/pi-coding-agent": "^0.74.0 || ^0.75.0 || ^0.77.0 || ^0.78.0",
-      "@earendil-works/pi-tui": "^0.74.0 || ^0.75.0 || ^0.77.0 || ^0.78.0"
+      "@earendil-works/pi-ai": "*",
+      "@earendil-works/pi-coding-agent": "*",
+      "@earendil-works/pi-tui": "*"
    },
    "overrides": {
       "basic-ftp": "5.3.1",
