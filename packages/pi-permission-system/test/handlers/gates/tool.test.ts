@@ -104,6 +104,34 @@ describe("describeToolGate", () => {
       expect(desc.sessionApproval!).toHaveProperty("pattern");
    });
 
+   it("uses matched rule pattern for chained bash command", () => {
+      const check = makeCheckResult("ask", {
+         toolName: "bash",
+         command: "cd packages/pi-subagents && git push",
+         matchedPattern: "*git push *",
+      });
+      const desc = describeToolGate(
+         makeTcc({ toolName: "bash", input: { command: "cd packages/pi-subagents && git push" } }),
+         check,
+      );
+      expect(desc.sessionApproval).toMatchObject({ surface: "bash", pattern: "*git push *" });
+      expect(desc.promptDetails.sessionLabel).toContain("*git push *");
+      expect(desc.promptDetails.hideSessionOption).toBeUndefined();
+   });
+
+   it("suppresses session option for chained bash command with catch-all matched rule", () => {
+      const check = makeCheckResult("ask", {
+         toolName: "bash",
+         command: "cd pkg && rm foo",
+         matchedPattern: "*",
+      });
+      const desc = describeToolGate(makeTcc({ toolName: "bash", input: { command: "cd pkg && rm foo" } }), check);
+      // No sessionApproval recorded, and the dialog option is hidden.
+      expect(desc.sessionApproval).toBeUndefined();
+      expect(desc.promptDetails.hideSessionOption).toBe(true);
+      expect(desc.promptDetails.sessionLabel).toBeUndefined();
+   });
+
    it("populates promptDetails with correct fields", () => {
       const check = makeCheckResult("ask");
       const desc = describeToolGate(makeTcc({ toolName: "read", agentName: "my-agent", toolCallId: "tc-42" }), check);

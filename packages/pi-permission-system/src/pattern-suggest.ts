@@ -6,10 +6,30 @@ import { deriveApprovalPattern } from "./session-rules";
 export interface SessionApprovalSuggestion {
    /** The permission surface this approval applies to. */
    surface: string;
-   /** The wildcard pattern to store as a session rule. */
+   /** The wildcard pattern to store as a session rule. Empty when `suppress`. */
    pattern: string;
-   /** Human-readable label for the "for session" dialog option. */
+   /** Human-readable label for the "for session" dialog option. Empty when `suppress`. */
    label: string;
+   /**
+    * When true, no safe session pattern exists — the "for this session" dialog
+    * option should be hidden, forcing a one-off Yes/No decision.
+    */
+   suppress?: boolean;
+}
+
+/**
+ * Regex matching shell control operators that join commands into a chain.
+ * Matches `&&`, `||`, `;`, `|` (pipe), and a bare `&` (background) that is
+ * not part of a redirect like `2>&1` (excluded via the `(?<![<>])` lookbehind).
+ */
+const SHELL_OPERATOR_RE = /&&|\|\||;|\||(?<![<>])&/;
+
+/**
+ * Detect whether a command string contains a shell control operator that
+ * chains multiple commands (`&&`, `||`, `;`, `|`, `&`).
+ */
+export function hasShellOperator(command: string): boolean {
+   return SHELL_OPERATOR_RE.test(command);
 }
 
 /**
@@ -22,10 +42,30 @@ export interface SessionApprovalSuggestion {
  * - Arity prefix covers all tokens: trailing wildcard (`npm run build*`).
  * - Arity prefix shorter than token list: space + wildcard (`git checkout *`).
  * - Unknown command: first token + space wildcard (`mytool *`).
+ *
+ * Chained commands (containing `&&`, `||`, `;`, `|`, `&`) are handled
+ * specially: a first-token pattern (e.g. `cd *`) would whitelabel the benign
+ * prefix and silently approve arbitrary chains via the trailing-`*` optional
+ * match. Instead, the matched rule pattern is used when it is specific, and
+ * the session option is suppressed (empty return) otherwise.
+ *
+ * @param command       The raw command string.
+ * @param matchedPattern The wildcard pattern of the rule that triggered the
+ *                       prompt, if any. Used for chained commands.
+ * @returns The suggested pattern, or empty string to suppress the session option.
  */
-export function suggestBashPattern(command: string): string {
+export function suggestBashPattern(command: string, matchedPattern?: string): string {
    const trimmed = command.trim();
    if (!trimmed) return "";
+
+   if (hasShellOperator(trimmed)) {
+      // Chained command: derive the session pattern from the matched rule so
+      // the approval reflects the operation that triggered the prompt. A
+      // catch-all (`*`) or absent match gives no safe pattern, so suppress.
+      if (matchedPattern && matchedPattern !== "*") return matchedPattern;
+      return "";
+   }
+
    const tokens = trimmed.split(/\s+/);
    if (tokens.length === 1) return trimmed;
    const meaningful = prefix(tokens);
@@ -87,12 +127,18 @@ function buildLabel(pattern: string, surface: string): string {
  * Returns a `SessionApprovalSuggestion` with the surface, the wildcard pattern
  * to store in `SessionRules`, and a human-readable dialog label.
  */
-export function suggestSessionPattern(surface: string, value: string): SessionApprovalSuggestion {
+export function suggestSessionPattern(
+   surface: string,
+   value: string,
+   matchedPattern?: string,
+): SessionApprovalSuggestion {
    let pattern: string;
+   let suppress = false;
 
    switch (surface) {
       case "bash":
-         pattern = suggestBashPattern(value);
+         pattern = suggestBashPattern(value, matchedPattern);
+         if (pattern === "") suppress = true;
          break;
       case "mcp":
          pattern = suggestMcpPattern(value);
@@ -115,6 +161,10 @@ export function suggestSessionPattern(surface: string, value: string): SessionAp
          // Extension tools / fallback.
          pattern = "*";
          break;
+   }
+
+   if (suppress) {
+      return { surface, pattern: "", label: "", suppress: true };
    }
 
    return { surface, pattern, label: buildLabel(pattern, surface) };

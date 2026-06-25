@@ -54,6 +54,8 @@ export function isPermissionDecisionState(value: unknown): value is PermissionDe
 export interface RequestPermissionOptions {
    /** Override the "for this session" option label (e.g. to show the suggested pattern). */
    sessionLabel?: string;
+   /** Hide the "for this session" option entirely (no safe session pattern exists). */
+   hideSessionOption?: boolean;
 }
 
 export async function requestPermissionDecisionFromUi(
@@ -63,7 +65,9 @@ export async function requestPermissionDecisionFromUi(
    options?: RequestPermissionOptions,
 ): Promise<PermissionPromptDecision> {
    const sessionOption = options?.sessionLabel ?? APPROVE_FOR_SESSION_OPTION;
-   const decisionOptions = [APPROVE_OPTION, sessionOption, DENY_OPTION, DENY_WITH_REASON_OPTION] as const;
+   const decisionOptions = options?.hideSessionOption
+      ? [APPROVE_OPTION, DENY_OPTION, DENY_WITH_REASON_OPTION]
+      : [APPROVE_OPTION, sessionOption, DENY_OPTION, DENY_WITH_REASON_OPTION];
 
    const selected = await ui.select(`${title}\n${message}`, [...decisionOptions]);
 

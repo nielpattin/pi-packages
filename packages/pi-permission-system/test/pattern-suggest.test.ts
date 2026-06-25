@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { suggestBashPattern, suggestMcpPattern, suggestSessionPattern } from "#src/pattern-suggest";
+import { hasShellOperator, suggestBashPattern, suggestMcpPattern, suggestSessionPattern } from "#src/pattern-suggest";
 
 describe("suggestBashPattern", () => {
    it("returns <command> <subcommand> * using the arity table", () => {
@@ -35,6 +35,43 @@ describe("suggestBashPattern", () => {
 
    it("produces tighter pattern for docker compose than plain docker", () => {
       expect(suggestBashPattern("docker compose up --build")).toBe("docker compose up *");
+   });
+
+   describe("chained commands (shell operators)", () => {
+      it("detects shell control operators", () => {
+         expect(hasShellOperator("cd pkg && git push")).toBe(true);
+         expect(hasShellOperator("a || b")).toBe(true);
+         expect(hasShellOperator("a; b")).toBe(true);
+         expect(hasShellOperator("a | b")).toBe(true);
+         expect(hasShellOperator("cmd &")).toBe(true);
+      });
+
+      it("does not treat redirect ampersand (2>&1) as a chain operator", () => {
+         expect(hasShellOperator("echo hi 2>&1")).toBe(false);
+      });
+
+      it("does not flag a plain single command", () => {
+         expect(hasShellOperator("git status --short")).toBe(false);
+      });
+
+      it("uses the matched rule pattern for a chained command", () => {
+         expect(suggestBashPattern("cd packages/pi-subagents && git push", "*git push *")).toBe("*git push *");
+      });
+
+      it("suppresses (returns empty) when chained and matched rule is catch-all *", () => {
+         expect(suggestBashPattern("cd pkg && git push", "*")).toBe("");
+      });
+
+      it("suppresses (returns empty) when chained and no matched rule", () => {
+         expect(suggestBashPattern("cd pkg && mytool run")).toBe("");
+      });
+
+      it("never returns a first-token pattern (e.g. cd *) for a chained command", () => {
+         // Regression guard: the buggy behaviour derived `cd *` from the first
+         // token, which whitelabels arbitrary chains via the trailing-* match.
+         expect(suggestBashPattern("cd pkg && git push", "*")).not.toBe("cd *");
+         expect(suggestBashPattern("cd pkg && git push", "*git push *")).not.toBe("cd *");
+      });
    });
 });
 

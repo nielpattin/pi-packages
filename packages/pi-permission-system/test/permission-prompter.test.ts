@@ -229,6 +229,22 @@ describe("PermissionPrompter", () => {
          });
       });
 
+      it("passes hideSessionOption to confirmPermission when present", async () => {
+         mockConfirmPermission.mockResolvedValue({
+            approved: true,
+            state: "approved",
+         });
+         const deps = makeDeps();
+         const prompter = new PermissionPrompter(deps);
+         const details = makeDetails({ hideSessionOption: true });
+
+         await prompter.prompt(makeCtx(true), details);
+
+         expect(mockConfirmPermission).toHaveBeenCalledWith(expect.anything(), expect.any(String), expect.anything(), {
+            hideSessionOption: true,
+         });
+      });
+
       it("passes undefined options to confirmPermission when sessionLabel is absent", async () => {
          mockConfirmPermission.mockResolvedValue({
             approved: true,

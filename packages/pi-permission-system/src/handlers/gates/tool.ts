@@ -29,7 +29,10 @@ export function describeToolGate(tcc: ToolCallContext, check: PermissionCheckRes
    const permissionLogContext = getPermissionLogContext(check, tcc.input, PATH_BEARING_TOOLS);
 
    // Compute session approval suggestion for the "for this session" option.
-   const suggestion = suggestSessionPattern(tcc.toolName, deriveSuggestionValue(tcc, check));
+   // For chained bash commands the matched rule pattern is used so the
+   // approval reflects the triggering operation; when no safe pattern exists
+   // (suppress), the session option is hidden entirely.
+   const suggestion = suggestSessionPattern(tcc.toolName, deriveSuggestionValue(tcc, check), check.matchedPattern);
 
    const askMessage = formatAskPrompt(check, tcc.agentName ?? undefined, tcc.input);
 
@@ -42,17 +45,21 @@ export function describeToolGate(tcc: ToolCallContext, check: PermissionCheckRes
          agentName: tcc.agentName ?? undefined,
          input: tcc.input,
       },
-      sessionApproval: {
-         surface: suggestion.surface,
-         pattern: suggestion.pattern,
-      },
+      ...(suggestion.suppress
+         ? {}
+         : {
+              sessionApproval: {
+                 surface: suggestion.surface,
+                 pattern: suggestion.pattern,
+              },
+           }),
       promptDetails: {
          source: "tool_call",
          agentName: tcc.agentName,
          message: askMessage,
          toolCallId: tcc.toolCallId,
          toolName: tcc.toolName,
-         sessionLabel: suggestion.label,
+         ...(suggestion.suppress ? { hideSessionOption: true } : { sessionLabel: suggestion.label }),
          ...permissionLogContext,
       },
       logContext: {

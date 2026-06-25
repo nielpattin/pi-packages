@@ -23,6 +23,8 @@ export interface PromptPermissionDetails {
    toolInputPreview?: string;
    /** Override label for the "for this session" dialog option. */
    sessionLabel?: string;
+   /** Hide the "for this session" dialog option (no safe session pattern exists). */
+   hideSessionOption?: boolean;
 }
 
 /** Mockable contract for permission prompting. */
@@ -79,11 +81,15 @@ export class PermissionPrompter implements PermissionPrompterApi {
 
       this.writeReviewEntry("permission_request.waiting", details);
 
+      const promptOptions: RequestPermissionOptions = {};
+      if (details.sessionLabel) promptOptions.sessionLabel = details.sessionLabel;
+      if (details.hideSessionOption) promptOptions.hideSessionOption = true;
+
       const decision = await confirmPermission(
          ctx,
          details.message,
          this.buildForwardingDeps(),
-         details.sessionLabel ? { sessionLabel: details.sessionLabel } : undefined,
+         Object.keys(promptOptions).length > 0 ? promptOptions : undefined,
       );
 
       this.writeReviewEntry(decision.approved ? "permission_request.approved" : "permission_request.denied", {

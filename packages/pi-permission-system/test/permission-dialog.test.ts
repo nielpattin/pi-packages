@@ -137,6 +137,18 @@ describe("requestPermissionDecisionFromUi", () => {
       const options = selectFn.mock.calls[0][1] as string[];
       expect(options[1]).toBe("Yes, for this session");
    });
+
+   it("hides the session option when hideSessionOption is set", async () => {
+      const selectFn = vi.fn().mockResolvedValue("Yes");
+      const ui: PermissionDecisionUi = {
+         select: selectFn,
+         input: vi.fn(),
+      };
+      await requestPermissionDecisionFromUi(ui, "Title", "Message", { hideSessionOption: true });
+      const options = selectFn.mock.calls[0][1] as string[];
+      expect(options).toEqual(["Yes", "No", "No, provide reason"]);
+      expect(options).not.toContain("Yes, for this session");
+   });
 });
 
 describe("normalizePermissionDenialReason", () => {
