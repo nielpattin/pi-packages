@@ -105,6 +105,15 @@ importers:
         specifier: ^0.26.8
         version: 0.26.9
 
+  packages/pi-reference:
+    dependencies:
+      '@earendil-works/pi-coding-agent':
+        specifier: '*'
+        version: 0.80.2(ws@8.21.0)(zod@4.4.3)
+      '@earendil-works/pi-tui':
+        specifier: '*'
+        version: 0.80.2
+
   packages/pi-simplify:
     dependencies:
       '@earendil-works/pi-ai':

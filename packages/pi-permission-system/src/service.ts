@@ -73,6 +73,16 @@ export interface PermissionsService {
     * @param agentName - Optional agent name for per-agent policy resolution.
     */
    getToolPermission(toolName: string, agentName?: string): PermissionState;
+
+   /**
+    * Register a session-scoped allow rule for a surface and pattern.
+    * Enables extensions to pre-approve paths (e.g. reference directories)
+    * without user prompts. Rules are cleared on session_start/reset.
+    *
+    * @param surface - Permission surface (e.g. "external_directory").
+    * @param pattern - Glob pattern to allow (e.g. "/path/to/dir/*").
+    */
+   approveSessionRule(surface: string, pattern: string): void;
 }
 
 /**

@@ -104,6 +104,9 @@ export default function piPermissionSystemExtension(pi: ExtensionAPI): void {
       getToolPermission(toolName, agentName) {
          return runtime.permissionManager.getToolPermission(toolName, agentName);
       },
+      approveSessionRule(surface, pattern) {
+         session.approveSessionRule(surface, pattern);
+      },
    };
    publishPermissionsService(permissionsService);
 

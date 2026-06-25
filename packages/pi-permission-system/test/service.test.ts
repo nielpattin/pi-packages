@@ -13,6 +13,7 @@ function makeService(overrides: Partial<PermissionsService> = {}): PermissionsSe
       registerSubagentSession: vi.fn(),
       unregisterSubagentSession: vi.fn(),
       getToolPermission: vi.fn(),
+      approveSessionRule: vi.fn(),
       ...overrides,
    };
 }
@@ -125,6 +126,7 @@ describe("service adapter delegation", () => {
             registry.unregister(key);
          },
          getToolPermission: vi.fn((): "allow" => "allow"),
+         approveSessionRule: vi.fn(),
       };
 
       publishPermissionsService(service);
@@ -151,6 +153,7 @@ describe("service adapter delegation", () => {
             registry.unregister(key);
          },
          getToolPermission: vi.fn((): "allow" => "allow"),
+         approveSessionRule: vi.fn(),
       };
 
       publishPermissionsService(service);
@@ -170,6 +173,7 @@ describe("service adapter delegation", () => {
          getToolPermission(toolName, agentName) {
             return getToolPermissionFn(toolName, agentName);
          },
+         approveSessionRule: vi.fn(),
       };
 
       publishPermissionsService(service);
@@ -188,6 +192,7 @@ describe("service adapter delegation", () => {
          getToolPermission(toolName, agentName) {
             return getToolPermissionFn(toolName, agentName);
          },
+         approveSessionRule: vi.fn(),
       };
 
       publishPermissionsService(service);
