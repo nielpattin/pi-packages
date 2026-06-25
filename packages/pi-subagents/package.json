@@ -32,8 +32,7 @@
    "main": "./dist/index.js",
    "types": "./dist/src/index.d.ts",
    "imports": {
-      "#src/*": "./dist/src/*.js",
-      "#test/helpers/*": "./test/helpers/*.ts"
+      "#src/*": "./dist/src/*.js"
    },
    "exports": {
       ".": {
