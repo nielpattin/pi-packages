@@ -36,7 +36,7 @@ beforeEach(() => {
 });
 
 describe("lean magic-context entry in subagent sessions", () => {
-   it("passes leanExtensionPaths as additionalExtensionPaths when extensions: true", async () => {
+   it("keeps noExtensions: false when extensions: true (leanExtensionPaths is ignored)", async () => {
       const { session } = createSession("LEAN_OK");
       io.createSession.mockResolvedValue({ session });
 
@@ -51,8 +51,7 @@ describe("lean magic-context entry in subagent sessions", () => {
 
       expect(io.createResourceLoader).toHaveBeenCalledWith(
          expect.objectContaining({
-            noExtensions: true,
-            additionalExtensionPaths: [LEAN_ENTRY],
+            noExtensions: false,
          }),
       );
    });
