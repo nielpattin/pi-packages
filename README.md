@@ -8,13 +8,14 @@ Most packages publish raw TypeScript source that Pi loads through jiti, so they 
 
 ## Packages
 
-| Package                                                 | Role                                                                              | Install                            | npm                                                          | Version |
-| ------------------------------------------------------- | --------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------- |
-| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents. | `<NONE>`                           |                                                              | 0.1.0   |
-| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.        | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.7   |
-| [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                         | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.7.0   |
-| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.       | `<NONE>`                           |                                                              | 0.2.0   |
-| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.          | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.10.0  |
+| Package                                                 | Role                                                                                               | Install                            | npm                                                          | Version |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------- |
+| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents.                  | `<NONE>`                           |                                                              | 0.2.1   |
+| [pi-reference](./packages/pi-reference)                 | Project references: declare local dirs and Git repos as agent-accessible with @alias autocomplete. | `<NONE>`                           |                                                              | 0.2.0   |
+| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.                         | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.9   |
+| [pi-station](./packages/pi-station)                     | Station bar status extension for the Pi coding agent TUI.                                          | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.8.0   |
+| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.                        | `<NONE>`                           |                                                              | 0.2.1   |
+| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.                           | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.11.1  |
 
 ## Prerequisites
 

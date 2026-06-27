@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.1
+
+### Patch Changes
+
+- 3ddcc54: Update Pi peer dependencies to use `*` range per extension standard. Update `diff` to v9, `file-type` to v22, `esbuild` to ^0.28.1, and other dev dependencies to latest.
+
 ## 0.2.0
 
 ### Minor Changes
@@ -21,6 +27,7 @@
 
 - 2dfb0b1: Add the initial `@nielpattin/pi-permission-system` package and document its companion integration with `@nielpattin/pi-subagents`.
 - 2badee6: perf(pi-subagents): defer heavy initialization to reduce startup time
+
    - Move heavy module loading (agent-runner, worktree, etc.) from static to dynamic imports
    - Defer settings.load() from load-time to session_start
    - Defer custom agent loading (AgentTypeRegistry.reload) from constructor to session_start
@@ -36,6 +43,7 @@
    Replaces `tsc` with `esbuild` for the extension entry point (`src/index.ts`),
    producing a single `dist/index.js` bundle instead of 57 individual module files.
    `tsc --emitDeclarationOnly` still runs for `.d.ts` type declarations.
+
    - `scripts/build.mjs` — runs esbuild for bundling, then tsc for types and
      individual `.js` files (needed by dynamic `import()` calls from the bundle)
    - `scripts/postbuild.mjs` — unchanged, adds `.js` extensions to individual files
@@ -58,6 +66,7 @@
    AgentConfigEditor, AgentCreationWizard, AgentsMenuHandler.
 
 - a904f2c: fix: use StringEnum for isolation parameter
+
    - Replace Type.Literal("worktree") with StringEnum(["worktree"]) for the isolation parameter schema
    - Type.Literal and Type.Union string enums don't work with Google's API; StringEnum is the correct approach per Pi docs
 
