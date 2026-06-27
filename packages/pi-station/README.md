@@ -1,6 +1,6 @@
 # Pi Station bar
 
-Custom status bar extension for [pi](https://github.com/badlogic/pi-mono) with fixed editor layout, bash mode, editor stash, prompt history, and configurable segments.
+Custom status bar extension for [pi](https://github.com/badlogic/pi-mono) with fixed editor layout, bash mode, editor stash, prompt history, undo/redo, hashline read/edit tools, and configurable segments.
 
 <img width="1672" height="941" alt="thumbnail" src="https://github.com/user-attachments/assets/7aec1c64-1e2b-403c-b614-025f076968de" />
 
@@ -18,12 +18,12 @@ Restart pi to activate.
 
 ## Commands
 
-| Command          | What                                                 |
-| ---------------- | ---------------------------------------------------- |
-| `/station`       | Open station bar settings (fixed editor, scroll bar) |
-| `/stash-history` | Open prompt history picker                           |
-| `/bash-mode`     | Enable sticky bash mode                              |
-| `/bash-reset`    | Reset managed bash session                           |
+| Command          | What                                                           |
+| ---------------- | -------------------------------------------------------------- |
+| `/station`       | Open station bar settings (fixed editor, scroll bar, hashline) |
+| `/stash-history` | Open prompt history picker                                     |
+| `/bash-mode`     | Enable sticky bash mode                                        |
+| `/bash-reset`    | Reset managed bash session                                     |
 
 Station bar runs as a custom editor with fixed layout compositor. Configure via `/station` settings menu or `settings.json`.
 
@@ -31,7 +31,8 @@ Station bar runs as a custom editor with fixed layout compositor. Configure via 
 {
    "station": {
       "fixedEditor": true,
-      "scrollBar": true
+      "scrollBar": true,
+      "hashline": true
    }
 }
 ```
@@ -53,6 +54,8 @@ Defaults:
 | `Ctrl+B`     | Toggle bash mode           |
 | `Alt+S`      | Stash/restore editor text  |
 | `Ctrl+Alt+H` | Open prompt history picker |
+| `Ctrl+Z`     | Undo editor input          |
+| `Ctrl+Y`     | Redo editor input          |
 
 Override in `settings.json`:
 
@@ -62,11 +65,40 @@ Override in `settings.json`:
       "shortcuts": {
          "bashMode": "ctrl+shift+b",
          "stash": "ctrl+shift+s",
-         "stashHistory": "ctrl+shift+h"
+         "stashHistory": "ctrl+shift+h",
+         "undo": "ctrl+z",
+         "redo": "ctrl+y"
       }
    }
 }
 ```
+
+## Undo/Redo
+
+`Ctrl+Z` undoes the last edit in the prompt editor. `Ctrl+Y` redoes it. Both keys are configurable via `shortcuts.undo` and `shortcuts.redo` in station settings.
+
+- `Ctrl+Z` also works alongside pi's built-in `Ctrl+-` undo.
+- `Ctrl+Y` overrides pi's yank (kill-ring paste). If you need yank, remap `redo` to a different key.
+- The redo stack is cleared when you make a new edit after undoing (standard undo/redo semantics).
+
+## Hashline
+
+Hashline replaces pi's built-in `read` and `edit` tools with hash-anchor-based versions. File lines are tagged with `LINE#HASH` anchors that survive edits, so the agent can reference exact lines without line-number drift.
+
+- **Read tool**: Returns file content with `LINE#HASH` anchors, width-aware path truncation, and opencode-style arrow rendering (`-> Read <path>:range`).
+- **Edit tool**: Uses hash anchors to locate edit targets. Supports exact-match replace, line-range replace, and legacy top-level replace. Generates diffs and returns changed regions.
+
+Toggle via `/station` settings or `settings.json`:
+
+```json
+{
+   "station": {
+      "hashline": true
+   }
+}
+```
+
+Default is `true`. When disabled, pi's built-in read/edit tools are used instead.
 
 ## Editor Stash
 
@@ -122,11 +154,11 @@ Command output renders in full-screen overlay (fixed-editor mode) or widget (non
 
 ## Station bar layout
 
-| Row       | Left                                              | Right               |
-| --------- | ------------------------------------------------- | ------------------- |
-| Primary   | `path`, `git`                                     | `mcp`, `skills`     |
-| Secondary | `shell_mode`, `context_pct`, `cache_read`, `cost` | `model`, `thinking` |
-| Tertiary  | `extension_statuses`                              |                     |
+| Row       | Left                                                           | Right               |
+| --------- | -------------------------------------------------------------- | ------------------- |
+| Primary   | `path`, `git`                                                  | `mcp`, `skills`     |
+| Secondary | `shell_mode`, `context_pct`, `cache_read`, `cache_hit`, `cost` | `model`, `thinking` |
+| Tertiary  | `extension_statuses`                                           |                     |
 
 ### Custom items
 
@@ -159,11 +191,14 @@ Settings merge from `~/.pi/agent/settings.json` and project `.pi/settings.json`:
    "station": {
       "fixedEditor": true,
       "scrollBar": true,
+      "hashline": true,
       "customItems": [],
       "shortcuts": {
          "bashMode": "ctrl+b",
          "stash": "alt+s",
-         "stashHistory": "ctrl+alt+h"
+         "stashHistory": "ctrl+alt+h",
+         "undo": "ctrl+z",
+         "redo": "ctrl+y"
       }
    },
    "showLastPrompt": true,
@@ -176,13 +211,15 @@ Settings merge from `~/.pi/agent/settings.json` and project `.pi/settings.json`:
 
 ## Segments
 
-Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`, `token_out`, `token_total`, `cost`, `context_pct`, `context_total`, `time_spent`, `time`, `session`, `hostname`, `cache_read`, `cache_write`, `thinking`, `extension_statuses`, `skills`, `mcp`.
+Built-in segments: `model`, `shell_mode`, `path`, `git`, `subagents`, `token_in`, `token_out`, `token_total`, `cost`, `context_pct`, `context_total`, `time_spent`, `time`, `session`, `hostname`, `cache_read`, `cache_write`, `cache_hit`, `thinking`, `extension_statuses`, `skills`, `mcp`.
 
 **Thinking** segment shows current thinking level (`think:off`, `think:med`, etc.) with per-level colors.
 
 **Git** integration uses async cached fetching (1s TTL). Invalidates on file writes/edits and git branch-changing commands. Shows branch, staged (+), unstaged (\*), untracked (?).
 
 **Context** warning colors: yellow at 70%, red at 90%. During streaming, uses live assistant usage. When `pi-custom-compaction` is installed, native context segments are hidden to avoid stale post-summary usage display.
+
+**Cache hit** (`cache_hit`) shows the latest message cache hit rate as `CH%`. Uses `latestCacheHitRate` from usage stats, matching pi's built-in footer display.
 
 **Subscription** detected via OAuth model registry — shows `(sub)` instead of dollar cost.
 
