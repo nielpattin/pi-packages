@@ -29,6 +29,8 @@ test("parseStationConfig supports object config with custom items", () => {
       bashMode: "ctrl+b",
       stash: "alt+s",
       stashHistory: "ctrl+alt+h",
+      undo: "ctrl+z",
+      redo: "ctrl+y",
    });
 });
 
@@ -53,6 +55,8 @@ test("parseStationConfig resolves shortcut overrides", () => {
       bashMode: "ctrl+shift+b",
       stash: "ctrl+shift+s",
       stashHistory: "ctrl+shift+h",
+      undo: "ctrl+z",
+      redo: "ctrl+y",
    });
 });
 

@@ -435,14 +435,12 @@ const cacheReadSegment: StatusLineSegment = {
 const cacheHitSegment: StatusLineSegment = {
    id: "cache_hit",
    render(ctx) {
-      const { input, cacheRead, cacheWrite } = ctx.usageStats;
-      const promptTokens = input + cacheRead + cacheWrite;
-      if (promptTokens <= 0 || cacheRead <= 0) {
+      const latest = ctx.usageStats.latestCacheHitRate;
+      if (latest === undefined || !Number.isFinite(latest)) {
          return { content: "", visible: false };
       }
 
-      const hitRate = (cacheRead / promptTokens) * 100;
-      const content = `CH${hitRate.toFixed(1)}%`;
+      const content = `CH${latest.toFixed(1)}%`;
       return { content: color(ctx, "context", content), visible: true };
    },
 };

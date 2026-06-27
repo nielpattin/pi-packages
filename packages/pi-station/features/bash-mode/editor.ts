@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { CustomEditor } from "@earendil-works/pi-coding-agent";
-import { truncateToWidth, visibleWidth } from "@earendil-works/pi-tui";
+import { matchesKey, truncateToWidth, visibleWidth, type KeyId } from "@earendil-works/pi-tui";
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type KeybindingsManager = any;
 import type { AutocompleteProvider } from "@earendil-works/pi-tui";
@@ -18,6 +18,8 @@ interface BashModeEditorOptions {
    onNotify: (message: string, level?: "info" | "warning" | "error") => void;
    getHistoryEntries: (prefix: string) => string[];
    resolveGhostSuggestion: (text: string, signal: AbortSignal) => Promise<GhostSuggestion | null>;
+   undoKey?: string;
+   redoKey?: string;
 }
 
 function isPrintableInput(data: string): boolean {
@@ -87,11 +89,27 @@ export class BashModeEditor extends CustomEditor {
    private ghost: GhostSuggestion | null = null;
    private ghostAbort: AbortController | null = null;
    private ghostToken = 0;
+   // Redo support: mirrors states popped from the parent undo stack.
+   private redoStack: unknown[] = [];
+   private suppressRedoClear = false;
 
    constructor(tui: any, theme: any, keybindings: KeybindingsManager, options: BashModeEditorOptions) {
       super(tui, theme, keybindings);
       this.keybindingsRef = keybindings;
       this.optionsRef = options;
+
+      // Monkey-patch the parent UndoStack.push so any new edit clears the redo stack.
+      // Standard undo/redo semantics: once you make a new edit after undoing, redo is gone.
+      const undoStack = Reflect.get(this, "undoStack");
+      if (undoStack && typeof undoStack.push === "function") {
+         const originalPush = undoStack.push.bind(undoStack);
+         undoStack.push = (state: unknown) => {
+            if (!this.suppressRedoClear) {
+               this.redoStack.length = 0;
+            }
+            return originalPush(state);
+         };
+      }
    }
 
    installAutocompleteProvider(provider: AutocompleteProvider): void {
@@ -134,6 +152,21 @@ export class BashModeEditor extends CustomEditor {
    }
 
    override handleInput(data: string): void {
+      // Redo key — restore a previously undone state.
+      if (this.optionsRef.redoKey && matchesKey(data, this.optionsRef.redoKey as KeyId)) {
+         this.performRedo();
+         return;
+      }
+
+      // Undo key — either the custom ctrl+z or the built-in tui.editor.undo (ctrl+-).
+      // We intercept both so we can capture the pre-undo state for redo.
+      const isCustomUndo = this.optionsRef.undoKey && matchesKey(data, this.optionsRef.undoKey as KeyId);
+      const isBuiltinUndo = this.keybindingsRef?.matches(data, "tui.editor.undo");
+      if (isCustomUndo || isBuiltinUndo) {
+         this.performUndo();
+         return;
+      }
+
       const droppedPathText = droppedPathTextFromInput(data);
       if (droppedPathText !== null) {
          this.insertTextAtCursor(droppedPathText);
@@ -395,5 +428,66 @@ export class BashModeEditor extends CustomEditor {
             }
             console.debug("[station-bar] Failed to resolve bash ghost suggestion:", error);
          });
+   }
+
+   /**
+    * Undo: pop the latest snapshot from the parent undo stack and restore it.
+    * Mirrors the parent Editor.undo() logic but adds redo capture.
+    */
+   private performUndo(): void {
+      // Exit prompt-history browsing (up/down navigation) — mirrors parent exitHistoryBrowsing().
+      Reflect.set(this, "historyIndex", -1);
+      Reflect.set(this, "historyDraft", null);
+
+      const undoStack = Reflect.get(this, "undoStack");
+      const snapshot = undoStack?.pop?.();
+      if (!snapshot) return;
+
+      const state = Reflect.get(this, "state");
+      if (state) {
+         this.redoStack.push(structuredClone(state));
+      }
+
+      Object.assign(state, snapshot);
+      Reflect.set(this, "lastAction", null);
+      Reflect.set(this, "preferredVisualCol", null);
+
+      const onChange = Reflect.get(this, "onChange");
+      if (typeof onChange === "function") {
+         onChange(this.getText());
+      }
+      this.tui.requestRender();
+   }
+
+   /**
+    * Redo: pop a state from the redo stack and restore it.
+    * The current state is pushed back onto the undo stack (without clearing redo)
+    * so the user can undo again.
+    */
+   private performRedo(): void {
+      const snapshot = this.redoStack.pop();
+      if (!snapshot) return;
+
+      const state = Reflect.get(this, "state");
+      const undoStack = Reflect.get(this, "undoStack");
+
+      // Push current state back to undo stack. Suppress the redo-clear so the
+      // monkey-patched push doesn't wipe the redo stack we're iterating.
+      this.suppressRedoClear = true;
+      try {
+         undoStack?.push?.(state);
+      } finally {
+         this.suppressRedoClear = false;
+      }
+
+      Object.assign(state, snapshot);
+      Reflect.set(this, "lastAction", null);
+      Reflect.set(this, "preferredVisualCol", null);
+
+      const onChange = Reflect.get(this, "onChange");
+      if (typeof onChange === "function") {
+         onChange(this.getText());
+      }
+      this.tui.requestRender();
    }
 }

@@ -128,6 +128,8 @@ export interface UsageStats {
    cacheRead: number;
    cacheWrite: number;
    cost: number;
+   /** Cache hit rate of the last assistant message (matches built-in footer). */
+   latestCacheHitRate?: number;
 }
 
 // Context passed to segment render functions

@@ -1285,6 +1285,7 @@ export default function stationBar(pi: ExtensionAPI) {
          cacheWrite = 0,
          cost = 0;
       let lastAssistant: AssistantMessage | undefined;
+      let latestCacheHitRate: number | undefined;
       let thinkingLevelFromSession: string | null = null;
 
       const sessionEvents = ctx.sessionManager?.getBranch?.() ?? [];
@@ -1311,6 +1312,8 @@ export default function stationBar(pi: ExtensionAPI) {
          cacheRead += m.usage.cacheRead;
          cacheWrite += m.usage.cacheWrite;
          cost += m.usage.cost.total;
+         const latestPromptTokens = m.usage.input + m.usage.cacheRead + m.usage.cacheWrite;
+         latestCacheHitRate = latestPromptTokens > 0 ? (m.usage.cacheRead / latestPromptTokens) * 100 : undefined;
          if (getUsageTokenTotal(m.usage) > 0) {
             lastAssistant = m;
          }
@@ -1361,7 +1364,7 @@ export default function stationBar(pi: ExtensionAPI) {
          skillsLoaded,
          theme,
          thinkingLevel,
-         usageStats: { cacheRead, cacheWrite, cost, input, output },
+         usageStats: { cacheRead, cacheWrite, cost, input, latestCacheHitRate, output },
          usingSubscription,
       };
    }
@@ -1757,6 +1760,8 @@ export default function stationBar(pi: ExtensionAPI) {
                   bashIntegration.getShellPath(),
                );
             },
+            undoKey: config.shortcuts.undo,
+            redoKey: config.shortcuts.redo,
          });
 
          const getInstalledAutocompleteProvider = (): AutocompleteProvider | undefined => {

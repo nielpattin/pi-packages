@@ -15,7 +15,7 @@ function createMockCtx(overrides: Record<string, any> = {}) {
       contextWindow: 0,
       customCompactionEnabled: false,
       theme: mockTheme,
-      usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0, input: 0, output: 0 },
+      usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0, input: 0, latestCacheHitRate: undefined, output: 0 },
       usingSubscription: false,
       ...overrides,
    };
@@ -45,26 +45,47 @@ describe("cache_read segment", () => {
 });
 
 describe("cache_hit segment", () => {
-   it("shows cache hit percentage when cache read exists", () => {
+   it("shows latest cache hit rate when present", () => {
       const ctx = createMockCtx({
-         usageStats: { cacheRead: 400_000, cacheWrite: 0, cost: 0.105, input: 100_000, output: 5000 },
+         usageStats: {
+            cacheRead: 400_000,
+            cacheWrite: 0,
+            cost: 0.105,
+            input: 100_000,
+            latestCacheHitRate: 99.8,
+            output: 5000,
+         },
       });
       const result = SEGMENTS.cache_hit.render(ctx as any);
       expect(result.visible).toBe(true);
-      expect(result.content).toContain("CH80.0%");
+      expect(result.content).toContain("CH99.8%");
    });
 
-   it("hides when no cache read tokens", () => {
+   it("hides when latestCacheHitRate is undefined", () => {
       const ctx = createMockCtx({
-         usageStats: { cacheRead: 0, cacheWrite: 0, cost: 0.105, input: 100_000, output: 5000 },
+         usageStats: {
+            cacheRead: 400_000,
+            cacheWrite: 0,
+            cost: 0.105,
+            input: 100_000,
+            latestCacheHitRate: undefined,
+            output: 5000,
+         },
       });
       const result = SEGMENTS.cache_hit.render(ctx as any);
       expect(result.visible).toBe(false);
    });
 
-   it("shows 100% when no input but cache read exists", () => {
+   it("shows 100% when latestCacheHitRate is 100", () => {
       const ctx = createMockCtx({
-         usageStats: { cacheRead: 400_000, cacheWrite: 0, cost: 0.105, input: 0, output: 5000 },
+         usageStats: {
+            cacheRead: 400_000,
+            cacheWrite: 0,
+            cost: 0.105,
+            input: 0,
+            latestCacheHitRate: 100,
+            output: 5000,
+         },
       });
       const result = SEGMENTS.cache_hit.render(ctx as any);
       expect(result.visible).toBe(true);

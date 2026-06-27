@@ -22,10 +22,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added Hashline read and edit tools with pi-station read row rendering.
+- Added undo/redo to the prompt editor input. Undo: Ctrl+Z (also keeps Ctrl+-). Redo: Ctrl+Y (overrides yank). Both configurable via `shortcuts.undo` and `shortcuts.redo` in station settings.
 
 ### Fixed
 
 - Chat scrollbar now has 1 column of padding between content and scrollbar indicator.
+- Cache_hit segment now uses `latestCacheHitRate` from usage stats instead of computing from cumulative tokens, matching the built-in footer display.
 
 ## 0.6.6
 

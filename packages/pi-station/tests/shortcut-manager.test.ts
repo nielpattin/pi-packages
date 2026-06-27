@@ -14,11 +14,15 @@ test("resolveStationShortcuts applies user overrides", () => {
          bashMode: "ctrl+shift+b",
          stash: "ctrl+shift+s",
          stashHistory: "ctrl+shift+h",
+         undo: "ctrl+shift+z",
+         redo: "ctrl+y",
       }),
       {
          bashMode: "ctrl+shift+b",
          stash: "ctrl+shift+s",
          stashHistory: "ctrl+shift+h",
+         undo: "ctrl+shift+z",
+         redo: "ctrl+y",
       },
    );
 });
