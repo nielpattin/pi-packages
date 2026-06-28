@@ -4,18 +4,18 @@
 
 Independent [Pi coding agent](https://github.com/earendil-works/pi-coding-agent) extensions focused on developer workflow. This repo keeps small Pi packages in one workspace while preserving independent package versions, release notes, and npm publishing.
 
-Most packages publish raw TypeScript source that Pi loads through jiti, so they are not built to `dist/`. The exception is `pi-subagents` (esbuild-bundled entrypoint), which builds to `dist/` via `pnpm --dir packages/<pkg> build`.
+Most packages publish raw TypeScript source that Pi loads through jiti, so they are not built to `dist/`. The exceptions are `pi-station` and `pi-subagents` (esbuild-bundled entrypoints), which build to `dist/` via `pnpm --dir packages/<pkg> build`.
 
 ## Packages
 
-| Package                                                 | Role                                                                                                                     | Install                            | npm                                                          | Version |
-| ------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ | ---------------------------------- | ------------------------------------------------------------ | ------- |
-| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents.                                        | `<NONE>`                           |                                                              | 0.2.1   |
-| [pi-reference](./packages/pi-reference)                 | Project references: declare local dirs and Git repos as agent-accessible with @alias autocomplete.                       | `<NONE>`                           |                                                              | 0.2.0   |
-| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.                                               | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.9   |
-| [pi-station](./packages/pi-station)                     | Station bar, fixed editor layout, bash mode, stash, prompt history, undo/redo, and configurable segments for the Pi TUI. | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.8.0   |
-| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.                                              | `<NONE>`                           |                                                              | 0.2.1   |
-| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.                                                 | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.11.1  |
+| Package                                                 | Role                                                                                                                                                                   | Install                            | npm                                                          | Version |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------ | ------- |
+| [pi-permission-system](./packages/pi-permission-system) | Central permission gates for tools, bash, MCP, skills, file paths, and subagents. Edit permission prompt is status-only; the diff lives in the chat via the edit tool. | `<NONE>`                           |                                                              | 0.2.2   |
+| [pi-reference](./packages/pi-reference)                 | Project references: declare local dirs and Git repos as agent-accessible with @alias autocomplete.                                                                     | `<NONE>`                           |                                                              | 0.2.0   |
+| [pi-simplify](./packages/pi-simplify)                   | Reviews recent code changes for clarity, consistency, and maintainability.                                                                                             | `pnpm add @nielpattin/pi-simplify` | [npm](https://www.npmjs.com/package/@nielpattin/pi-simplify) | 0.2.9   |
+| [pi-station](./packages/pi-station)                     | Station bar, fixed editor layout, bash mode, stash, prompt history, undo/redo, hashline read/edit with in-chat diff preview, and configurable segments for the Pi TUI. | `pnpm add @nielpattin/pi-station`  | [npm](https://www.npmjs.com/package/@nielpattin/pi-station)  | 0.9.0   |
+| [pi-subagents](./packages/pi-subagents)                 | Autonomous subagent spawning, steering, result retrieval, and `/agents` UI.                                                                                            | `<NONE>`                           |                                                              | 0.2.1   |
+| [pi-multi-auth](./packages/pi-multi-auth)               | Multi-provider credential management, OAuth login, and account rotation.                                                                                               | `<NONE>`                           | [source](https://github.com/MasuRii/pi-multi-auth)           | 0.11.1  |
 
 ## Prerequisites
 
@@ -59,7 +59,7 @@ pnpm --dir packages/pi-station pack --dry-run
 pnpm --dir packages/pi-multi-auth pack --dry-run
 ```
 
-For raw-TS packages, the dry-run output should include TypeScript source files and package docs, and should not include `dist/`. For `pi-subagents`, the dry-run should include the built `dist/`.
+For raw-TS packages, the dry-run output should include TypeScript source files and package docs, and should not include `dist/`. For `pi-station` and `pi-subagents`, the dry-run should include the built `dist/`.
 
 ## Add a New Package
 
@@ -86,7 +86,7 @@ pnpm version-packages   # apply changesets and sync the root changelog summary
 
 `pnpm version-packages` runs `changeset version` and then `pnpm changelog:sync`. Changesets updates package versions and package changelogs. `CHANGELOG.md` summarizes the latest package changelog entries and is generated from package changelogs.
 
-Changesets uses scoped package tags such as `@nielpattin/pi-station@0.8.0`. Prefer that tag convention for new releases.
+Changesets uses scoped package tags such as `@nielpattin/pi-station@0.9.0`. Prefer that tag convention for new releases.
 
 The legacy `scripts/release.mjs` script is kept for reference during the transition. Prefer Changesets for new releases.
 
@@ -97,7 +97,7 @@ The legacy `scripts/release.mjs` script is kept for reference during the transit
 Publishing is manual, exact, and tag-only. The GitHub publish workflow accepts a package plus a Changesets tag, checks out that tag, verifies the selected package version, runs package-local `pack --dry-run`, then publishes only that package.
 
 ```bash
-./publish.sh pi-station --tag '@nielpattin/pi-station@0.8.0'
+./publish.sh pi-station --tag '@nielpattin/pi-station@0.9.0'
 ```
 
 The publish workflow installs dependencies and packages the selected package. It does not run `pnpm check`, `pnpm test`, or `pnpm coverage`.

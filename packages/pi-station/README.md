@@ -16,6 +16,16 @@ pi install npm:@nielpattin/pi-station
 
 Restart pi to activate.
 
+## Development
+
+pi-station is a built package. Source in `index.ts` and `features/` is bundled to `dist/` with esbuild (`pnpm --dir packages/pi-station build`, ~50ms). `pi.extensions` points at `./dist/index.js`, so after editing source you MUST rebuild before `/reload` picks up changes:
+
+```bash
+pnpm --dir packages/pi-station build
+```
+
+`dist/` is gitignored and rebuilt locally and in CI. The `features/hashline/edit-tool` subpath is exported for consumers (e.g. `pi-permission-system` reuses the edit tool's diff rendering).
+
 ## Commands
 
 | Command          | What                                                           |
@@ -86,7 +96,7 @@ Override in `settings.json`:
 Hashline replaces pi's built-in `read` and `edit` tools with hash-anchor-based versions. File lines are tagged with `LINE#HASH` anchors that survive edits, so the agent can reference exact lines without line-number drift.
 
 - **Read tool**: Returns file content with `LINE#HASH` anchors, width-aware path truncation, and opencode-style arrow rendering (`-> Read <path>:range`).
-- **Edit tool**: Uses hash anchors to locate edit targets. Supports exact-match replace, line-range replace, and legacy top-level replace. Generates diffs and returns changed regions.
+- **Edit tool**: Uses hash anchors to locate edit targets. Supports exact-match replace, line-range replace, and legacy top-level replace. Generates diffs and returns changed regions. When an edit is requested, a colored diff preview renders inline in the chat transcript (computed synchronously, so it appears even while a permission prompt is open).
 
 Toggle via `/station` settings or `settings.json`:
 
