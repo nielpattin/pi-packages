@@ -84,7 +84,7 @@ export async function describeBashExternalDirectoryGate(
       tcc.agentName ?? undefined,
    );
 
-   const patterns = uncoveredPaths.map((p) => deriveApprovalPattern(p));
+   const patterns = uncoveredPaths.map((p) => deriveApprovalPattern(p, tcc.cwd));
 
    return {
       surface: "external_directory",

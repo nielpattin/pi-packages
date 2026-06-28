@@ -25,16 +25,27 @@ function deriveSuggestionValue(tcc: ToolCallContext, check: PermissionCheckResul
  * Takes a pre-computed PermissionCheckResult (from checkPermission) and
  * returns a GateDescriptor that the runner can execute. No side effects.
  */
-export function describeToolGate(tcc: ToolCallContext, check: PermissionCheckResult): GateDescriptor {
+export async function describeToolGate(tcc: ToolCallContext, check: PermissionCheckResult): Promise<GateDescriptor> {
    const permissionLogContext = getPermissionLogContext(check, tcc.input, PATH_BEARING_TOOLS);
 
    // Compute session approval suggestion for the "for this session" option.
    // For chained bash commands the matched rule pattern is used so the
    // approval reflects the triggering operation; when no safe pattern exists
    // (suppress), the session option is hidden entirely.
-   const suggestion = suggestSessionPattern(tcc.toolName, deriveSuggestionValue(tcc, check), check.matchedPattern);
+   const suggestion = suggestSessionPattern(
+      tcc.toolName,
+      deriveSuggestionValue(tcc, check),
+      check.matchedPattern,
+      tcc.cwd,
+   );
 
-   const askMessage = formatAskPrompt(check, tcc.agentName ?? undefined, tcc.input);
+   let askMessage = formatAskPrompt(check, tcc.agentName ?? undefined, tcc.input);
+
+   // NOTE: The edit diff is intentionally NOT rendered here. It is shown in
+   // the chat transcript by the edit tool's own renderCall (pi-station), which
+   // renders the colored diff preview inline in the tool row. The permission
+   // dialog (status) only carries the ask text + options — mirroring OpenCode,
+   // where the diff lives in the chat/body, not the status header.
 
    return {
       surface: tcc.toolName,

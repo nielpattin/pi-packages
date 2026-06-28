@@ -172,7 +172,7 @@ export class PermissionGateHandler {
 
       // ── Normal tool permission gate (descriptor + runner) ────────────────────
       const toolCheck = checkPermission(tcc.toolName, tcc.input, tcc.agentName ?? undefined, getSessionRuleset());
-      const toolDescriptor = describeToolGate(tcc, toolCheck);
+      const toolDescriptor = await describeToolGate(tcc, toolCheck);
       toolDescriptor.preCheck = toolCheck;
       const toolResult = await runGateCheck(toolDescriptor, tcc.agentName, tcc.toolCallId, runnerDeps);
       if (toolResult.action === "block") {

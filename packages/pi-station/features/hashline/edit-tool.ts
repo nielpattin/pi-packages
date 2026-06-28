@@ -2,8 +2,7 @@ import { Markdown, Text } from "@earendil-works/pi-tui";
 import type { ExtensionAPI, ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { withFileMutationQueue } from "@earendil-works/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import { constants } from "fs";
-import { readFileSync } from "fs";
+import { constants, readFileSync, statSync } from "fs";
 import { access as fsAccess } from "fs/promises";
 import { detectLineEnding, generateDiffString, normalizeToLF, restoreLineEndings, stripBom } from "./core/edit-diff.ts";
 import { applyExactUniqueLegacyReplace, extractLegacyTopLevelReplace } from "./core/edit-compat.ts";
@@ -736,6 +735,71 @@ export async function computeEditPreview(request: unknown, cwd: string): Promise
    }
 }
 
+/**
+ * Synchronous variant of computeEditPreview for render-time use.
+ *
+ * The render path must produce the diff on the first frame (e.g. while the
+ * permission dialog is open) so it cannot rely on async file reads + a later
+ * invalidate/re-render. This reads the file synchronously, skips binary/image
+ * detection (edits only target text files; a binary target fails at execution
+ * anyway), and returns the diff or an error. Mirrors computeEditPreview's
+ * edit-application logic exactly.
+ */
+export function computeEditPreviewSync(request: unknown, cwd: string): EditPreview {
+   try {
+      assertEditRequest(request);
+   } catch (error: unknown) {
+      return { error: error instanceof Error ? error.message : String(error) };
+   }
+
+   const params = request as EditRequestParams;
+   const path = params.path;
+   const absolutePath = resolveToCwd(path, cwd);
+   const toolEdits = Array.isArray(params.edits) ? params.edits : [];
+   const legacy = extractLegacyTopLevelReplace(params as Record<string, unknown>);
+
+   if (toolEdits.length === 0 && !legacy) {
+      return { error: "No edits provided." };
+   }
+
+   try {
+      let stat: ReturnType<typeof statSync>;
+      try {
+         stat = statSync(absolutePath);
+      } catch (error: unknown) {
+         const code = (error as NodeJS.ErrnoException).code;
+         if (code === "ENOENT") return { error: `File not found: ${path}` };
+         if (code === "EACCES" || code === "EPERM") return { error: `File is not readable: ${path}` };
+         return { error: `Cannot access file: ${path}` };
+      }
+      if (stat.isDirectory()) {
+         return { error: `Path is a directory: ${path}. Use ls to inspect directories.` };
+      }
+
+      const originalNormalized = normalizeToLF(stripBom(readFileSync(absolutePath, "utf8")).text);
+
+      let result: string;
+      if (toolEdits.length > 0) {
+         const resolved = resolveEditAnchors(toolEdits);
+         result = applyHashlineEdits(originalNormalized, resolved).content;
+      } else {
+         result = applyExactUniqueLegacyReplace(
+            originalNormalized,
+            normalizeToLF(legacy!.oldText),
+            normalizeToLF(legacy!.newText),
+         ).content;
+      }
+
+      if (originalNormalized === result) {
+         return { error: `No changes made to ${path}. The edits produced identical content.` };
+      }
+
+      return { diff: generateDiffString(originalNormalized, result).diff };
+   } catch (error: unknown) {
+      return { error: error instanceof Error ? error.message : String(error) };
+   }
+}
+
 type EditToolDefinition = ToolDefinition<typeof hashlineEditToolSchema, HashlineEditToolDetails, EditRenderState> & {
    renderShell?: "default" | "self";
 };
@@ -752,11 +816,18 @@ const editToolDefinition: EditToolDefinition = {
    renderShell: "default",
    renderCall(args, theme, context) {
       const previewInput = getRenderablePreviewInput(args);
-      if (context.executionStarted) {
-         context.state.argsKey = undefined;
-         context.state.preview = undefined;
-         context.state.previewGeneration = (context.state.previewGeneration ?? 0) + 1;
-      } else if (!context.argsComplete || !previewInput) {
+      // Compute the diff preview whenever a renderable edit input is present.
+      // We intentionally do NOT gate on argsComplete/executionStarted: the
+      // permission gate (beforeToolCall) runs and blocks BEFORE those flags
+      // reach this component, so the only render frames the user sees while the
+      // permission dialog is open carry argsComplete=false AND
+      // executionStarted=false. The args are nonetheless complete (the model
+      // finished emitting them), so computing here produces the real diff. The
+      // preview is keyed by args (JSON), so it recomputes only when args change
+      // (e.g. while streaming) and persists until args change or renderResult
+      // clears it. Sync (not async) so the diff is on the FIRST render frame —
+      // a later invalidate/re-render is unreliable while the modal is open.
+      if (!previewInput) {
          context.state.argsKey = undefined;
          context.state.preview = undefined;
          context.state.previewGeneration = (context.state.previewGeneration ?? 0) + 1;
@@ -764,24 +835,8 @@ const editToolDefinition: EditToolDefinition = {
          const argsKey = JSON.stringify(previewInput);
          if (context.state.argsKey !== argsKey) {
             context.state.argsKey = argsKey;
-            context.state.preview = undefined;
-            const previewGeneration = (context.state.previewGeneration ?? 0) + 1;
-            context.state.previewGeneration = previewGeneration;
-            computeEditPreview(previewInput, context.cwd)
-               .then((preview) => {
-                  if (context.state.argsKey === argsKey && context.state.previewGeneration === previewGeneration) {
-                     context.state.preview = preview;
-                     context.invalidate();
-                  }
-               })
-               .catch((err: unknown) => {
-                  if (context.state.argsKey === argsKey && context.state.previewGeneration === previewGeneration) {
-                     context.state.preview = {
-                        error: err instanceof Error ? err.message : String(err),
-                     };
-                     context.invalidate();
-                  }
-               });
+            context.state.preview = computeEditPreviewSync(previewInput, context.cwd);
+            context.state.previewGeneration = (context.state.previewGeneration ?? 0) + 1;
          }
       }
       const text = (context.lastComponent as Text | undefined) ?? new Text("", 0, 0);

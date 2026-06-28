@@ -141,7 +141,7 @@ describe("suggestSessionPattern", () => {
 
    describe("external_directory surface", () => {
       it("returns parent-directory glob from deriveApprovalPattern", () => {
-         const result = suggestSessionPattern("external_directory", "/tmp/foo.txt");
+         const result = suggestSessionPattern("external_directory", "/tmp/foo.txt", undefined, "/proj");
          expect(result).toMatchObject({
             surface: "external_directory",
             pattern: "/tmp/*",
@@ -151,22 +151,22 @@ describe("suggestSessionPattern", () => {
 
    describe("path surface", () => {
       it("returns directory-scoped pattern for a file path", () => {
-         const result = suggestSessionPattern("path", "src/.env");
+         const result = suggestSessionPattern("path", "src/.env", undefined, "/proj");
          expect(result).toMatchObject({
             surface: "path",
-            pattern: "src/*",
+            pattern: "/proj/src/*",
          });
       });
 
       it("label includes path pattern", () => {
-         const result = suggestSessionPattern("path", "src/.env");
-         expect(result.label).toBe('Yes, allow path "src/*" for this session');
+         const result = suggestSessionPattern("path", "src/.env", undefined, "/proj");
+         expect(result.label).toBe('Yes, allow path "/proj/src/*" for this session');
       });
    });
 
    describe("path-bearing tool surfaces", () => {
       it("returns directory-scoped pattern for read with a file path", () => {
-         const result = suggestSessionPattern("read", "/outside/project/file.ts");
+         const result = suggestSessionPattern("read", "/outside/project/file.ts", undefined, "/proj");
          expect(result).toMatchObject({
             surface: "read",
             pattern: "/outside/project/*",
@@ -174,25 +174,25 @@ describe("suggestSessionPattern", () => {
       });
 
       it("returns directory-scoped pattern for write with a file path", () => {
-         const result = suggestSessionPattern("write", "src/main.ts");
+         const result = suggestSessionPattern("write", "src/main.ts", undefined, "/proj");
          expect(result).toMatchObject({
             surface: "write",
-            pattern: "src/*",
+            pattern: "/proj/src/*",
          });
       });
 
       it("returns * when value is '*' (fallback)", () => {
-         const result = suggestSessionPattern("read", "*");
+         const result = suggestSessionPattern("read", "*", undefined, "/proj");
          expect(result).toMatchObject({ surface: "read", pattern: "*" });
       });
 
       it("label includes the path pattern for path-bearing tools", () => {
-         const result = suggestSessionPattern("read", "/tmp/data/file.txt");
+         const result = suggestSessionPattern("read", "/tmp/data/file.txt", undefined, "/proj");
          expect(result.label).toBe('Yes, allow read "/tmp/data/*" for this session');
       });
 
       it("label shows tool name when pattern is *", () => {
-         const result = suggestSessionPattern("find", "*");
+         const result = suggestSessionPattern("find", "*", undefined, "/proj");
          expect(result.label).toBe('Yes, allow tool "find" for this session');
       });
    });
@@ -224,13 +224,13 @@ describe("suggestSessionPattern", () => {
       });
 
       it("external_directory label includes surface prefix", () => {
-         const result = suggestSessionPattern("external_directory", "/tmp/foo.txt");
+         const result = suggestSessionPattern("external_directory", "/tmp/foo.txt", undefined, "/proj");
          expect(result.label).toBe('Yes, allow access to external directory "/tmp/*" for this session');
       });
 
       it("path-bearing tool label includes path pattern", () => {
-         const result = suggestSessionPattern("edit", "src/file.ts");
-         expect(result.label).toBe('Yes, allow edit "src/*" for this session');
+         const result = suggestSessionPattern("edit", "src/file.ts", undefined, "/proj");
+         expect(result.label).toBe('Yes, allow edit "/proj/src/*" for this session');
       });
 
       it("tool label shows tool name when value is *", () => {

@@ -128,35 +128,35 @@ describe("SessionRules", () => {
 
 describe("deriveApprovalPattern", () => {
    it("returns parent directory glob for a file path", () => {
-      expect(deriveApprovalPattern("/other/project/src/foo.ts")).toBe("/other/project/src/*");
+      expect(deriveApprovalPattern("/other/project/src/foo.ts", "/")).toBe("/other/project/src/*");
    });
 
    it("returns directory glob when path already ends with separator", () => {
-      expect(deriveApprovalPattern("/other/project/src/")).toBe("/other/project/src/*");
+      expect(deriveApprovalPattern("/other/project/src/", "/")).toBe("/other/project/src/*");
    });
 
    it("returns parent directory glob for a directory-like path without trailing separator", () => {
       // Cannot distinguish dir from file — dirname is the safe choice
-      expect(deriveApprovalPattern("/other/project/src")).toBe("/other/project/*");
+      expect(deriveApprovalPattern("/other/project/src", "/")).toBe("/other/project/*");
    });
 
    it("handles root path", () => {
-      expect(deriveApprovalPattern("/")).toBe("/*");
+      expect(deriveApprovalPattern("/", "/")).toBe("/*");
    });
 
    it("handles single-level path", () => {
-      expect(deriveApprovalPattern("/foo")).toBe("/*");
+      expect(deriveApprovalPattern("/foo", "/")).toBe("/*");
    });
 
    it("produces a pattern that matches paths under the approved directory", () => {
-      const pattern = deriveApprovalPattern("/other/project/src/foo.ts");
+      const pattern = deriveApprovalPattern("/other/project/src/foo.ts", "/");
       const session = new SessionRules();
       session.approve("external_directory", pattern);
       expect(evaluate("external_directory", "/other/project/src/bar.ts", session.getRuleset()).action).toBe("allow");
    });
 
    it("produces a pattern that does not match sibling directories", () => {
-      const pattern = deriveApprovalPattern("/other/project/src/foo.ts");
+      const pattern = deriveApprovalPattern("/other/project/src/foo.ts", "/");
       const session = new SessionRules();
       session.approve("external_directory", pattern);
       expect(evaluate("external_directory", "/other/project/lib/bar.ts", session.getRuleset()).action).toBe("ask");

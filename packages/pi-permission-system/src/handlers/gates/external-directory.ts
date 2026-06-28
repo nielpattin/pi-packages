@@ -63,7 +63,7 @@ export function describeExternalDirectoryGate(tcc: ToolCallContext, infraDirs: s
       tcc.agentName ?? undefined,
    );
 
-   const pattern = deriveApprovalPattern(normalizedExtPath);
+   const pattern = deriveApprovalPattern(normalizedExtPath, tcc.cwd);
 
    return {
       surface: "external_directory",

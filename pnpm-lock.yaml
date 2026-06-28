@@ -149,6 +149,10 @@ importers:
       xxhashjs:
         specifier: ^0.2.2
         version: 0.2.2
+    devDependencies:
+      esbuild:
+        specifier: ^0.28.1
+        version: 0.28.1
 
   packages/pi-subagents:
     dependencies:

@@ -71,6 +71,19 @@ jobs:
                 exit 1
               fi
 
+         - name: Build package (if it has a build script)
+           shell: bash
+           run: |
+              set -euo pipefail
+              pkg="${{ inputs.package }}"
+              manifest="packages/$pkg/package.json"
+              if node -e "const s=require('./'+process.argv[1]).scripts; process.exit(s && s.build ? 0 : 1)" "$manifest"; then
+                echo "build script found, running pnpm build..."
+                pnpm --dir "packages/$pkg" run build
+              else
+                echo "no build script, skipping"
+              fi
+
          - name: Pack dry run
            run: pnpm --dir packages/${{ inputs.package }} pack --dry-run
 

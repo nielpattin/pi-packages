@@ -131,9 +131,11 @@ export function suggestSessionPattern(
    surface: string,
    value: string,
    matchedPattern?: string,
+   cwd?: string,
 ): SessionApprovalSuggestion {
    let pattern: string;
    let suppress = false;
+   const effectiveCwd = cwd ?? process.cwd();
 
    switch (surface) {
       case "bash":
@@ -147,15 +149,15 @@ export function suggestSessionPattern(
          pattern = value;
          break;
       case "external_directory":
-         pattern = deriveApprovalPattern(value);
+         pattern = deriveApprovalPattern(value, effectiveCwd);
          break;
       case "path":
-         pattern = deriveApprovalPattern(value);
+         pattern = deriveApprovalPattern(value, effectiveCwd);
          break;
       default:
          // Path-bearing tools: derive a directory-scoped pattern from the path.
          if (PATH_BEARING_TOOLS.has(surface) && value !== "*") {
-            pattern = deriveApprovalPattern(value);
+            pattern = deriveApprovalPattern(value, effectiveCwd);
             break;
          }
          // Extension tools / fallback.

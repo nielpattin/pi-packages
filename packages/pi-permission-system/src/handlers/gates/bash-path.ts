@@ -96,7 +96,7 @@ export async function describeBashPathGate(
    // All tokens evaluate to allow — no restriction.
    if (!worstCheck || !worstToken) return null;
 
-   const pattern = deriveApprovalPattern(worstToken);
+   const pattern = deriveApprovalPattern(worstToken, tcc.cwd);
    const askMessage = formatPathAskPrompt(tcc.toolName, worstToken, tcc.agentName ?? undefined);
 
    return {

@@ -39,7 +39,7 @@ export function describePathGate(
    // "path" key should not trigger path-level prompts (#58).
    if (check.matchedPattern === undefined) return null;
 
-   const pattern = deriveApprovalPattern(filePath);
+   const pattern = deriveApprovalPattern(filePath, tcc.cwd);
 
    const descriptor: GateDescriptor = {
       surface: "path",

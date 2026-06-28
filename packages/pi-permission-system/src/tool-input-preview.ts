@@ -33,29 +33,10 @@ export function getPromptPath(input: Record<string, unknown>): string | null {
 
 export function formatEditInputForPrompt(input: Record<string, unknown>): string {
    const path = getPromptPath(input);
-   const rawEdits = Array.isArray(input.edits)
-      ? input.edits
-      : typeof input.oldText === "string" && typeof input.newText === "string"
-        ? [{ oldText: input.oldText, newText: input.newText }]
-        : [];
-
-   const edits = rawEdits
-      .map((edit) => toRecord(edit))
-      .filter((edit) => typeof edit.oldText === "string" && typeof edit.newText === "string");
-
    const pathPart = path ? `for '${path}'` : "";
-   if (edits.length === 0) {
-      return pathPart ? `${pathPart} with edit input` : "with edit input";
-   }
-
-   const firstEdit = edits[0];
-   const oldText = String(firstEdit.oldText);
-   const newText = String(firstEdit.newText);
-   const firstEditSummary = `edit #1 replaces ${formatCount(countTextLines(oldText), "line", "lines")} with ${formatCount(countTextLines(newText), "line", "lines")}`;
-   const extraEdits =
-      edits.length > 1 ? `, plus ${formatCount(edits.length - 1, "additional edit", "additional edits")}` : "";
-   const summary = `(${formatCount(edits.length, "replacement", "replacements")}: ${firstEditSummary}${extraEdits})`;
-   return pathPart ? `${pathPart} ${summary}` : summary;
+   // The actual diff is rendered by the edit tool's own computeEditPreview
+   // (wired in describeToolGate). Here we only surface the target path.
+   return pathPart || "with edit input";
 }
 
 export function formatWriteInputForPrompt(input: Record<string, unknown>): string {
