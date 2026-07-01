@@ -31,14 +31,29 @@ describe("buildReferenceGuidance", () => {
       expect(result).not.toContain("<name>sdk</name>");
    });
 
-   it("excludes hidden references", () => {
+   it("includes hidden references that have descriptions", () => {
       const refs = [
          makeRef({ name: "docs", description: "Product docs" }),
          makeRef({ name: "internal", description: "Hidden", hidden: true }),
       ];
       const result = buildReferenceGuidance(refs);
       expect(result).toContain("<name>docs</name>");
-      expect(result).not.toContain("<name>internal</name>");
+      expect(result).toContain("<name>internal</name>");
+      expect(result).toContain("Hidden");
+   });
+
+   it("sorts references alphabetically by name", () => {
+      const refs = [
+         makeRef({ name: "zookeeper", description: "Z" }),
+         makeRef({ name: "alpha", description: "A" }),
+         makeRef({ name: "middle", description: "M" }),
+      ];
+      const result = buildReferenceGuidance(refs);
+      const alphaIdx = result.indexOf("<name>alpha</name>");
+      const middleIdx = result.indexOf("<name>middle</name>");
+      const zooIdx = result.indexOf("<name>zookeeper</name>");
+      expect(alphaIdx).toBeLessThan(middleIdx);
+      expect(middleIdx).toBeLessThan(zooIdx);
    });
 
    it("wraps in project_references tag", () => {

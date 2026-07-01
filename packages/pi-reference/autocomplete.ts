@@ -18,7 +18,7 @@ import type { AutocompleteProvider, AutocompleteItem, AutocompleteSuggestions } 
 
 // ─── ANSI colors for label rendering ─────────────────────
 // The SelectList supports ANSI codes in labels (visibleWidth strips them).
-// Cyan marks the @alias prefix, matching OpenCode's reference styling.
+// Cyan marks the @alias prefix for visual distinction in the picker.
 const CYAN = "\x1b[36m";
 const RESET = "\x1b[0m";
 
@@ -303,7 +303,7 @@ export function expandReferenceTokens(text: string, references: ReferenceInfo[])
             const entries = readdirSync(fullPath, { withFileTypes: true })
                .filter((e) => !e.name.startsWith("."))
                .map((e) => e.name + (e.isDirectory() ? "/" : ""))
-               .sort();
+               .toSorted();
             const listing = entries.join("\n");
             return `<file path="@${alias}/${relativePath}">directory listing:\n${listing}\n</file>`;
          }

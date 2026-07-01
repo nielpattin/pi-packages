@@ -3,7 +3,7 @@ import os from "os";
 import { execFile } from "child_process";
 import { existsSync } from "fs";
 import { promisify } from "util";
-import { reportWarning, reportError, reportCloneStart, reportCloneDone } from "./status.js";
+import { beginSync, reportSyncStep, endSync } from "./status.js";
 
 const execFileAsync = promisify(execFile);
 
@@ -14,6 +14,11 @@ export interface ParsedRepo {
    org: string;
    repo: string;
    remote: string;
+}
+
+export interface GitSyncTask {
+   repository: string;
+   branch?: string;
 }
 
 // ─── Repo URL parsing ─────────────────────────────────────────────
@@ -86,6 +91,13 @@ export function cachePath(repo: ParsedRepo): string {
    return path.join(CACHE_BASE, repo.host, repo.org, repo.repo);
 }
 
+/** Compute cache path for a repository string. Returns "" if unparseable. */
+export function computeRepoPath(repository: string): string {
+   const repo = parseRepo(repository);
+   if (!repo) return "";
+   return cachePath(repo);
+}
+
 // ─── Throttling ───────────────────────────────────────────────────
 
 const FETCH_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
@@ -98,67 +110,77 @@ function git(args: string[], cwd?: string): Promise<{ stdout: string; stderr: st
 }
 
 /**
- * Ensure a repo is cloned and up-to-date in the cache.
- * Fire-and-forget: errors are logged, not thrown.
- * Returns the cache path immediately (content may arrive async).
+ * Sync all git references in parallel with progress tracking.
+ *
+ * All repos sync concurrently. A single progress widget
+ * ("Syncing references... 3/16") updates as each repo finishes. When all done,
+ * clears the widget and shows a summary toast if any repos failed.
+ *
+ * Each repo is either cloned (if missing) or fetched (if stale).
+ * Network errors are collected and reported in the summary, not per-repo.
  */
-export function ensureRepo(repository: string, branch?: string): string {
-   const repo = parseRepo(repository);
-   if (!repo) {
-      reportWarning(`Could not parse repository: ${repository}`);
-      return "";
+export function syncGitRepos(tasks: GitSyncTask[]): void {
+   if (tasks.length === 0) return;
+
+   // Deduplicate same target+branch combos.
+   // Two aliases pointing at the same repo+branch only trigger one git operation.
+   const seen = new Map<string, GitSyncTask>();
+   for (const task of tasks) {
+      const repo = parseRepo(task.repository);
+      if (!repo) continue;
+      const cacheKey = `${repo.host}/${repo.org}/${repo.repo}@${task.branch ?? ""}`;
+      if (!seen.has(cacheKey)) seen.set(cacheKey, task);
    }
 
-   const localPath = cachePath(repo);
-   const cacheKey = `${repo.host}/${repo.org}/${repo.repo}`;
+   const deduped = Array.from(seen.values());
+   if (deduped.length === 0) return;
 
-   // Fire-and-forget async operation
-   doEnsure(localPath, repo, branch, cacheKey).catch((err) => {
-      reportError(`Git operation failed for ${cacheKey}: ${String(err)}`);
-      reportCloneDone(cacheKey);
-   });
+   beginSync(deduped.length);
 
-   return localPath;
+   // All repos sync concurrently via Promise.allSettled.
+   void Promise.allSettled(deduped.map((task) => syncOneRepo(task))).then(() => endSync());
 }
 
-async function doEnsure(
-   localPath: string,
-   repo: ParsedRepo,
-   branch: string | undefined,
-   cacheKey: string,
-): Promise<void> {
-   if (!existsSync(path.join(localPath, ".git"))) {
-      // Clone
-      reportCloneStart(cacheKey);
-      await git(["clone", "--filter=blob:none", repo.remote, localPath]);
-      if (branch) {
-         await git(["checkout", branch], localPath);
-      }
-      lastFetchTime.set(cacheKey, Date.now());
-      reportCloneDone(cacheKey);
+async function syncOneRepo(task: GitSyncTask): Promise<void> {
+   const repo = parseRepo(task.repository);
+   if (!repo) {
+      reportSyncStep(task.repository, true);
       return;
    }
 
-   // Throttle refreshes
-   const lastFetch = lastFetchTime.get(cacheKey);
-   if (lastFetch && Date.now() - lastFetch < FETCH_THROTTLE_MS) {
-      return; // Recently fetched, skip
-   }
+   const localPath = cachePath(repo);
+   const cacheKey = `${repo.org}/${repo.repo}`;
 
-   // Fetch + reset
-   reportCloneStart(cacheKey);
-   await git(["fetch", "origin"], localPath);
-
-   const targetBranch = branch || (await getDefaultBranch(localPath));
    try {
-      await git(["checkout", "-B", targetBranch, `origin/${targetBranch}`], localPath);
-      await git(["reset", "--hard", `origin/${targetBranch}`], localPath);
-   } catch {
-      reportWarning(`Could not checkout branch ${targetBranch} for ${cacheKey}`);
-   }
+      if (!existsSync(path.join(localPath, ".git"))) {
+         // ── Initial clone ──
+         await git(["clone", "--filter=blob:none", repo.remote, localPath]);
+         if (task.branch) {
+            await git(["checkout", task.branch], localPath);
+         }
+         lastFetchTime.set(cacheKey, Date.now());
+      } else {
+         // ── Existing repo — fetch if stale ──
+         const lastFetch = lastFetchTime.get(cacheKey);
+         if (lastFetch && Date.now() - lastFetch < FETCH_THROTTLE_MS) {
+            return; // Recently fetched, skip
+         }
 
-   lastFetchTime.set(cacheKey, Date.now());
-   reportCloneDone(cacheKey);
+         await git(["fetch", "origin"], localPath);
+         const targetBranch = task.branch || (await getDefaultBranch(localPath));
+         try {
+            await git(["checkout", "-B", targetBranch, `origin/${targetBranch}`], localPath);
+            await git(["reset", "--hard", `origin/${targetBranch}`], localPath);
+         } catch {
+            // Branch checkout failed — non-critical, repo still usable
+         }
+         lastFetchTime.set(cacheKey, Date.now());
+      }
+      reportSyncStep(cacheKey, false);
+   } catch {
+      // Network error, clone failure, etc. — record for summary toast.
+      reportSyncStep(cacheKey, true);
+   }
 }
 
 async function getDefaultBranch(localPath: string): Promise<string> {

@@ -6,7 +6,9 @@ import type { ReferenceInfo } from "./types.js";
  * Returns empty string if no references have descriptions.
  */
 export function buildReferenceGuidance(references: ReferenceInfo[]): string {
-   const visible = references.filter((r) => r.description && !r.hidden);
+   // Only description gates guidance. hidden refs WITH descriptions
+   // are still advertised to the agent — hidden only affects the @autocomplete picker.
+   const visible = references.filter((r) => r.description).toSorted((a, b) => a.name.localeCompare(b.name));
    if (visible.length === 0) return "";
 
    const entries = visible
