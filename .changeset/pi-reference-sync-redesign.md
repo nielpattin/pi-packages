@@ -2,9 +2,11 @@
 "@nielpattin/pi-reference": patch
 ---
 
-Redesign git sync UX: serial queue, single progress widget, batched error summary.
+Improve git sync and system prompt guidance.
 
-- **Serial queue**: All git operations now run one at a time through a serial queue. Previously, all git references fired concurrent `git clone`/`git fetch` processes on session start, causing `getaddrinfo() thread failed to start` errors on Windows when many references were configured (16+ concurrent git processes exhausting the DNS thread pool).
-- **Single progress widget**: One line above the editor shows a counter (`⠋ Syncing references... 3/16`) that updates as each repo finishes. No per-repo flickering between clone messages.
-- **Batched error summary**: Network errors (DNS failures, connection timeouts, etc.) are collected across all repos and shown as a single warning toast at the end of sync (`3 of 16 references failed to sync: owner/repo, ...`) instead of spamming one error toast per repo.
-- **Background fetch is silent**: Existing repos (already cloned from a previous session) fetch silently. Only the progress counter reflects activity; no per-repo toasts for routine fetches.
+- **Parallel sync**: Git references now sync concurrently via `Promise.allSettled`. Each repo clone/fetches independently for faster startup.
+- **Same-target+branch deduplication**: Two aliases pointing at the same repo+branch only trigger one git operation.
+- **Animated progress widget**: A spinner (`⠋ ⠙ ⠹ ⠸ ...`) cycles every 80ms with a counter (`Syncing references... 3/16`) above the editor while sync runs. Cleared when all repos finish.
+- **Batched error summary**: Network errors are collected across all repos and shown as a single warning toast at the end of sync instead of spamming one error toast per repo.
+- **Guidance filtering fix**: Only `description` gates system prompt advertisement. `hidden` references WITH descriptions are still advertised to the agent; `hidden` only affects the `@` autocomplete picker.
+- **Alphabetical sorting**: References in the system prompt XML are now sorted alphabetically by name.
