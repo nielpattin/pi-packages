@@ -1,7 +1,6 @@
 node_modules
 .test-dist/
 coverage/
-config.json
 debug/
 .env
 .env.*

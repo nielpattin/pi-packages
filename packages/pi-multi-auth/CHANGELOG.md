@@ -21,6 +21,10 @@ All notable changes to this project will be documented in this file.
 - Added `cfut_` token recognition to Cloudflare credential parser alongside existing `cfat_` support, so pasted Workers AI tokens are handled by the Cloudflare-specific parser instead of falling through to the generic fallback.
 - Added `resolveCloudflareRequestOverridesFromText` call in the generic API key fallback parser to extract account IDs and base URLs from surrounding text, so credential request overrides are applied even when the generic parser handles the input.
 
+### Changed
+
+- Moved runtime configuration from the package-root `config.json` to `multi-auth-config.json` under Pi's runtime directory, so it survives reinstalls and `/reload` alongside `multi-auth.json`. A legacy `config.json` at the extension root is migrated to the new location on first load and removed.
+
 ### Fixed
 
 - Fixed `session_start` reload handler not awaiting `registerMultiAuthProviders()`, which caused a race condition where `resetApiProviders()` during `reload()` wiped provider wrappers and the next API call hit before async re-registration completed, producing "Invalid URL" errors (OpenAI SDK received literal `managed-by-multi-auth` as baseURL).

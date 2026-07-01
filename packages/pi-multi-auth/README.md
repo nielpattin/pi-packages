@@ -17,7 +17,7 @@
 - Enriches status-only provider failures with bounded diagnostic probes so authentication, permission, billing, and rate-limit errors include actionable provider response details when available.
 - Provides lightweight rotation for API-key providers that do not expose external usage state, including delegated parent-session lease reuse.
 - Filters removed legacy Google Gemini CLI and Google Antigravity providers so stale provider definitions are not offered for credential setup or usage refreshes.
-- Persists extension state and usage snapshots under Pi's runtime directory while keeping local `config.json` and debug output outside the published package.
+- Persists extension state, usage snapshots, and runtime configuration (`multi-auth-config.json`) under Pi's runtime directory; only debug output stays local to the package.
 - Coordinates fresh usage refreshes across selection, startup, modal, and manual refresh flows with bounded concurrency, candidate windows, cooldowns, and circuit breaking.
 
 ## Provider capability matrix
@@ -107,7 +107,7 @@ The global path above is the default when `PI_CODING_AGENT_DIR` is unset; otherw
 
 ## Configuration
 
-Runtime configuration lives in `config.json` at the extension root. The extension creates the file automatically with defaults on first load if it does not already exist.
+Runtime configuration lives in `multi-auth-config.json` under Pi's runtime directory (`~/.pi/agent/`, respecting `PI_DELEGATED_AUTH_RUNTIME_DIR` / `PI_CODING_AGENT_DIR`). The extension creates the file automatically with defaults on first load if it does not already exist. On first run after upgrade, a legacy `config.json` at the extension root is migrated to the new location and removed.
 
 | Key               | Type                                                           | Default | Purpose                                                             |
 | ----------------- | -------------------------------------------------------------- | ------- | ------------------------------------------------------------------- |
@@ -115,7 +115,7 @@ Runtime configuration lives in `config.json` at the extension root. The extensio
 | `hiddenProviders` | `string[]`                                                     | `[]`    | Hides selected providers from the multi-auth UI and runtime work    |
 | `rotationModes`   | `Record<string, "round-robin" \| "usage-based" \| "balancer">` | `{}`    | Overrides provider rotation modes outside `multi-auth.json`         |
 
-The published package intentionally excludes `config.json` and `debug/`; both are created locally as needed by the running extension. Usage snapshots are cached in Pi's runtime directory as `multi-auth-usage-cache.json` so operational and display-only usage state can survive extension restarts without publishing local state.
+The published package ships no runtime state. Configuration (`multi-auth-config.json`) and usage snapshots (`multi-auth-usage-cache.json`) live in Pi's runtime directory; only `debug/` output is created locally as needed by the running extension, so operational and display-only state survives extension restarts without publishing local state.
 
 ### Credential request overrides
 

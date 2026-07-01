@@ -54,24 +54,6 @@ function checkDirtyWorktree() {
    }
 }
 
-function checkDebugConfig() {
-   const configPath = resolve(EXTENSION_ROOT, "config.json");
-   let debugEnabled = false;
-   try {
-      const config = JSON.parse(readFileSync(configPath, "utf-8"));
-      debugEnabled = config.debug === true;
-   } catch {
-      // config.json may be absent; package safety is enforced elsewhere.
-   }
-   if (debugEnabled) {
-      console.warn(
-         "WARNING: config.json has debug=true locally. This will not ship because config.json is excluded from the package.",
-      );
-   } else {
-      console.log("OK: Local debug state is disabled (or config.json is absent).");
-   }
-}
-
 function checkPackageManifestSafety() {
    const pkgPath = resolve(EXTENSION_ROOT, "package.json");
    const pkg = JSON.parse(readFileSync(pkgPath, "utf-8"));
@@ -148,21 +130,17 @@ function main() {
    checkDirtyWorktree();
    console.log("");
 
-   console.log("Step 2: Debug config check (informational)");
-   checkDebugConfig();
-   console.log("");
-
-   console.log("Step 3: Package manifest safety check (fatal)");
+   console.log("Step 2: Package manifest safety check (fatal)");
    checkPackageManifestSafety();
    console.log("");
 
-   console.log("Step 4: npm run check (fatal)");
+   console.log("Step 3: npm run check (fatal)");
    if (run("npm", ["run", "check"]).status !== 0) {
       process.exit(1);
    }
    console.log("");
 
-   console.log("Step 5: npm pack --dry-run validation (fatal)");
+   console.log("Step 4: npm pack --dry-run validation (fatal)");
    checkPackDryRun();
    console.log("");
 

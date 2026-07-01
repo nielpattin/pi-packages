@@ -1,8 +1,9 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, unlinkSync, writeFileSync } from "node:fs";
 import { basename, dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { getErrorMessage } from "./auth-error-utils.js";
 import type { RotationMode } from "./types.js";
+import { resolveAgentRuntimePath } from "./runtime-paths.js";
 
 export const MULTI_AUTH_EXTENSION_ID = "pi-multi-auth";
 
@@ -43,7 +44,8 @@ export function resolveExtensionRoot(moduleUrl = import.meta.url): string {
 }
 
 export const EXTENSION_ROOT = resolveExtensionRoot();
-export const CONFIG_PATH = join(EXTENSION_ROOT, "config.json");
+export const LEGACY_CONFIG_PATH = join(EXTENSION_ROOT, "config.json");
+export const CONFIG_PATH = resolveAgentRuntimePath("multi-auth-config.json");
 export const DEBUG_DIR = join(EXTENSION_ROOT, "debug");
 export const DEBUG_LOG_PATH = join(DEBUG_DIR, `${MULTI_AUTH_EXTENSION_ID}-debug.jsonl`);
 
@@ -206,8 +208,30 @@ function ensureConfigDirectory(configPath: string): void {
    mkdirSync(dirname(configPath), { recursive: true });
 }
 
+export function migrateLegacyConfigFile(
+   configPath: string,
+   legacyPath: string = LEGACY_CONFIG_PATH,
+): "ok" | "absent" | "error" {
+   if (!existsSync(legacyPath)) {
+      return "absent";
+   }
+   try {
+      ensureConfigDirectory(configPath);
+      const raw = readFileSync(legacyPath, "utf-8");
+      writeFileSync(configPath, raw, "utf-8");
+      unlinkSync(legacyPath);
+      return "ok";
+   } catch {
+      return "error";
+   }
+}
+
 export function ensureMultiAuthConfig(configPath = CONFIG_PATH): { created: boolean; warning?: string } {
    if (existsSync(configPath)) {
+      return { created: false };
+   }
+
+   if (configPath === CONFIG_PATH && migrateLegacyConfigFile(configPath) === "ok") {
       return { created: false };
    }
 

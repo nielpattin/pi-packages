@@ -50,15 +50,6 @@ function main() {
    // Validate index.ts exists
    assert(existsSync(resolve(EXTENSION_ROOT, "index.ts")), "index.ts exists");
 
-   // Validate config.json is parseable (dev sanity)
-   const configPath = resolve(EXTENSION_ROOT, "config.json");
-   if (existsSync(configPath)) {
-      const config = readJson(configPath);
-      assert(typeof config === "object" && config !== null, "config.json is valid JSON object");
-   } else {
-      console.log("SKIP: config.json not found (may be excluded from package)");
-   }
-
    // Validate npm pack dry-run excludes debug/config/tests
    const packResult = spawnSync("npm", ["pack", "--dry-run"], {
       encoding: "utf-8",
