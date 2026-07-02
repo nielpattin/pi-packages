@@ -6,11 +6,11 @@ This file summarizes the latest package changelog entries. Package changelogs re
 
 ### pi-multi-auth
 
-## 0.11.1
+## 0.12.0
 
-### Patch Changes
+### Minor Changes
 
-- 3ddcc54: Update Pi peer dependencies to use `*` range per extension standard. Update `diff` to v9, `file-type` to v22, `esbuild` to ^0.28.1, and other dev dependencies to latest.
+- 5639d13: Move runtime configuration from the package-root `config.json` to `multi-auth-config.json` under Pi's runtime directory (`~/.pi/agent/`, respecting `PI_DELEGATED_AUTH_RUNTIME_DIR` / `PI_CODING_AGENT_DIR`). Configuration now lives alongside `multi-auth.json` and the usage cache instead of inside the extension package, so it survives reinstalls and `/reload`. On first load after upgrade, a legacy `config.json` at the extension root is migrated to the new location and removed.
 
 ### @nielpattin/pi-permission-system
 
@@ -37,24 +37,18 @@ This file summarizes the latest package changelog entries. Package changelogs re
 
 ### @nielpattin/pi-reference
 
-## 0.2.0
+## 0.2.1
 
-### Minor Changes
+### Patch Changes
 
-- 0514ff7: Add pi-reference package: project references for Pi. Declare local directories and Git repos as accessible to the agent via system prompt guidance and permission auto-allow.
+- 36eebc9: Rework git sync reliability, autocomplete UX, and system prompt guidance.
 
-   Features:
-
-   - Config in settings.json `references` block (global + project, string/object entry forms)
-   - Git repos cloned into ~/.cache/checkouts (reuses librarian cache path), refreshed on session start with 5-min throttle
-   - @alias autocomplete: type @ to browse reference aliases (cyan), @alias/ to browse files, drill into directories
-   - @alias/path tokens in submitted prompts are expanded to file content (or directory listings)
-   - System prompt XML guidance for references with descriptions
-   - Permission auto-allow via external_directory session rules
-   - Footer status bar shows "refs: N"
-   - Transient widget above editor shows "cloning owner/repo..." during git operations
-
-   Extend PermissionsService with approveSessionRule() for cross-extension session-level allow rules.
+   - **Bounded concurrency + retry**: Git references sync through a worker pool (3 at a time) with network-error retry (2 retries, backoff). Fixes random `getaddrinfo() thread failed to start` failures on Windows from spawning too many git processes at once.
+   - **Same-target+branch deduplication**: Two aliases pointing at the same repo+branch trigger only one git operation.
+   - **Footer sync status**: Sync progress moved from an above-editor widget to the extension status bar. Shows `⠧ Syncing references... 2/15` (animated spinner + counter) during sync, reverts to `refs: N` when idle.
+   - **Batched error summary**: Network errors collected across all repos, shown as a single warning toast at the end of sync instead of one per repo.
+   - **System prompt guidance restored**: `@alias/path` tokens stay as literal text in the message. The system prompt instructs the agent to split on the first `/`, map the alias to its path, and append the rest (may be a file or directory).
+   - **`@alias` autocomplete**: Tab on an alias inserts `@alias/` (slash, no space) so the dropdown stays open and lists root contents. Labels show just filenames in cyan. Built-in file suggestions no longer leak after a completed reference token. Alias resolution uses prefix matching so aliases containing `/` work correctly.
 
 ### @nielpattin/pi-simplify
 

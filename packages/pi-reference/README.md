@@ -74,16 +74,19 @@ Git references are cloned into `~/.cache/checkouts/<host>/<org>/<repo>` — the 
 Type `@` in the editor to browse references:
 
 - `@` alone shows all reference aliases (cyan)
-- `@alias/` browses files inside that reference's directory
-- `@alias/path/to/file.ts` inserts the path into your prompt
-- On submission, `@alias/path` tokens are expanded to file content
+- `@partial` filters aliases by prefix
+- `@alias/` browses files inside that reference's directory (filenames shown in cyan)
+- Tab on an alias inserts `@alias/` and keeps the dropdown open to browse root contents
+- Tab on a file inserts `@alias/path/to/file.ts ` (trailing space dismisses the dropdown)
 
-The footer status bar shows `refs: N` (reference count). During git clone operations, a widget above the editor shows `cloning owner/repo...` for each in-progress clone.
+`@alias/path` tokens stay as literal text when submitted. The system prompt instructs the agent to split on the first `/`, map the alias to its configured path, and append the rest (which may be a file or directory).
+
+The footer status bar shows `refs: N` (reference count). During git sync, the footer shows `⠧ Syncing references... 2/15` (animated spinner + counter) and reverts to `refs: N` when done.
 
 ## How it works
 
-1. On `session_start`, references are resolved from global + project settings. Git repos are cloned/fetched asynchronously.
-2. On `before_agent_start` (first turn), reference directories are auto-allowed via the permission system's `external_directory` surface. References with descriptions are injected into the system prompt as an XML block.
+1. On `session_start`, references are resolved from global + project settings. Git repos are synced asynchronously through a bounded-concurrency worker pool (3 at a time) with network-error retry, to avoid DNS exhaustion on Windows.
+2. On `before_agent_start` (first turn), reference directories are auto-allowed via the permission system's `external_directory` surface. References with descriptions are injected into the system prompt as an XML block with an explicit instruction telling the agent how to resolve `@alias/path` tokens.
 
 ## Graceful degradation
 
