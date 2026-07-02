@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { extractAtToken, parseReferenceToken, fuzzyMatch, expandReferenceTokens } from "../autocomplete.js";
+import {
+   extractAtToken,
+   parseReferenceToken,
+   fuzzyMatch,
+   expandReferenceTokens,
+   extractCompletedReferenceAlias,
+} from "../autocomplete.js";
 import type { ReferenceInfo } from "../types.js";
 import { existsSync, mkdirSync, writeFileSync, rmSync } from "fs";
 import { join } from "path";
@@ -46,11 +52,8 @@ describe("extractAtToken", () => {
 describe("parseReferenceToken", () => {
    const references = [makeRef("opencode", "/cache/opencode"), makeRef("docs", "/project/docs")];
 
-   it("parses @alias without path", () => {
-      const result = parseReferenceToken("@opencode", references);
-      expect(result?.alias).toBe("opencode");
-      expect(result?.refPath).toBe("/cache/opencode");
-      expect(result?.remainder).toBe("");
+   it("returns null for @alias without path (needs /", () => {
+      expect(parseReferenceToken("@opencode", references)).toBeNull();
    });
 
    it("parses @alias/path", () => {
@@ -117,20 +120,19 @@ describe("expandReferenceTokens", () => {
 
    it("expands @alias/path to file content", () => {
       const result = expandReferenceTokens("Check @testref/hello.txt", references);
-      expect(result).toContain('<file path="@testref/hello.txt">');
+      expect(result).toContain(`In "${join(tmpDir, "hello.txt")}"`);
       expect(result).toContain("Hello World!");
    });
 
    it("expands @alias/nested/path", () => {
       const result = expandReferenceTokens("See @testref/src/index.ts", references);
-      expect(result).toContain('<file path="@testref/src/index.ts">');
+      expect(result).toContain(`In "${join(tmpDir, "src", "index.ts")}"`);
       expect(result).toContain("export default 42;");
    });
 
-   it("lists directory for @alias/dir/", () => {
+   it("shows only path for directory (no listing)", () => {
       const result = expandReferenceTokens("Browse @testref/src/", references);
-      expect(result).toContain("directory listing:");
-      expect(result).toContain("index.ts");
+      expect(result).toBe(`Browse In "${join(tmpDir, "src")}"`);
    });
 
    it("returns original text for unknown alias", () => {
@@ -157,5 +159,38 @@ describe("expandReferenceTokens", () => {
       const result = expandReferenceTokens("Read @testref/hello.txt and @testref/src/index.ts", references);
       expect(result).toContain("Hello World!");
       expect(result).toContain("export default 42;");
+   });
+});
+
+describe("extractCompletedReferenceAlias", () => {
+   const references = [makeRef("opencode", "/cache/opencode"), makeRef("docs", "/project/docs")];
+
+   it("returns alias when @alias is followed by a space", () => {
+      expect(extractCompletedReferenceAlias("@opencode ", references)).toBe("opencode");
+   });
+
+   it("returns alias when @alias is followed by a tab", () => {
+      expect(extractCompletedReferenceAlias("@docs\t", references)).toBe("docs");
+   });
+
+   it("returns alias when preceded by another delimiter", () => {
+      expect(extractCompletedReferenceAlias("path=@opencode ", references)).toBe("opencode");
+   });
+
+   it("returns null when @alias has no terminating delimiter", () => {
+      expect(extractCompletedReferenceAlias("@opencode", references)).toBeNull();
+   });
+
+   it("returns null when @alias is followed by a slash (still browsing)", () => {
+      expect(extractCompletedReferenceAlias("@opencode/", references)).toBeNull();
+   });
+
+   it("returns null for unknown alias", () => {
+      expect(extractCompletedReferenceAlias("@unknown ", references)).toBeNull();
+   });
+
+   it("returns null when alias is a substring of another word", () => {
+      // @opencode embedded inside a larger token should not match
+      expect(extractCompletedReferenceAlias("foo@opencode ", references)).toBeNull();
    });
 });

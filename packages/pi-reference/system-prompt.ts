@@ -24,7 +24,7 @@ export function buildReferenceGuidance(references: ReferenceInfo[]): string {
 
    return (
       `<project_references>\n` +
-      `The following project references provide additional directories accessible when relevant.\n` +
+      `Split on the first "/": <name> before the slash, <rest> after. Map <name> to its path and append <rest>. It may be a file or directory.\n` +
       `${entries}\n` +
       `</project_references>`
    );

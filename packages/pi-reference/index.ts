@@ -1,9 +1,9 @@
 import type { ReferenceInfo } from "./types.js";
 import { resolveReferences } from "./resolve.js";
-import { buildReferenceGuidance } from "./system-prompt.js";
 import { allowReferenceDirs } from "./permissions.js";
 import { setUiContext, setCurrentReferences, reportError } from "./status.js";
-import { ReferenceAutocompleteProvider, expandReferenceTokens } from "./autocomplete.js";
+import { ReferenceAutocompleteProvider } from "./autocomplete.js";
+import { buildReferenceGuidance } from "./system-prompt.js";
 
 // ─── Module-level state ───────────────────────────────────────────
 
@@ -31,7 +31,6 @@ export default function (pi: import("@earendil-works/pi-coding-agent").Extension
                  hasUI: ctx.hasUI,
                  notify: ctx.ui.notify.bind(ctx.ui),
                  setStatus: ctx.ui.setStatus.bind(ctx.ui),
-                 setWidget: ctx.ui.setWidget.bind(ctx.ui),
               }
             : null,
       );
@@ -45,9 +44,9 @@ export default function (pi: import("@earendil-works/pi-coding-agent").Extension
       }
    });
 
-   // Inject reference guidance into system prompt + auto-allow dirs.
-   pi.on("before_agent_start", (event, ctx) => {
-      // Auto-allow reference directories (once per session, after permission system clears)
+   // Auto-allow reference directories + inject reference guidance into system prompt.
+   pi.on("before_agent_start", (_event, ctx) => {
+      // Auto-allow reference directories (once per session).
       if (!rulesInjected && resolvedReferences.length > 0) {
          allowReferenceDirs(resolvedReferences, ctx.cwd);
          rulesInjected = true;
@@ -56,13 +55,6 @@ export default function (pi: import("@earendil-works/pi-coding-agent").Extension
       // Append reference guidance to system prompt
       const guidance = buildReferenceGuidance(resolvedReferences);
       if (!guidance) return {};
-      return { systemPrompt: event.systemPrompt + "\n\n" + guidance };
-   });
-
-   pi.on("input", (event) => {
-      if (resolvedReferences.length === 0) return;
-      const expanded = expandReferenceTokens(event.text, resolvedReferences);
-      if (expanded === event.text) return;
-      return { action: "transform", text: expanded };
+      return { systemPrompt: _event.systemPrompt + "\n\n" + guidance };
    });
 }

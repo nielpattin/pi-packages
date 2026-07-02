@@ -5,11 +5,9 @@
  * index.ts wires the UI context on session_start; other modules call
  * reportInfo / reportWarning / reportError.
  *
- * Two display surfaces:
- *   - setStatus(): compact persistent footer status ("refs: 17")
- *   - setWidget(): single progress line during reference sync, cleared when done.
- *     Shows a counter ("Syncing references... 3/16") so the user can see
- *     sync progress without per-repo flickering.
+ * Single display surface — the extension status bar (footer):
+ *   - During sync:  "⠧ Syncing references... 2/15" (animated spinner + counter)
+ *   - When idle:    "refs: 19"
  */
 
 import type { ReferenceInfo } from "./types.js";
@@ -20,7 +18,6 @@ interface UiContext {
    hasUI: boolean;
    notify(message: string, type?: "info" | "warning" | "error"): void;
    setStatus(key: string, text: string | undefined): void;
-   setWidget(key: string, content: string[] | undefined, options?: { placement?: "aboveEditor" | "belowEditor" }): void;
 }
 
 let ui: UiContext | null = null;
@@ -32,7 +29,9 @@ export function setUiContext(ctx: UiContext | null): void {
 
 export function setCurrentReferences(refs: ReferenceInfo[]): void {
    currentReferences = refs;
-   updateFooterStatus();
+   if (!syncActive) {
+      updateFooterStatus();
+   }
 }
 
 // ─── Status reporting (transient toasts) ─────────────────────────
@@ -51,15 +50,15 @@ export function reportError(msg: string): void {
 
 // ─── Sync progress tracking ──────────────────────────────────────
 //
-// One-line widget that shows a counter during reference sync:
+// Footer status line that shows a counter during reference sync:
 //
 //   ⠋ Syncing references... 3/16
 //
 // No per-repo flickering. Updates the counter as each repo finishes.
-// Cleared when all repos are done. A summary toast appears only if
-// some repos failed to sync.
+// When all repos are done, the footer reverts to "refs: N".
+// A summary toast appears only if some repos failed to sync.
 
-const WIDGET_KEY = "pi-reference-sync";
+const STATUS_KEY = "pi-reference";
 
 // Braille spinner frames — cycle through while sync is active.
 const SPINNER_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
@@ -80,7 +79,7 @@ export function beginSync(total: number): void {
    syncActive = total > 0;
    spinnerFrame = 0;
    startSpinner();
-   refreshSyncWidget();
+   refreshSyncStatus();
 }
 
 /** Mark one repo as done, optionally recording it as failed. */
@@ -89,12 +88,11 @@ export function reportSyncStep(ownerRepo: string, failed: boolean): void {
    if (failed) syncFailed.push(ownerRepo);
 }
 
-/** Finish the sync batch: clear widget, show summary toast if failures. */
+/** Finish the sync batch: revert footer to "refs: N", show summary toast if failures. */
 export function endSync(): void {
    if (!syncActive) return;
    syncActive = false;
    stopSpinner();
-   refreshSyncWidget();
    if (syncFailed.length > 0) {
       const summary =
          syncFailed.length === syncTotal
@@ -105,13 +103,14 @@ export function endSync(): void {
    syncTotal = 0;
    syncDone = 0;
    syncFailed = [];
+   updateFooterStatus();
 }
 
 function startSpinner(): void {
    if (spinnerTimer) return;
    spinnerTimer = setInterval(() => {
       spinnerFrame = (spinnerFrame + 1) % SPINNER_FRAMES.length;
-      refreshSyncWidget();
+      refreshSyncStatus();
    }, SPINNER_INTERVAL_MS);
 }
 
@@ -122,23 +121,14 @@ function stopSpinner(): void {
    }
 }
 
-function refreshSyncWidget(): void {
+function refreshSyncStatus(): void {
    if (!ui?.hasUI) return;
-
-   if (!syncActive || syncTotal === 0) {
-      ui.setWidget(WIDGET_KEY, undefined, { placement: "aboveEditor" });
-      return;
-   }
-
+   if (!syncActive || syncTotal === 0) return;
    const spinner = SPINNER_FRAMES[spinnerFrame];
-   ui.setWidget(WIDGET_KEY, [`${spinner} Syncing references... ${syncDone}/${syncTotal}`], {
-      placement: "aboveEditor",
-   });
+   ui.setStatus(STATUS_KEY, `${spinner} Syncing references... ${syncDone}/${syncTotal}`);
 }
 
-// ─── Footer status (persistent, compact) ─────────────────────────
-
-const STATUS_KEY = "pi-reference";
+// ─── Footer status (idle state) ──────────────────────────────────
 
 function updateFooterStatus(): void {
    if (!ui?.hasUI) return;

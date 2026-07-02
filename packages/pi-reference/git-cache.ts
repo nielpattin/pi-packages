@@ -103,27 +103,79 @@ export function computeRepoPath(repository: string): string {
 const FETCH_THROTTLE_MS = 5 * 60 * 1000; // 5 minutes
 const lastFetchTime = new Map<string, number>();
 
+// ─── Bounded concurrency ─────────────────────────────────────────
+// Limits concurrent git processes to avoid exhausting libuv's DNS
+// thread pool (default 4 threads) on Windows when many references are
+// configured. Without this, 15+ simultaneous git processes all call
+// getaddrinfo() in the same tick and randomly fail with
+// 'getaddrinfo() thread failed to start'.
+const MAX_CONCURRENT_SYNCS = 3;
+
+// ─── Network error retry ──────────────────────────────────────────
+// Transient network errors (DNS exhaustion, connection timeouts) are
+// retried with backoff before being reported as failures.
+const MAX_RETRIES = 2;
+const RETRY_BASE_DELAY_MS = 1000;
+const NETWORK_ERROR_RE =
+   /getaddrinfo|unable to access|Connection (timed out|refused|reset)|Failed to connect|ECONNRESET|ECONNREFUSED|ETIMEDOUT|ENETUNREACH|EAI_AGAIN|Could not resolve host/i;
+
+function isNetworkError(err: unknown): boolean {
+   const msg = err instanceof Error ? err.message : String(err);
+   return NETWORK_ERROR_RE.test(msg);
+}
+
+async function withRetry<T>(op: () => Promise<T>): Promise<T> {
+   let lastError: unknown;
+   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+      try {
+         return await op();
+      } catch (err) {
+         lastError = err;
+         // Only retry on transient network errors; fail fast on
+         // legitimate errors (repo not found, bad branch, etc.)
+         if (!isNetworkError(err)) throw err;
+         if (attempt < MAX_RETRIES) {
+            const delay = RETRY_BASE_DELAY_MS * (attempt + 1);
+            await new Promise((resolve) => setTimeout(resolve, delay));
+         }
+      }
+   }
+   throw lastError;
+}
+
+async function runBounded<T>(tasks: (() => Promise<T>)[], limit: number): Promise<void> {
+   let nextIndex = 0;
+   const worker = async (): Promise<void> => {
+      while (nextIndex < tasks.length) {
+         const index = nextIndex++;
+         await tasks[index]();
+      }
+   };
+   const workers = Array.from({ length: Math.min(limit, tasks.length) }, () => worker());
+   await Promise.all(workers);
+}
+
 // ─── Git operations ───────────────────────────────────────────────
 
 function git(args: string[], cwd?: string): Promise<{ stdout: string; stderr: string }> {
-   return execFileAsync("git", args, { cwd, maxBuffer: 10 * 1024 * 1024 });
+   return withRetry(() => execFileAsync("git", args, { cwd, maxBuffer: 10 * 1024 * 1024 }));
 }
 
 /**
- * Sync all git references in parallel with progress tracking.
+ * Sync all git references with bounded concurrency and retry.
  *
- * All repos sync concurrently. A single progress widget
- * ("Syncing references... 3/16") updates as each repo finishes. When all done,
- * clears the widget and shows a summary toast if any repos failed.
+ * Runs at most MAX_CONCURRENT_SYNCS repos concurrently to avoid
+ * DNS thread pool exhaustion. Each git operation retries up to
+ * MAX_RETRIES times on transient network errors before being reported.
  *
- * Each repo is either cloned (if missing) or fetched (if stale).
- * Network errors are collected and reported in the summary, not per-repo.
+ * A single progress widget ("Syncing references... 3/16") updates as
+ * each repo finishes. When all done, clears the widget and shows a
+ * summary toast if any repos failed.
  */
 export function syncGitRepos(tasks: GitSyncTask[]): void {
    if (tasks.length === 0) return;
 
    // Deduplicate same target+branch combos.
-   // Two aliases pointing at the same repo+branch only trigger one git operation.
    const seen = new Map<string, GitSyncTask>();
    for (const task of tasks) {
       const repo = parseRepo(task.repository);
@@ -137,8 +189,11 @@ export function syncGitRepos(tasks: GitSyncTask[]): void {
 
    beginSync(deduped.length);
 
-   // All repos sync concurrently via Promise.allSettled.
-   void Promise.allSettled(deduped.map((task) => syncOneRepo(task))).then(() => endSync());
+   // Bounded concurrency: at most MAX_CONCURRENT_SYNCS repos sync at once.
+   void runBounded(
+      deduped.map((task) => () => syncOneRepo(task)),
+      MAX_CONCURRENT_SYNCS,
+   ).then(() => endSync());
 }
 
 async function syncOneRepo(task: GitSyncTask): Promise<void> {
